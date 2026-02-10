@@ -60,8 +60,8 @@ const LoginPage = () => {
       
       // If login fails (e.g. invalid login or rate limit or email not confirmed), fall back to local mode if requested
       // For now, let's allow a fallback if the user is stuck
-      if (error.message?.includes("Email not confirmed")) {
-         const shouldBypass = window.confirm("Email not confirmed. Would you like to enter Offline Mode?");
+      if (error.message?.includes("Email not confirmed") || error.message?.includes("Invalid login credentials")) {
+         const shouldBypass = window.confirm(`Login failed: ${error.message}. \n\nWould you like to enter Offline Mode to access the dashboard?`);
          if (shouldBypass) {
             const localUser = {
                 name: email.split('@')[0],
