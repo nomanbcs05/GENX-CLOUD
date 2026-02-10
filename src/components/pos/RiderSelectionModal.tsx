@@ -1,0 +1,58 @@
+import { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { useCartStore } from '@/stores/cartStore';
+import { toast } from 'sonner';
+import { User, Bike, MapPin } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+interface RiderSelectionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const RIDERS = [
+  { id: 1, name: 'Ayaz' },
+  { id: 2, name: 'Mumtaz' },
+  { id: 3, name: 'Abuzar' },
+  { id: 4, name: 'Zafar' },
+];
+
+const RiderSelectionModal = ({ isOpen, onClose }: RiderSelectionModalProps) => {
+  const { setRider } = useCartStore();
+  
+  const handleSelectRider = (rider: any) => {
+    setRider({ name: rider.name });
+    toast.success(`Rider ${rider.name} assigned`);
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[500px] p-6 bg-background">
+        <DialogHeader className="pb-4">
+          <DialogTitle className="text-2xl font-bold text-center">
+            Select Rider
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="grid grid-cols-2 gap-4">
+          {RIDERS.map((rider) => (
+            <motion.button
+              key={rider.id}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleSelectRider(rider)}
+              className="p-6 rounded-xl border-2 border-muted hover:border-primary hover:bg-primary/5 bg-card transition-all flex flex-col items-center justify-center gap-2 h-32"
+            >
+              <User className="h-8 w-8 text-muted-foreground" />
+              <h3 className="font-bold text-lg">{rider.name}</h3>
+            </motion.button>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default RiderSelectionModal;
