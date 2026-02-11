@@ -31,7 +31,12 @@ const StartDayModal = ({ isOpen, onSuccess, onClose, forceNewSession = false }: 
         // Clear history as requested
         await api.orders.deleteAllOrders();
       }
-      return api.registers.start(amount);
+      
+      // Convert date string to ISO string for the database
+      const openedAt = new Date(date);
+      openedAt.setHours(new Date().getHours(), new Date().getMinutes(), new Date().getSeconds());
+      
+      return api.registers.start(amount, openedAt.toISOString());
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['open-register'] });

@@ -43,12 +43,13 @@ export const api = {
       if (error) throw error;
       return data as DailyRegister | null;
     },
-    start: async (startingAmount: number) => {
+    start: async (startingAmount: number, openedAt?: string) => {
       const { data, error } = await supabase
         .from('daily_registers')
         .insert({
           starting_amount: startingAmount,
-          status: 'open'
+          status: 'open',
+          opened_at: openedAt || new Date().toISOString()
         })
         .select()
         .single();
