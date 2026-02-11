@@ -41,13 +41,19 @@ const ManageProductsPage = () => {
     name: '',
     description: '',
     price: '',
-    category: '',
-    kitchen: '',
+    category_id: '',
+    kitchen_id: '',
     image: '',
+    discountable: true,
     hasVariants: false,
-    variants: [] as any[],
     selectedAddons: [] as string[],
   });
+
+  // Variant State
+  const [options, setOptions] = useState<any[]>([]);
+  const [newOptionName, setNewOptionName] = useState('');
+  const [newOptionValues, setNewOptionValues] = useState<string[]>(['']);
+  const [variants, setVariants] = useState<any[]>([]);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -80,6 +86,57 @@ const ManageProductsPage = () => {
       setProductForm(prev => ({ ...prev, image: url }));
       toast({ title: "Success", description: "Image uploaded successfully" });
     },
+    onError: (error: any) => {
+      toast({ title: "Upload Failed", description: error.message, variant: "destructive" });
+    }
+  });
+
+  const saveProductMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const productPayload = {
+        name: data.name,
+        description: data.description,
+        price: parseFloat(data.price) || 0,
+        category: categories.find((c: any) => c.id === data.category_id)?.name || '',
+        image: data.image,
+        available: true,
+      };
+
+      let product;
+      if (editingProduct) {
+        product = await api.products.update(editingProduct.id, productPayload);
+      } else {
+        product = await api.products.create(productPayload);
+      }
+
+      // Handle variants if enabled
+      if (data.hasVariants && variants.length > 0) {
+        // Here you would call api to save variants
+        // For now we'll assume the API supports this or add it to api.ts
+      }
+
+      return product;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products-with-details'] });
+      toast({ title: "Success", description: `Product ${editingProduct ? 'updated' : 'created'} successfully` });
+      setIsProductModalOpen(false);
+      resetForm();
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: api.products.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products-with-details'] });
+      toast({ title: "Success", description: "Product deleted successfully" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
   });
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,14 +149,78 @@ const ManageProductsPage = () => {
       name: '',
       description: '',
       price: '',
-      category: '',
-      kitchen: '',
+      category_id: '',
+      kitchen_id: '',
       image: '',
+      discountable: true,
       hasVariants: false,
-      variants: [],
       selectedAddons: [],
     });
+    setOptions([]);
+    setVariants([]);
     setEditingProduct(null);
+  };
+
+  const generateVariants = () => {
+    if (options.length === 0) return;
+    
+    const combinations = (acc: any[], current: any) => {
+      if (acc.length === 0) return current.values.map((v: string) => ({ name: v, price: productForm.price, available: true }));
+      const result: any[] = [];
+      acc.forEach(prev => {
+        current.values.forEach((v: string) => {
+          result.push({
+            name: `${prev.name}/${v}`,
+            price: prev.price,
+            available: true
+          });
+        });
+      });
+      return result;
+    };
+
+    const newVariants = options.reduce(combinations, []);
+    setVariants(newVariants);
+  };
+
+  const handleAddOption = () => {
+    if (!newOptionName || newOptionValues.some(v => !v)) return;
+    const newOption = {
+      name: newOptionName,
+      values: newOptionValues.filter(v => v !== '')
+    };
+    setOptions([...options, newOption]);
+    setNewOptionName('');
+    setNewOptionValues(['']);
+    // Regenerate variants automatically
+    setTimeout(generateVariants, 0);
+  };
+
+  const removeOption = (index: number) => {
+    const newOptions = options.filter((_, i) => i !== index);
+    setOptions(newOptions);
+    // Regenerate variants
+    if (newOptions.length === 0) setVariants([]);
+    else setTimeout(generateVariants, 0);
+  };
+
+  const handleEditProduct = (product: any) => {
+    setEditingProduct(product);
+    setProductForm({
+      name: product.name,
+      description: product.description || '',
+      price: product.price.toString(),
+      category_id: categories.find((c: any) => c.name === product.category)?.id || '',
+      kitchen_id: '', // Not in DB yet
+      image: product.image || '',
+      discountable: true,
+      hasVariants: product.product_variants?.length > 0,
+      selectedAddons: product.product_addons?.map((a: any) => a.id) || [],
+    });
+    if (product.product_variants?.length > 0) {
+      setVariants(product.product_variants);
+    }
+    setIsProductModalOpen(true);
   };
 
   const filteredProducts = products.filter((p: any) => 
@@ -211,14 +332,35 @@ const ManageProductsPage = () => {
                       </select>
                     </TableCell>
                     <TableCell className="py-4">
-                      <Switch className="data-[state=checked]:bg-indigo-500" />
+                      <Switch 
+                        checked={product.available}
+                        onCheckedChange={(checked) => {
+                          api.products.update(product.id, { available: checked })
+                            .then(() => queryClient.invalidateQueries({ queryKey: ['products-with-details'] }));
+                        }}
+                        className="data-[state=checked]:bg-indigo-500" 
+                      />
                     </TableCell>
                     <TableCell className="py-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-indigo-600">
+                        <Button 
+                          onClick={() => handleEditProduct(product)}
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-slate-400 hover:text-indigo-600"
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-red-500">
+                        <Button 
+                          onClick={() => {
+                            if (window.confirm('Are you sure you want to delete this product?')) {
+                              deleteProductMutation.mutate(product.id);
+                            }
+                          }}
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-slate-400 hover:text-red-500"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -237,21 +379,35 @@ const ManageProductsPage = () => {
               {/* Left Panel: Basic Info */}
               <div className="flex-1 bg-white rounded-3xl p-8 overflow-y-auto">
                 <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl font-black text-indigo-600">Add New Product</h2>
-                  <Button variant="ghost" size="icon" className="bg-indigo-50 text-indigo-600 rounded-full h-8 w-8">
-                    <ChevronRight className="h-4 w-4" />
+                  <h2 className="text-2xl font-black text-indigo-600">
+                    {editingProduct ? 'Edit Product' : 'Add New Product'}
+                  </h2>
+                  <Button 
+                    onClick={() => setIsProductModalOpen(false)}
+                    variant="ghost" 
+                    size="icon" 
+                    className="bg-indigo-50 text-indigo-600 rounded-full h-8 w-8"
+                  >
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
 
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <Label className="text-sm font-black text-slate-900">Name</Label>
-                    <Input className="h-12 bg-slate-50 border-none rounded-xl" placeholder="Enter product name" />
+                    <Input 
+                      value={productForm.name}
+                      onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                      className="h-12 bg-slate-50 border-none rounded-xl" 
+                      placeholder="Enter product name" 
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm font-black text-slate-900">Description</Label>
                     <textarea 
+                      value={productForm.description}
+                      onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
                       className="w-full h-24 bg-slate-50 border-none rounded-xl p-4 text-sm outline-none resize-none" 
                       placeholder="Enter description"
                     />
@@ -259,150 +415,278 @@ const ManageProductsPage = () => {
 
                   <div className="space-y-2">
                     <Label className="text-sm font-black text-slate-900">Price</Label>
-                    <Input className="h-12 bg-slate-50 border-none rounded-xl" placeholder="0.00" />
+                    <Input 
+                      value={productForm.price}
+                      onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+                      className="h-12 bg-slate-50 border-none rounded-xl" 
+                      placeholder="0.00" 
+                    />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <Label className="text-sm font-black text-slate-900">Discountable</Label>
-                    <Switch className="data-[state=checked]:bg-indigo-500" />
+                    <Switch 
+                      checked={productForm.discountable}
+                      onCheckedChange={(checked) => setProductForm({ ...productForm, discountable: checked })}
+                      className="data-[state=checked]:bg-indigo-500" 
+                    />
                   </div>
 
                   <div className="space-y-3">
                     <Label className="text-sm font-black text-slate-900">Categories</Label>
-                    <select className="w-full h-12 bg-slate-50 border-none rounded-xl px-4 text-sm outline-none">
-                      <option>Select category</option>
+                    <select 
+                      value={productForm.category_id}
+                      onChange={(e) => setProductForm({ ...productForm, category_id: e.target.value })}
+                      className="w-full h-12 bg-slate-50 border-none rounded-xl px-4 text-sm outline-none"
+                    >
+                      <option value="">Select category</option>
                       {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                     <div className="flex flex-wrap gap-2">
-                      <Badge className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-none py-1.5 px-3 rounded-lg font-bold">
-                        Fast Food <X className="h-3 w-3 ml-2 cursor-pointer" />
-                      </Badge>
+                      {productForm.category_id && (
+                        <Badge className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-none py-1.5 px-3 rounded-lg font-bold">
+                          {categories.find((c: any) => c.id === productForm.category_id)?.name}
+                          <X 
+                            onClick={() => setProductForm({ ...productForm, category_id: '' })}
+                            className="h-3 w-3 ml-2 cursor-pointer" 
+                          />
+                        </Badge>
+                      )}
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     <Label className="text-sm font-black text-slate-900">Addons</Label>
-                    <select className="w-full h-12 bg-slate-50 border-none rounded-xl px-4 text-sm outline-none">
-                      <option>Select addons</option>
+                    <select 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val && !productForm.selectedAddons.includes(val)) {
+                          setProductForm({ ...productForm, selectedAddons: [...productForm.selectedAddons, val] });
+                        }
+                      }}
+                      className="w-full h-12 bg-slate-50 border-none rounded-xl px-4 text-sm outline-none"
+                    >
+                      <option value="">Select addons</option>
                       {addons.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
                     </select>
                     <div className="flex flex-wrap gap-2">
-                      <Badge className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-none py-1.5 px-3 rounded-lg font-bold">
-                        Cheese <X className="h-3 w-3 ml-2 cursor-pointer" />
-                      </Badge>
+                      {productForm.selectedAddons.map(addonId => (
+                        <Badge key={addonId} className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-none py-1.5 px-3 rounded-lg font-bold">
+                          {addons.find((a: any) => a.id === addonId)?.name}
+                          <X 
+                            onClick={() => setProductForm({ 
+                              ...productForm, 
+                              selectedAddons: productForm.selectedAddons.filter(id => id !== addonId) 
+                            })}
+                            className="h-3 w-3 ml-2 cursor-pointer" 
+                          />
+                        </Badge>
+                      ))}
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm font-black text-slate-900">Select Kitchen</Label>
-                    <select className="w-full h-12 bg-slate-50 border-none rounded-xl px-4 text-sm outline-none">
-                      <option>Select kitchen</option>
+                    <select 
+                      value={productForm.kitchen_id}
+                      onChange={(e) => setProductForm({ ...productForm, kitchen_id: e.target.value })}
+                      className="w-full h-12 bg-slate-50 border-none rounded-xl px-4 text-sm outline-none"
+                    >
+                      <option value="">Select kitchen</option>
                       {kitchens.map((k: any) => <option key={k.id} value={k.id}>{k.name}</option>)}
                     </select>
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-sm font-black text-slate-900">Upload your image here</Label>
-                    <div className="border-2 border-dashed border-indigo-100 rounded-3xl p-8 text-center bg-indigo-50/30">
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="h-12 w-12 bg-white rounded-full flex items-center justify-center shadow-sm">
-                          <Upload className="h-6 w-6 text-indigo-500" />
+                    <div 
+                      className="border-2 border-dashed border-indigo-100 rounded-3xl p-8 text-center bg-indigo-50/30 relative cursor-pointer"
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                    >
+                      <input 
+                        id="image-upload"
+                        type="file" 
+                        className="hidden" 
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                      />
+                      {productForm.image ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <img src={productForm.image} alt="Preview" className="h-20 w-20 object-cover rounded-xl" />
+                          <p className="text-xs text-indigo-500 font-bold">Change Image</p>
                         </div>
-                        <p className="text-xs text-slate-400 font-bold mt-2">Drag and drop or browse to choose a file</p>
-                      </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="h-12 w-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+                            {uploadImageMutation.isPending ? <Loader2 className="h-6 w-6 animate-spin text-indigo-500" /> : <Upload className="h-6 w-6 text-indigo-500" />}
+                          </div>
+                          <p className="text-xs text-slate-400 font-bold mt-2">Drag and drop or browse to choose a file</p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Switch id="variants" />
+                    <Switch 
+                      id="variants" 
+                      checked={productForm.hasVariants}
+                      onCheckedChange={(checked) => setProductForm({ ...productForm, hasVariants: checked })}
+                    />
                     <Label htmlFor="variants" className="text-sm font-black text-slate-900">
                       This product has options, like size or color
                     </Label>
                   </div>
 
-                  <Button className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl">
-                    Save
+                  <Button 
+                    onClick={() => saveProductMutation.mutate(productForm)}
+                    disabled={saveProductMutation.isPending}
+                    className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl"
+                  >
+                    {saveProductMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    {editingProduct ? 'Update Product' : 'Save Product'}
                   </Button>
                 </div>
               </div>
 
               {/* Right Panel: Variants */}
-              <div className="w-[380px] bg-white rounded-3xl p-8 overflow-y-auto">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl font-black text-indigo-600">Add New Variants</h2>
-                  <Button variant="ghost" size="icon" className="bg-indigo-50 text-indigo-600 rounded-full h-8 w-8">
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
+              {productForm.hasVariants && (
+                <div className="w-[380px] bg-white rounded-3xl p-8 overflow-y-auto">
+                  <div className="flex items-center justify-between mb-8">
+                    <h2 className="text-2xl font-black text-indigo-600">Add New Variants</h2>
+                    <Button variant="ghost" size="icon" className="bg-indigo-50 text-indigo-600 rounded-full h-8 w-8">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
 
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Switch checked />
-                      <Label className="text-sm font-black text-slate-900">This product has options, like size or color</Label>
-                    </div>
-
+                  <div className="space-y-6">
                     <div className="space-y-4">
-                      {/* Option: Size */}
-                      <div className="p-4 bg-slate-50 rounded-2xl space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-black text-slate-900">Size</span>
-                          <div className="flex gap-2">
-                            <Trash2 className="h-4 w-4 text-slate-300 cursor-pointer" />
-                            <Edit className="h-4 w-4 text-slate-300 cursor-pointer" />
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <Badge className="bg-white text-slate-400 border border-slate-200 py-1.5 px-4 rounded-lg font-bold">Medium</Badge>
-                          <Badge className="bg-white text-slate-400 border border-slate-200 py-1.5 px-4 rounded-lg font-bold">Small</Badge>
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <Switch 
+                          checked={productForm.hasVariants} 
+                          onCheckedChange={(checked) => setProductForm({ ...productForm, hasVariants: checked })}
+                        />
+                        <Label className="text-sm font-black text-slate-900">This product has options, like size or color</Label>
                       </div>
 
-                      <div className="space-y-3 pt-4 border-t border-slate-100">
-                        <div className="space-y-2">
-                          <Label className="text-xs font-black text-slate-400 uppercase">Option Name</Label>
-                          <Input className="h-10 bg-slate-50 border-none rounded-xl" placeholder="e.g. Size" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs font-black text-slate-400 uppercase">Option Value</Label>
-                          <div className="flex gap-2">
-                            <Input className="h-10 bg-slate-50 border-none rounded-xl flex-1" placeholder="e.g. Small" />
-                            <Button size="icon" className="h-10 w-10 bg-slate-100 text-slate-400 rounded-xl hover:bg-slate-200">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                      <div className="space-y-4">
+                        {/* Options List */}
+                        {options.map((opt, idx) => (
+                          <div key={idx} className="p-4 bg-slate-50 rounded-2xl space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-black text-slate-900">{opt.name}</span>
+                              <div className="flex gap-2">
+                                <Trash2 
+                                  onClick={() => removeOption(idx)}
+                                  className="h-4 w-4 text-slate-300 cursor-pointer hover:text-red-500" 
+                                />
+                                <Edit className="h-4 w-4 text-slate-300 cursor-pointer hover:text-indigo-500" />
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {opt.values.map((v: string, vIdx: number) => (
+                                <Badge key={vIdx} className="bg-white text-slate-400 border border-slate-200 py-1.5 px-4 rounded-lg font-bold">
+                                  {v}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
+                        ))}
+
+                        <div className="space-y-3 pt-4 border-t border-slate-100">
+                          <div className="space-y-2">
+                            <Label className="text-xs font-black text-slate-400 uppercase">Option Name</Label>
+                            <Input 
+                              value={newOptionName}
+                              onChange={(e) => setNewOptionName(e.target.value)}
+                              className="h-10 bg-slate-50 border-none rounded-xl" 
+                              placeholder="e.g. Size" 
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs font-black text-slate-400 uppercase">Option Values</Label>
+                            {newOptionValues.map((val, idx) => (
+                              <div key={idx} className="flex gap-2 mb-2">
+                                <Input 
+                                  value={val}
+                                  onChange={(e) => {
+                                    const newVals = [...newOptionValues];
+                                    newVals[idx] = e.target.value;
+                                    setNewOptionValues(newVals);
+                                  }}
+                                  className="h-10 bg-slate-50 border-none rounded-xl flex-1" 
+                                  placeholder={`Value ${idx + 1}`} 
+                                />
+                                {newOptionValues.length > 1 && (
+                                  <Button 
+                                    onClick={() => setNewOptionValues(newOptionValues.filter((_, i) => i !== idx))}
+                                    size="icon" 
+                                    className="h-10 w-10 bg-slate-100 text-slate-400 rounded-xl hover:bg-slate-200"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          <Button 
+                            onClick={() => setNewOptionValues([...newOptionValues, ''])}
+                            variant="ghost" 
+                            className="text-indigo-600 font-bold text-xs p-0 h-auto"
+                          >
+                            Add Another Value
+                          </Button>
+                          <Button 
+                            onClick={handleAddOption}
+                            className="w-full h-10 bg-indigo-600 text-white font-black rounded-xl mt-4"
+                          >
+                            Done
+                          </Button>
                         </div>
-                        <Button variant="ghost" className="text-indigo-600 font-bold text-xs p-0 h-auto">
-                          Add Another Value
-                        </Button>
-                        <Button className="w-full h-10 bg-indigo-600 text-white font-black rounded-xl mt-4">
-                          Done
-                        </Button>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="pt-6 border-t border-slate-100 space-y-4">
-                    <h3 className="text-sm font-black text-indigo-600 uppercase tracking-wider">Variants</h3>
-                    <div className="space-y-3">
-                      {[
-                        'Medium/Black', 'Medium/Blue', 'Medium/Yellow', 
-                        'Large/Yellow', 'Large/Yellow'
-                      ].map((variant, i) => (
-                        <div key={i} className="flex items-center gap-4 group">
-                          <span className="text-sm font-bold text-slate-600 flex-1">{variant}</span>
-                          <Input className="h-10 w-24 bg-slate-50 border-none rounded-xl text-right" placeholder="0.00" />
-                          <Switch defaultChecked />
+                    {variants.length > 0 && (
+                      <div className="pt-6 border-t border-slate-100 space-y-4">
+                        <h3 className="text-sm font-black text-indigo-600 uppercase tracking-wider">Generated Variants</h3>
+                        <div className="space-y-3">
+                          {variants.map((variant, i) => (
+                            <div key={i} className="flex items-center gap-4 group">
+                              <span className="text-sm font-bold text-slate-600 flex-1 truncate">{variant.name}</span>
+                              <Input 
+                                value={variant.price}
+                                onChange={(e) => {
+                                  const newVariants = [...variants];
+                                  newVariants[i].price = e.target.value;
+                                  setVariants(newVariants);
+                                }}
+                                className="h-10 w-24 bg-slate-50 border-none rounded-xl text-right" 
+                                placeholder="0.00" 
+                              />
+                              <Switch 
+                                checked={variant.available}
+                                onCheckedChange={(checked) => {
+                                  const newVariants = [...variants];
+                                  newVariants[i].available = checked;
+                                  setVariants(newVariants);
+                                }}
+                              />
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
+                    )}
 
-                  <Button className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl mt-8 shadow-lg shadow-indigo-100">
-                    Save
-                  </Button>
+                    <Button 
+                      onClick={() => saveProductMutation.mutate(productForm)}
+                      disabled={saveProductMutation.isPending}
+                      className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl mt-8 shadow-lg shadow-indigo-100"
+                    >
+                      {saveProductMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      Save All
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
