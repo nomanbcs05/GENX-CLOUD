@@ -47,8 +47,16 @@ const AppSidebar = () => {
 
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // Fallback mapping for specific emails if metadata is missing
+        let role = user.user_metadata?.role;
+        if (!role) {
+          if (user.email === 'noman21cs@gmail.com') role = 'admin';
+          else if (user.email === 'syedabuzarzaidi07@gmail.com') role = 'cashier';
+          else role = 'Cashier';
+        }
+        
         setUserName(user.user_metadata?.name || user.email?.split('@')[0] || "User");
-        setUserRole(user.user_metadata?.role || "Cashier");
+        setUserRole(role);
       }
     };
     fetchUser();
