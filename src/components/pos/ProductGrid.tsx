@@ -17,6 +17,7 @@ import CustomerSelectionModal from './CustomerSelectionModal';
 import RiderSelectionModal from './RiderSelectionModal';
 import ArabicBroastModal from './ArabicBroastModal';
 import PizzaSelectionModal from './PizzaSelectionModal';
+import RollSelectionModal from './RollSelectionModal';
 
 const ProductGrid = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,6 +27,7 @@ const ProductGrid = () => {
   const [showRiderModal, setShowRiderModal] = useState(false);
   const [showBroastModal, setShowBroastModal] = useState(false);
   const [showPizzaModal, setShowPizzaModal] = useState(false);
+  const [showRollModal, setShowRollModal] = useState(false);
   
   const { data: openRegister } = useQuery({
     queryKey: ['open-register'],
@@ -157,11 +159,35 @@ const ProductGrid = () => {
         products = [virtualPizza as any, ...products];
       }
     } else {
-      // If we are in another category, hide any pizza items
-      products = products.filter(p => p.category !== 'Pizzas' && !(p as any).isVirtual);
-    }
+       // If we are in another category, hide any pizza items
+       products = products.filter(p => p.category !== 'Pizzas' && !(p as any).isVirtual);
+     }
 
-    // Then filter by search
+     // Special logic for Rolls:
+     const isRollsVisible = selectedCategory === 'all' || selectedCategory === 'Rolls';
+     
+     if (isRollsVisible) {
+       const isRollItem = (p: any) => p.category === 'Rolls';
+       products = products.filter(p => !isRollItem(p));
+       
+       const virtualRoll = {
+         id: 'virtual-roll-menu',
+         name: 'Rolls Menu',
+         price: 0,
+         category: 'Rolls',
+         image: '🌯',
+         isVirtual: true,
+         modalType: 'roll'
+       };
+       
+       if (!searchQuery.trim() || virtualRoll.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+         products = [virtualRoll as any, ...products];
+       }
+     } else {
+       products = products.filter(p => p.category !== 'Rolls' && !(p as any).isVirtual);
+     }
+
+     // Then filter by search
     if (searchQuery.trim()) {
       const searchResults = fuse.search(searchQuery);
       const searchIds = new Set(searchResults.map(r => r.item.id));
@@ -177,6 +203,8 @@ const ProductGrid = () => {
         setShowBroastModal(true);
       } else if ((product as any).modalType === 'pizza') {
         setShowPizzaModal(true);
+      } else if ((product as any).modalType === 'roll') {
+        setShowRollModal(true);
       }
       return;
     }
@@ -373,6 +401,12 @@ const ProductGrid = () => {
         onClose={() => setShowPizzaModal(false)}
         onAdd={handleAddToCart}
       />
+
+      <RollSelectionModal
+        isOpen={showRollModal}
+        onClose={() => setShowRollModal(false)}
+        onAdd={handleAddToCart}
+      />
     </div>
   );
 };
@@ -383,7 +417,7 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onAdd }: ProductCardProps) => {
-  const isNoImageCategory = product.category === 'Arabic Broast' || product.category === 'ALA CART' || product.category === 'Snacks' || product.category === 'Beverages' || product.category === 'Pizzas';
+  const isNoImageCategory = product.category === 'Arabic Broast' || product.category === 'ALA CART' || product.category === 'Snacks' || product.category === 'Beverages' || product.category === 'Pizzas' || product.category === 'Rolls';
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 

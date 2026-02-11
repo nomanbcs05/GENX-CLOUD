@@ -1,0 +1,153 @@
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, Plus, Utensils } from 'lucide-react';
+import { cn } from "@/lib/utils";
+
+interface RollSelectionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAdd: (product: any) => void;
+}
+
+interface RollItem {
+  name: string;
+  price: number;
+  category: 'Special Zinger' | 'Bar BQ';
+}
+
+const ROLL_DATA: RollItem[] = [
+  // Special Zinger Rolls
+  { name: "Max Roll", price: 300, category: 'Special Zinger' },
+  { name: "Special Zinger Cheese Roll", price: 300, category: 'Special Zinger' },
+  { name: "Special Zinger Roll", price: 250, category: 'Special Zinger' },
+  { name: "Peri Peri Sauce Zinger Roll", price: 250, category: 'Special Zinger' },
+  { name: "Special Pizza Roll", price: 450, category: 'Special Zinger' },
+  
+  // Bar BQ Rolls
+  { name: "Chicken Green Boti Roll", price: 250, category: 'Bar BQ' },
+  { name: "Chicken Behari Roll", price: 250, category: 'Bar BQ' },
+  { name: "Chicken Chatni Roll", price: 250, category: 'Bar BQ' },
+  { name: "Chicken Garlic Mayo Roll", price: 250, category: 'Bar BQ' },
+  { name: "Chicken Malai Boti Roll", price: 250, category: 'Bar BQ' },
+  { name: "Beef Kabab Roll", price: 150, category: 'Bar BQ' },
+  { name: "Chicken Kabab Roll", price: 150, category: 'Bar BQ' },
+];
+
+export default function RollSelectionModal({ isOpen, onClose, onAdd }: RollSelectionModalProps) {
+  const [activeTab, setActiveTab] = useState<'Special Zinger' | 'Bar BQ'>('Special Zinger');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredRolls = ROLL_DATA.filter(r => 
+    r.category === activeTab && 
+    r.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleAddRoll = (roll: RollItem) => {
+    const rollProduct = {
+      id: `roll-${roll.name.toLowerCase().replace(/\s+/g, '-')}`,
+      name: roll.name,
+      price: roll.price,
+      category: 'Rolls',
+      image: '🌯',
+      sku: `ROLL-${roll.name.substring(0,3).toUpperCase()}`
+    };
+    onAdd(rollProduct);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
+        {/* Header */}
+        <div className="bg-yellow-500 bg-gradient-to-br from-yellow-500 to-amber-600 px-6 py-5 text-white shrink-0 relative">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <DialogTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
+                <Utensils className="h-7 w-7" />
+                Rolls Menu
+              </DialogTitle>
+              <DialogDescription className="text-yellow-50/80 text-xs font-bold uppercase tracking-widest mt-0.5">
+                Zinger & Bar BQ Special Rolls
+              </DialogDescription>
+            </div>
+            <button 
+              onClick={onClose}
+              className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all active:scale-90"
+            >
+              <Plus className="h-6 w-6 rotate-45" />
+            </button>
+          </div>
+
+          <div className="flex gap-4 items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-yellow-100/50" />
+              <Input
+                placeholder="Search rolls..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-white/10 border-none text-white placeholder:text-yellow-100/50 pl-10 h-11 text-sm rounded-xl focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0"
+              />
+            </div>
+            <div className="flex bg-black/10 p-1 rounded-xl shrink-0">
+              <button
+                onClick={() => setActiveTab('Special Zinger')}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all",
+                  activeTab === 'Special Zinger' ? "bg-white text-yellow-600 shadow-sm" : "text-white/60 hover:text-white"
+                )}
+              >
+                Zinger
+              </button>
+              <button
+                onClick={() => setActiveTab('Bar BQ')}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all",
+                  activeTab === 'Bar BQ' ? "bg-white text-yellow-600 shadow-sm" : "text-white/60 hover:text-white"
+                )}
+              >
+                Bar BQ
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto bg-slate-50/30 custom-scrollbar">
+          <div className="p-6 grid grid-cols-1 gap-3">
+            {filteredRolls.map((roll) => (
+              <button
+                key={roll.name}
+                onClick={() => handleAddRoll(roll)}
+                className="group flex items-center justify-between p-4 bg-white hover:bg-yellow-50 rounded-2xl border border-slate-100 hover:border-yellow-200 shadow-sm hover:shadow-md transition-all text-left"
+              >
+                <div className="flex-1 pr-4">
+                  <p className="font-bold text-slate-800 text-[15px] group-hover:text-yellow-700 transition-colors">{roll.name}</p>
+                </div>
+                <div className="flex items-center gap-5 shrink-0">
+                  <span className="font-black text-slate-900 text-base">Rs {roll.price}</span>
+                  <div className="h-8 w-8 rounded-full bg-slate-100 group-hover:bg-yellow-500 flex items-center justify-center transition-colors">
+                    <Plus className="h-4 w-4 text-slate-400 group-hover:text-white" />
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 bg-white border-t border-slate-100 flex items-center justify-between shrink-0">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4">
+            Tap an item to add to cart
+          </p>
+          <Button 
+            onClick={onClose}
+            className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 rounded-xl h-11"
+          >
+            Done
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
