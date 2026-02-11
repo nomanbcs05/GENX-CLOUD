@@ -148,7 +148,14 @@ export const api = {
             { name: "Crispy Wings 6Pcs", price: 350, cost: 0, sku: "ALC-CW-6", category: "ALA CART", image: "🍗", stock: 100 },
             { name: "Crispy Wings 12Pcs", price: 650, cost: 0, sku: "ALC-CW-12", category: "ALA CART", image: "🍗", stock: 100 },
             { name: "Hotshot 10Pcs", price: 450, cost: 0, sku: "ALC-HS-10", category: "ALA CART", image: "🍿", stock: 100 },
-            { name: "Hotshot 5Pcs", price: 250, cost: 0, sku: "ALC-HS-5", category: "ALA CART", image: "🍿", stock: 100 }
+            { name: "Hotshot 5Pcs", price: 250, cost: 0, sku: "ALC-HS-5", category: "ALA CART", image: "🍿", stock: 100 },
+            // Snacks (Fries)
+            { name: "Plain Fries", price: 150, cost: 0, sku: "SNK-FRIES-P", category: "Snacks", image: "", stock: 100 },
+            { name: "Masala Fries", price: 170, cost: 0, sku: "SNK-FRIES-M", category: "Snacks", image: "", stock: 100 },
+            { name: "Garlic Mayo Fries", price: 200, cost: 0, sku: "SNK-FRIES-GM", category: "Snacks", image: "", stock: 100 },
+            { name: "Loaded Fries", price: 300, cost: 0, sku: "SNK-FRIES-L", category: "Snacks", image: "", stock: 100 },
+            { name: "Pizza Loaded Fries Small", price: 250, cost: 0, sku: "SNK-FRIES-PLS", category: "Snacks", image: "", stock: 100 },
+            { name: "Pizza Loaded Fries Large", price: 450, cost: 0, sku: "SNK-FRIES-PLL", category: "Snacks", image: "", stock: 100 }
           ];
 
       try {
