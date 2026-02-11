@@ -21,6 +21,7 @@ import RollSelectionModal from './RollSelectionModal';
 import BroastSelectionModal from './BroastSelectionModal';
 import BurgerSelectionModal from './BurgerSelectionModal';
 import BarBQSelectionModal from './BarBQSelectionModal';
+import SauceToppingSelectionModal from './SauceToppingSelectionModal';
 
 const ProductGrid = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -34,6 +35,7 @@ const ProductGrid = () => {
   const [showSimpleBroastModal, setShowSimpleBroastModal] = useState(false);
   const [showBurgerModal, setShowBurgerModal] = useState(false);
   const [showBarBQModal, setShowBarBQModal] = useState(false);
+  const [showSauceToppingModal, setShowSauceToppingModal] = useState(false);
   
   const { data: openRegister } = useQuery({
     queryKey: ['open-register'],
@@ -265,6 +267,30 @@ const ProductGrid = () => {
        products = products.filter(p => p.category !== 'BAR BQ' && !(p as any).isVirtual);
      }
 
+     // Special logic for Sauces & Toppings:
+     const isSauceToppingVisible = selectedCategory === 'all' || selectedCategory === 'Sauces' || selectedCategory === 'Toppings' || selectedCategory === 'ALA CART';
+     
+     if (isSauceToppingVisible) {
+       const isSauceToppingItem = (p: any) => p.category === 'Sauces' || p.category === 'Toppings';
+       products = products.filter(p => !isSauceToppingItem(p));
+       
+       const virtualSauceTopping = {
+         id: 'virtual-sauce-topping-menu',
+         name: 'Sauces & Toppings',
+         price: 0,
+         category: 'ALA CART',
+         image: '🥣',
+         isVirtual: true,
+         modalType: 'sauce-topping'
+       };
+       
+       if (!searchQuery.trim() || virtualSauceTopping.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+         products = [virtualSauceTopping as any, ...products];
+       }
+     } else {
+       products = products.filter(p => p.category !== 'Sauces' && p.category !== 'Toppings' && !(p as any).isVirtual);
+     }
+
      // Then filter by search
     if (searchQuery.trim()) {
       const searchResults = fuse.search(searchQuery);
@@ -289,6 +315,8 @@ const ProductGrid = () => {
         setShowBurgerModal(true);
       } else if ((product as any).modalType === 'barbq') {
         setShowBarBQModal(true);
+      } else if ((product as any).modalType === 'sauce-topping') {
+        setShowSauceToppingModal(true);
       }
       return;
     }
@@ -506,10 +534,16 @@ const ProductGrid = () => {
 
          <BarBQSelectionModal
            isOpen={showBarBQModal}
-           onClose={() => setShowBarBQModal(false)}
-           onAdd={handleAddToCart}
-         />
-       </div>
+          onClose={() => setShowBarBQModal(false)}
+          onAdd={handleAddToCart}
+        />
+
+        <SauceToppingSelectionModal
+          isOpen={showSauceToppingModal}
+          onClose={() => setShowSauceToppingModal(false)}
+          onAdd={handleAddToCart}
+        />
+      </div>
   );
 };
 
@@ -519,7 +553,7 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onAdd }: ProductCardProps) => {
-  const isNoImageCategory = product.category === 'Arabic Broast' || product.category === 'ALA CART' || product.category === 'Snacks' || product.category === 'Beverages' || product.category === 'Pizzas' || product.category === 'Rolls' || product.category === 'Broast' || product.category === 'Burgers' || product.category === 'BAR BQ';
+  const isNoImageCategory = product.category === 'Arabic Broast' || product.category === 'ALA CART' || product.category === 'Snacks' || product.category === 'Beverages' || product.category === 'Pizzas' || product.category === 'Rolls' || product.category === 'Broast' || product.category === 'Burgers' || product.category === 'BAR BQ' || product.category === 'Sauces' || product.category === 'Toppings';
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
