@@ -300,6 +300,8 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, onAdd }: ProductCardProps) => {
   const isArabicBroast = product.category === 'Arabic Broast';
+  const [imageLoaded, setImageLoaded] = React.useState(false);
+  const [imageError, setImageError] = React.useState(false);
 
   return (
     <motion.button
@@ -310,26 +312,48 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
         "relative w-full aspect-square p-4 bg-white rounded-2xl border border-slate-100 shadow-sm transition-all",
         "hover:shadow-md hover:border-blue-200 hover:bg-blue-50/30",
         "focus:outline-none focus:ring-2 focus:ring-blue-500/20",
-        "flex flex-col items-center justify-center text-center gap-2"
+        "flex flex-col items-center justify-center text-center gap-2 group"
       )}
     >
       {!isArabicBroast && product.image && (
-        <div className="mb-1 h-16 w-full flex items-center justify-center overflow-hidden">
+        <div className="relative mb-1 h-20 w-full flex items-center justify-center overflow-hidden rounded-xl bg-slate-50/50">
           {product.image.startsWith('http') ? (
-            <img src={product.image} alt={product.name} className="h-full w-full object-contain" />
+            <>
+              {!imageLoaded && !imageError && (
+                <div className="absolute inset-0 animate-pulse bg-slate-200/50 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full border-2 border-slate-300 border-t-blue-500 animate-spin" />
+                </div>
+              )}
+              {imageError ? (
+                <span className="text-2xl opacity-50">📦</span>
+              ) : (
+                <img 
+                  src={product.image} 
+                  alt={product.name} 
+                  onLoad={() => setImageLoaded(true)}
+                  onError={() => setImageError(true)}
+                  className={cn(
+                    "h-full w-full object-contain p-1 transition-all duration-500",
+                    imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                  )} 
+                />
+              )}
+            </>
           ) : (
-            <span className="text-3xl">{product.image}</span>
+            <span className="text-3xl group-hover:scale-110 transition-transform duration-300">
+              {product.image}
+            </span>
           )}
         </div>
       )}
       
       <h3 className={cn(
-        "font-bold text-slate-800 leading-tight line-clamp-3 px-2",
+        "font-bold text-slate-800 leading-tight line-clamp-2 px-2",
         isArabicBroast ? "text-sm md:text-base" : "text-xs md:text-sm"
       )}>
         {product.name}
       </h3>
-      <div className="mt-1">
+      <div className="mt-auto">
         <span className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
           Rs {product.price.toLocaleString()}
         </span>
