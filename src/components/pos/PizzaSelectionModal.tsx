@@ -67,24 +67,27 @@ export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSel
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
         {/* Header */}
-        <div className="bg-orange-500 bg-gradient-to-br from-orange-500 to-red-600 px-6 py-5 text-white shrink-0 relative">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <DialogTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
-                <Pizza className="h-7 w-7" />
-                Pizza Menu
-              </DialogTitle>
-              <DialogDescription className="text-orange-50/80 text-xs font-bold uppercase tracking-widest mt-0.5">
-                Freshly Baked • Premium Toppings
-              </DialogDescription>
+        <DialogHeader className="p-0">
+          <div className="bg-orange-500 bg-gradient-to-br from-orange-500 to-red-600 px-6 py-5 text-white shrink-0 relative">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-lg">
+                  <Pizza className="h-7 w-7" />
+                </div>
+                <div>
+                  <DialogTitle className="text-2xl font-black uppercase tracking-tight">Pizza Menu</DialogTitle>
+                  <DialogDescription className="text-orange-50/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">
+                    Select flavor & size
+                  </DialogDescription>
+                </div>
+              </div>
+              <button 
+                onClick={onClose}
+                className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all active:scale-90"
+              >
+                <Plus className="h-6 w-6 rotate-45" />
+              </button>
             </div>
-            <button 
-              onClick={onClose}
-              className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all active:scale-90"
-            >
-              <Plus className="h-6 w-6 rotate-45" />
-            </button>
-          </div>
 
           <div className="flex gap-4 items-center">
             <div className="relative flex-1">
@@ -138,7 +141,7 @@ export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSel
                 className="grid grid-cols-[1fr,repeat(4,100px)] gap-4 px-8 py-4 items-center hover:bg-orange-50/30 transition-colors group"
               >
                 <div className="flex flex-col">
-                  <span className="font-bold text-slate-800 text-sm group-hover:text-orange-600 transition-colors">
+                  <span className="font-bold font-heading text-slate-800 text-sm group-hover:text-orange-600 transition-colors tracking-tight">
                     {flavor.name}
                   </span>
                 </div>
@@ -150,14 +153,14 @@ export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSel
                       {price ? (
                         <button
                           onClick={() => handleAddPizza(flavor.name, size, price)}
-                          className="w-20 h-10 flex flex-col items-center justify-center rounded-xl border border-slate-100 bg-white hover:border-orange-500 hover:bg-orange-500 hover:text-white transition-all shadow-sm active:scale-95"
+                          className="w-full h-10 rounded-xl bg-slate-50 hover:bg-orange-600 border border-slate-100 hover:border-orange-500 text-slate-600 hover:text-white transition-all flex flex-col items-center justify-center group/btn active:scale-95 shadow-sm hover:shadow-orange-200"
                         >
-                          <span className="text-[10px] font-bold opacity-60 group-hover:text-white/80">Rs</span>
-                          <span className="text-xs font-black">{price}</span>
+                          <span className="text-[11px] font-black font-heading tracking-tight">Rs {price}</span>
+                          <span className="text-[8px] font-bold uppercase tracking-widest opacity-0 group-hover/btn:opacity-100 transition-opacity">Add</span>
                         </button>
                       ) : (
-                        <div className="w-20 h-10 flex items-center justify-center opacity-20">
-                          <span className="text-[10px] font-bold">---</span>
+                        <div className="w-full h-10 rounded-xl bg-slate-50/50 flex items-center justify-center">
+                          <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest italic">N/A</span>
                         </div>
                       )}
                     </div>

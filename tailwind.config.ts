@@ -71,6 +71,10 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+        heading: ["Montserrat", "sans-serif"],
+      },
       boxShadow: {
         'card': 'var(--shadow-card)',
         'hover': 'var(--shadow-hover)',

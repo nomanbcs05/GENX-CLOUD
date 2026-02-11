@@ -100,44 +100,46 @@ const TableSelectionModal = ({ isOpen, onClose }: TableSelectionModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[700px] p-0 overflow-hidden bg-background">
-        <DialogHeader className="flex flex-row items-center justify-between p-4 border-b bg-muted/20">
-          <div>
-            <DialogTitle className="text-2xl font-bold">Select a Table</DialogTitle>
-            <DialogDescription>
-              Choose an available table for dine-in orders.
-            </DialogDescription>
-          </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
-            <X className="h-5 w-5" />
-          </Button>
-        </DialogHeader>
-
-        <div className="p-4 space-y-4">
-          {/* Filter Buttons & Actions */}
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-              {(['all', 'indoor', 'outdoor', 'vip'] as const).map((filter) => (
-                <Button
-                  key={filter}
-                  variant={activeFilter === filter ? "default" : "outline"}
-                  onClick={() => setActiveFilter(filter)}
-                  size="sm"
-                  className="capitalize min-w-[80px]"
-                >
-                  {filter}
-                </Button>
-              ))}
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <DialogHeader className="space-y-1">
+              <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">Table Selection</DialogTitle>
+              <DialogDescription className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                Select an available table for dine-in
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => clearReservedMutation.mutate()}
+                className="text-[10px] font-bold font-heading uppercase tracking-widest border-slate-200"
+              >
+                Clear Reserved
+              </Button>
+              <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full">
+                <X className="h-4 w-4" />
+              </Button>
             </div>
+          </div>
 
-            <Button 
-              variant="destructive" 
-              size="sm" 
-              onClick={() => clearReservedMutation.mutate()}
-              disabled={clearReservedMutation.isPending}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Clear Reserved
-            </Button>
+          <div className="flex gap-2 mb-6 bg-slate-100 p-1 rounded-2xl">
+            {(['all', 'indoor', 'outdoor', 'vip'] as const).map((section) => (
+              <Button
+                key={section}
+                variant={activeFilter === section ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActiveFilter(section)}
+                className={cn(
+                  "flex-1 rounded-xl text-[10px] font-black font-heading uppercase tracking-widest h-10 transition-all",
+                  activeFilter === section 
+                    ? "bg-white text-slate-900 shadow-sm" 
+                    : "text-slate-500 hover:text-slate-900"
+                )}
+              >
+                {section}
+              </Button>
+            ))}
           </div>
 
           {/* Tables Grid */}

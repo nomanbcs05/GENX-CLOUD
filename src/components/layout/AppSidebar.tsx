@@ -83,14 +83,14 @@ const AppSidebar = () => {
   return (
     <aside className="w-[180px] bg-sidebar text-sidebar-foreground flex flex-col h-full">
       {/* Logo */}
-      <div className="p-3 border-b border-sidebar-border">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
-            <Coffee className="h-4 w-4 text-sidebar-primary-foreground" />
+      <div className="p-4 border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-sidebar-primary flex items-center justify-center shadow-lg shadow-sidebar-primary/20">
+            <Coffee className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-bold text-xs">Gen XCloud POS</h1>
-            <p className="text-[10px] text-sidebar-foreground/70">POS System</p>
+            <h1 className="font-black font-heading text-sm tracking-tight uppercase leading-none">Gen XCloud</h1>
+            <p className="text-[10px] font-bold text-sidebar-foreground/50 uppercase tracking-widest mt-1">POS System</p>
           </div>
         </div>
       </div>
@@ -99,7 +99,7 @@ const AppSidebar = () => {
       <nav className="flex-1 p-2 space-y-1">
         <button
           onClick={() => setShowNewOrderModal(true)}
-          className="w-full flex items-center gap-2 px-2 py-3 mb-2 rounded-lg text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+          className="w-full flex items-center gap-2 px-3 py-3.5 mb-3 rounded-xl text-xs font-black font-heading uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-[0.98]"
         >
           <PlusCircle className="h-5 w-5" />
           <span>New Order</span>
@@ -113,10 +113,10 @@ const AppSidebar = () => {
               key={item.name}
               to={item.href}
               className={cn(
-                "flex items-center gap-2 px-2 py-2 rounded-lg text-xs font-medium transition-colors",
+                "flex items-center gap-2 px-3 py-2.5 rounded-xl text-[11px] font-bold font-heading uppercase tracking-wider transition-all",
                 isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
               )}
             >
               <item.icon className="h-4 w-4" />
@@ -134,24 +134,24 @@ const AppSidebar = () => {
       </nav>
 
       {/* User Section */}
-      <div className="p-2 border-t border-sidebar-border">
-        <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-sidebar-accent/30">
-          <div className="w-7 h-7 rounded-full bg-sidebar-primary flex items-center justify-center">
-            <span className="text-[10px] font-bold text-sidebar-primary-foreground">
+      <div className="p-3 border-t border-sidebar-border">
+        <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-sidebar-accent/30 border border-sidebar-border/50">
+          <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center shadow-md">
+            <span className="text-[10px] font-black font-heading text-sidebar-primary-foreground">
               {(userName || "US").substring(0, 2).toUpperCase()}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium truncate">{userName}</p>
-            <p className="text-[10px] text-sidebar-foreground/60">{userRole}</p>
+            <p className="text-xs font-bold font-heading truncate leading-tight tracking-tight">{userName}</p>
+            <p className="text-[10px] font-bold text-sidebar-foreground/40 uppercase tracking-widest mt-0.5">{userRole}</p>
           </div>
         </div>
         
         <button 
           onClick={handleLogout}
-          className="w-full mt-2 flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-destructive transition-colors"
+          className="w-full mt-3 flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold font-heading uppercase tracking-widest text-sidebar-foreground/50 hover:bg-destructive/10 hover:text-destructive transition-all"
         >
-          <LogOut className="h-3 w-3" />
+          <LogOut className="h-3.5 w-3.5" />
           <span>Log out</span>
         </button>
       </div>

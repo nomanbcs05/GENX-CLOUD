@@ -47,16 +47,18 @@ export default function BroastSelectionModal({ isOpen, onClose, onAdd }: BroastS
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
         {/* Header */}
-        <div className="bg-orange-600 bg-gradient-to-br from-orange-600 to-red-600 px-6 py-5 text-white shrink-0 relative">
+        <div className="bg-orange-500 bg-gradient-to-br from-orange-500 to-red-600 px-6 py-5 text-white shrink-0 relative">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <DialogTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
-                <Utensils className="h-7 w-7" />
-                Broast Menu
-              </DialogTitle>
-              <DialogDescription className="text-orange-50/80 text-xs font-bold uppercase tracking-widest mt-0.5">
-                Crispy & Delicious Broast
-              </DialogDescription>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/10 rounded-lg">
+                <ChefHat className="h-7 w-7" />
+              </div>
+              <div>
+                <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">Broast Menu</DialogTitle>
+                <DialogDescription className="text-orange-50/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">
+                  Crispy • Juicy • Fresh
+                </DialogDescription>
+              </div>
             </div>
             <button 
               onClick={onClose}
@@ -87,10 +89,10 @@ export default function BroastSelectionModal({ isOpen, onClose, onAdd }: BroastS
                 className="group flex items-center justify-between p-4 bg-white hover:bg-orange-50 rounded-2xl border border-slate-100 hover:border-orange-200 shadow-sm hover:shadow-md transition-all text-left"
               >
                 <div className="flex-1 pr-4">
-                  <p className="font-bold text-slate-800 text-[15px] group-hover:text-orange-700 transition-colors">{broast.name}</p>
+                  <p className="font-bold font-heading text-slate-800 text-[15px] group-hover:text-orange-700 transition-colors tracking-tight">{broast.name}</p>
                 </div>
                 <div className="flex items-center gap-5 shrink-0">
-                  <span className="font-black text-slate-900 text-base">Rs {broast.price}</span>
+                  <span className="font-black font-heading text-slate-900 text-base tracking-tight">Rs {broast.price}</span>
                   <div className="h-8 w-8 rounded-full bg-slate-100 group-hover:bg-orange-600 flex items-center justify-center transition-colors">
                     <Plus className="h-4 w-4 text-slate-400 group-hover:text-white" />
                   </div>
@@ -107,7 +109,7 @@ export default function BroastSelectionModal({ isOpen, onClose, onAdd }: BroastS
           </p>
           <Button 
             onClick={onClose}
-            className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 rounded-xl h-11"
+            className="bg-slate-900 hover:bg-slate-800 text-white font-black font-heading uppercase tracking-widest px-8 rounded-xl h-11"
           >
             Done
           </Button>

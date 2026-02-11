@@ -71,8 +71,10 @@ const StartDayModal = ({ isOpen, onSuccess, onClose, forceNewSession = false }: 
       >
         <div className="flex justify-between items-center mb-2">
           <DialogHeader className="flex-1">
-            <DialogTitle>{forceNewSession ? 'Start New Session' : 'Start of Day'}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl font-black font-heading uppercase tracking-tight">
+              {forceNewSession ? 'Start New Session' : 'Start of Day'}
+            </DialogTitle>
+            <DialogDescription className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
               {forceNewSession 
                 ? 'Starting a new session will clear existing order history.' 
                 : 'Please enter details to begin the shift.'}
@@ -85,38 +87,37 @@ const StartDayModal = ({ isOpen, onSuccess, onClose, forceNewSession = false }: 
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           <div className="space-y-2">
-            <Label htmlFor="date">Start Day</Label>
+            <Label htmlFor="date" className="text-[10px] font-black font-heading uppercase tracking-widest text-slate-500">Date</Label>
             <Input
               id="date"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
+              className="h-11 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Starting Cash Amount</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">Rs</span>
-              <Input
-                id="amount"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="pl-9"
-                required
-                autoFocus
-              />
-            </div>
+            <Label htmlFor="amount" className="text-[10px] font-black font-heading uppercase tracking-widest text-slate-500">Opening Balance (Rs)</Label>
+            <Input
+              id="amount"
+              type="number"
+              placeholder="0.00"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+              className="h-11 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all font-bold text-lg"
+            />
           </div>
 
-          <Button type="submit" className="w-full" disabled={startDayMutation.isPending}>
+          <Button 
+            type="submit" 
+            className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black font-heading uppercase tracking-widest shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98]"
+            disabled={startDayMutation.isPending}
+          >
             {startDayMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -425,7 +425,7 @@ const ProductGrid = () => {
                 variant={selectedCategory === category.id ? "default" : "outline"}
                 size="sm"
                 className={cn(
-                  "whitespace-nowrap px-6 h-9 rounded-full transition-all text-sm font-semibold",
+                  "whitespace-nowrap px-6 h-9 rounded-full transition-all text-sm font-bold font-heading uppercase tracking-wide",
                   selectedCategory === category.id 
                     ? "bg-blue-600 text-white border-none shadow-md" 
                     : "bg-slate-50 text-slate-600 border-slate-100 hover:bg-slate-100 hover:text-blue-600"
@@ -602,7 +602,7 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
       )}
       
       <h3 className={cn(
-        "font-bold text-slate-800 leading-tight line-clamp-2 px-1 text-[11px] md:text-xs",
+        "font-bold font-heading text-slate-800 leading-tight line-clamp-2 px-1 text-[11px] md:text-xs tracking-tight",
         isNoImageCategory && "text-xs md:text-sm"
       )}>
         {product.name}

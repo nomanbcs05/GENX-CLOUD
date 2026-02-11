@@ -54,14 +54,16 @@ export default function BurgerSelectionModal({ isOpen, onClose, onAdd }: BurgerS
         {/* Header */}
         <div className="bg-red-600 bg-gradient-to-br from-red-600 to-rose-700 px-6 py-5 text-white shrink-0 relative">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <DialogTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
-                <Utensils className="h-7 w-7" />
-                Burgers Menu
-              </DialogTitle>
-              <DialogDescription className="text-red-50/80 text-xs font-bold uppercase tracking-widest mt-0.5">
-                Premium & Juicy Burgers
-              </DialogDescription>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/10 rounded-lg">
+                <ChefHat className="h-7 w-7" />
+              </div>
+              <div>
+                <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">Burgers Menu</DialogTitle>
+                <DialogDescription className="text-red-50/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">
+                  Premium & Juicy Burgers
+                </DialogDescription>
+              </div>
             </div>
             <button 
               onClick={onClose}
@@ -92,10 +94,10 @@ export default function BurgerSelectionModal({ isOpen, onClose, onAdd }: BurgerS
                 className="group flex items-center justify-between p-4 bg-white hover:bg-red-50 rounded-2xl border border-slate-100 hover:border-red-200 shadow-sm hover:shadow-md transition-all text-left"
               >
                 <div className="flex-1 pr-4">
-                  <p className="font-bold text-slate-800 text-[15px] group-hover:text-red-700 transition-colors">{burger.name}</p>
+                  <p className="font-bold font-heading text-slate-800 text-[15px] group-hover:text-red-700 transition-colors tracking-tight">{burger.name}</p>
                 </div>
                 <div className="flex items-center gap-5 shrink-0">
-                  <span className="font-black text-slate-900 text-base">Rs {burger.price}</span>
+                  <span className="font-black font-heading text-slate-900 text-base tracking-tight">Rs {burger.price}</span>
                   <div className="h-8 w-8 rounded-full bg-slate-100 group-hover:bg-red-600 flex items-center justify-center transition-colors">
                     <Plus className="h-4 w-4 text-slate-400 group-hover:text-white" />
                   </div>
@@ -112,7 +114,7 @@ export default function BurgerSelectionModal({ isOpen, onClose, onAdd }: BurgerS
           </p>
           <Button 
             onClick={onClose}
-            className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 rounded-xl h-11"
+            className="bg-slate-900 hover:bg-slate-800 text-white font-black font-heading uppercase tracking-widest px-8 rounded-xl h-11"
           >
             Done
           </Button>

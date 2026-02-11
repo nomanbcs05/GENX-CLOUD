@@ -62,14 +62,16 @@ export default function RollSelectionModal({ isOpen, onClose, onAdd }: RollSelec
         {/* Header */}
         <div className="bg-yellow-500 bg-gradient-to-br from-yellow-500 to-amber-600 px-6 py-5 text-white shrink-0 relative">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <DialogTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
-                <Utensils className="h-7 w-7" />
-                Rolls Menu
-              </DialogTitle>
-              <DialogDescription className="text-yellow-50/80 text-xs font-bold uppercase tracking-widest mt-0.5">
-                Zinger & Bar BQ Special Rolls
-              </DialogDescription>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/10 rounded-lg">
+                <ChefHat className="h-7 w-7" />
+              </div>
+              <div>
+                <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">Rolls Menu</DialogTitle>
+                <DialogDescription className="text-yellow-50/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">
+                  Zinger & Bar BQ Special Rolls
+                </DialogDescription>
+              </div>
             </div>
             <button 
               onClick={onClose}
@@ -122,10 +124,10 @@ export default function RollSelectionModal({ isOpen, onClose, onAdd }: RollSelec
                 className="group flex items-center justify-between p-4 bg-white hover:bg-yellow-50 rounded-2xl border border-slate-100 hover:border-yellow-200 shadow-sm hover:shadow-md transition-all text-left"
               >
                 <div className="flex-1 pr-4">
-                  <p className="font-bold text-slate-800 text-[15px] group-hover:text-yellow-700 transition-colors">{roll.name}</p>
+                  <p className="font-bold font-heading text-slate-800 text-[15px] group-hover:text-yellow-700 transition-colors tracking-tight">{roll.name}</p>
                 </div>
                 <div className="flex items-center gap-5 shrink-0">
-                  <span className="font-black text-slate-900 text-base">Rs {roll.price}</span>
+                  <span className="font-black font-heading text-slate-900 text-base tracking-tight">Rs {roll.price}</span>
                   <div className="h-8 w-8 rounded-full bg-slate-100 group-hover:bg-yellow-500 flex items-center justify-center transition-colors">
                     <Plus className="h-4 w-4 text-slate-400 group-hover:text-white" />
                   </div>
@@ -142,7 +144,7 @@ export default function RollSelectionModal({ isOpen, onClose, onAdd }: RollSelec
           </p>
           <Button 
             onClick={onClose}
-            className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 rounded-xl h-11"
+            className="bg-slate-900 hover:bg-slate-800 text-white font-black font-heading uppercase tracking-widest px-8 rounded-xl h-11"
           >
             Done
           </Button>

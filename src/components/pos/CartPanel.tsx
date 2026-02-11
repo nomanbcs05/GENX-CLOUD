@@ -251,11 +251,11 @@ const CartPanel = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-card border-l">
+    <div className="flex flex-col h-full bg-card border-l font-sans">
       {/* Header */}
       <div className="p-4 border-b">
-        <h2 className="text-lg font-semibold">Current Order</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-lg font-black font-heading tracking-tight uppercase">Current Order</h2>
+        <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
           {items.length} {items.length === 1 ? 'item' : 'items'}
         </p>
       </div>
@@ -326,8 +326,8 @@ const CartPanel = () => {
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{item.product.name}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="font-bold font-heading text-sm truncate tracking-tight">{item.product.name}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                       Rs {item.product.price.toLocaleString()} each
                     </p>
                   </div>
@@ -446,7 +446,7 @@ const CartPanel = () => {
           )}
 
           <Separator />
-          <div className="flex justify-between text-lg font-bold">
+          <div className="flex justify-between text-xl font-black font-heading tracking-tight uppercase">
             <span>Total</span>
             <span>Rs {total.toLocaleString()}</span>
           </div>
@@ -455,11 +455,11 @@ const CartPanel = () => {
         {/* Action Buttons */}
         <div className="flex flex-col gap-2">
           <div className="flex gap-2">
-             <Button variant="outline" className="flex-1" onClick={handleShowKOT} disabled={items.length === 0}>
+             <Button variant="outline" className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11" onClick={handleShowKOT} disabled={items.length === 0}>
                <ChefHat className="h-4 w-4 mr-2" />
                KOT
              </Button>
-             <Button variant="outline" className="flex-1" onClick={handleShowBill} disabled={items.length === 0}>
+             <Button variant="outline" className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11" onClick={handleShowBill} disabled={items.length === 0}>
                <FileText className="h-4 w-4 mr-2" />
                Bill
              </Button>
@@ -467,7 +467,7 @@ const CartPanel = () => {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              className="flex-1"
+              className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11"
               onClick={handleClearCart}
               disabled={items.length === 0}
             >
@@ -475,7 +475,7 @@ const CartPanel = () => {
               Clear
             </Button>
             <Button
-              className="flex-[2] btn-success"
+              className="flex-[2] btn-success font-black font-heading uppercase tracking-widest text-sm h-11 shadow-lg shadow-emerald-500/20"
               onClick={handleCompleteSale}
               disabled={items.length === 0}
             >

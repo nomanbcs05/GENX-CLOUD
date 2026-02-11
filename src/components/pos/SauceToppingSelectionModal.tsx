@@ -67,14 +67,16 @@ export default function SauceToppingSelectionModal({ isOpen, onClose, onAdd }: S
         {/* Header */}
         <div className="bg-yellow-500 bg-gradient-to-br from-yellow-500 to-amber-600 px-6 py-5 text-white shrink-0 relative">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <DialogTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/10 rounded-lg">
                 <Droplets className="h-7 w-7 text-white" />
-                Sauces & Toppings
-              </DialogTitle>
-              <DialogDescription className="text-yellow-100 text-xs font-bold uppercase tracking-widest mt-0.5">
-                Extra Flavours & Add-ons
-              </DialogDescription>
+              </div>
+              <div>
+                <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">Sauces & Toppings</DialogTitle>
+                <DialogDescription className="text-yellow-100 text-[10px] font-bold uppercase tracking-widest mt-0.5">
+                  Extra Flavours & Add-ons
+                </DialogDescription>
+              </div>
             </div>
             <button 
               onClick={onClose}
@@ -101,17 +103,17 @@ export default function SauceToppingSelectionModal({ isOpen, onClose, onAdd }: S
             <TabsList className="grid w-full grid-cols-2 bg-slate-100 p-1 rounded-2xl h-12">
               <TabsTrigger 
                 value="sauces" 
-                className="rounded-xl font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-yellow-600 data-[state=active]:shadow-sm transition-all"
+                className="rounded-xl font-black font-heading text-xs uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-yellow-600 data-[state=active]:shadow-sm transition-all"
               >
                 <Droplets className="h-4 w-4 mr-2" />
                 Sauces
               </TabsTrigger>
               <TabsTrigger 
                 value="toppings" 
-                className="rounded-xl font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:text-yellow-600 data-[state=active]:shadow-sm transition-all"
+                className="rounded-xl font-black font-heading text-xs uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-yellow-600 data-[state=active]:shadow-sm transition-all"
               >
                 <Layers className="h-4 w-4 mr-2" />
-                Extra Toppings
+                Toppings
               </TabsTrigger>
             </TabsList>
           </div>
@@ -126,10 +128,10 @@ export default function SauceToppingSelectionModal({ isOpen, onClose, onAdd }: S
                     className="group flex items-center justify-between p-4 bg-white hover:bg-yellow-50/50 rounded-2xl border border-slate-100 hover:border-yellow-200 shadow-sm hover:shadow-md transition-all text-left"
                   >
                     <div className="flex-1 pr-4">
-                      <p className="font-bold text-slate-800 text-[15px] group-hover:text-yellow-700 transition-colors">{item.name}</p>
+                      <p className="font-bold font-heading text-slate-800 text-[15px] group-hover:text-yellow-700 transition-colors tracking-tight">{item.name}</p>
                     </div>
                     <div className="flex items-center gap-5 shrink-0">
-                      <span className="font-black text-slate-900 text-base">Rs {item.price}</span>
+                      <span className="font-black font-heading text-slate-900 text-base tracking-tight">Rs {item.price}</span>
                       <div className="h-8 w-8 rounded-full bg-slate-100 group-hover:bg-yellow-500 flex items-center justify-center transition-colors">
                         <Plus className="h-4 w-4 text-slate-400 group-hover:text-white" />
                       </div>
@@ -170,7 +172,7 @@ export default function SauceToppingSelectionModal({ isOpen, onClose, onAdd }: S
           </p>
           <Button 
             onClick={onClose}
-            className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-8 rounded-xl h-11 border-none"
+            className="bg-slate-900 hover:bg-slate-800 text-white font-black font-heading uppercase tracking-widest px-8 rounded-xl h-11"
           >
             Done
           </Button>

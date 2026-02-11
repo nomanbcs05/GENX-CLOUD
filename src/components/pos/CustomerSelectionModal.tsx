@@ -132,64 +132,79 @@ const CustomerSelectionModal = ({ isOpen, onClose }: CustomerSelectionModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Customer Information</DialogTitle>
-          <DialogDescription>
-            Enter customer details or search by phone number.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Phone className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="phone"
-                  placeholder="Enter phone number"
-                  className="pl-9"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  onBlur={handlePhoneSearch} // Auto-search on blur
-                  autoFocus
-                />
-              </div>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="icon"
-                onClick={handlePhoneSearch}
-                disabled={isSearching}
-              >
-                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-              </Button>
+      <DialogContent className="max-w-md p-0 overflow-hidden bg-white border-none rounded-3xl shadow-2xl">
+        <DialogHeader className="bg-slate-900 px-6 py-6 text-white">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/10 rounded-lg">
+              <User className="h-6 w-6 text-blue-400" />
+            </div>
+            <div>
+              <DialogTitle className="text-xl font-black font-heading uppercase tracking-tight">Customer Details</DialogTitle>
+              <DialogDescription className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">
+                Enter name & phone for loyalty tracking
+              </DialogDescription>
             </div>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="name">Customer Name</Label>
-            <div className="relative">
-              <User className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="name"
-                placeholder="Enter customer name"
-                className="pl-9"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black font-heading uppercase tracking-widest text-slate-500">Phone Number</Label>
+              <div className="relative">
+                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  onBlur={handlePhoneSearch}
+                  placeholder="Enter phone number"
+                  className="pl-10 h-11 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all font-bold"
+                  type="tel"
+                />
+                {isSearching && (
+                  <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-blue-500" />
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black font-heading uppercase tracking-widest text-slate-500">Customer Name</Label>
+              <div className="relative">
+                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter customer name"
+                  className="pl-10 h-11 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all font-bold"
+                />
+              </div>
             </div>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+          <div className="flex gap-3">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose}
+              className="flex-1 h-11 rounded-xl text-[11px] font-black font-heading uppercase tracking-widest border-slate-200 hover:bg-slate-50"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Confirm & Continue
+            <Button 
+              type="submit" 
+              className="flex-[2] h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black font-heading uppercase tracking-widest shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98]"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Customer'
+              )}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
