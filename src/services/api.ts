@@ -133,11 +133,16 @@ export const api = {
         { name: "COMBO 1 (1 Qtr Broast, 1 Zinger, Drink, Bun, Fries)", price: 999, cost: 0, sku: "COMBO-1", category: "Arabic Broast", image: "🍱" },
         { name: "COMBO 2 (Half Broast, Fries, 2 Bun, 2 Sauce, Drink)", price: 1300, cost: 0, sku: "COMBO-2", category: "Arabic Broast", image: "🍱" },
         { name: "COMBO 3 (Full Broast, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 2450, cost: 0, sku: "COMBO-3", category: "Arabic Broast", image: "🍱" },
-        { name: "COMBO 4 (Jumbo Pizza, 1 Kukkar, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 3500, cost: 0, sku: "COMBO-4", category: "Arabic Broast", image: "🍱" }
+        { name: "COMBO 4 (Jumbo Pizza, 1 Kukkar, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 3500, cost: 0, sku: "COMBO-4", category: "Arabic Broast", image: "🍱" },
+        { name: "Cold Drink 300ml", price: 120, cost: 0, sku: "DRINK-300", category: "Beverages", image: "🥤" },
+        { name: "Mineral Water Small", price: 60, cost: 0, sku: "WATER-S", category: "Beverages", image: "💧" }
       ];
 
-      // Create category first
-      await supabase.from('categories').upsert({ name: 'Arabic Broast', icon: 'Utensils' }, { onConflict: 'name' });
+      // Create categories first
+      const categories = [...new Set(items.map(i => i.category))];
+      for (const catName of categories) {
+        await supabase.from('categories').upsert({ name: catName, icon: 'Utensils' }, { onConflict: 'name' });
+      }
 
       // Insert products
       const { error } = await supabase.from('products').upsert(items, { onConflict: 'name' });

@@ -56,11 +56,10 @@ const ProductGrid = () => {
   });
 
   useEffect(() => {
-    const hasArabicBroast = allProducts.some(p => p.category === 'Arabic Broast');
-    if (!productsLoading && !hasArabicBroast) {
+    if (!productsLoading && allProducts.length === 0) {
       seedMenu();
     }
-  }, [allProducts, productsLoading, seedMenu]);
+  }, [allProducts.length, productsLoading, seedMenu]);
 
   // Fetch Categories
   const { data: categories = [] } = useQuery({
@@ -88,17 +87,16 @@ const ProductGrid = () => {
     }
 
     // Special logic for Arabic Broast: 
-    // If not in the "Arabic Broast" category, hide individual items and only show the main "Injected Broast" card
+    // If NOT in the "Arabic Broast" category, hide individual items and only show the main "Injected Broast" card
     if (selectedCategory !== 'Arabic Broast') {
       const isBroastItem = (p: any) => p.category === 'Arabic Broast';
-      const broastProducts = products.filter(isBroastItem);
+      const broastProducts = allProducts.filter(isBroastItem);
       
       if (broastProducts.length > 0) {
-        // Remove individual broast items
+        // Remove individual broast items from the current filtered list
         products = products.filter(p => !isBroastItem(p));
         
         // Add a single virtual product for "Injected Broast"
-        // We use a unique ID that won't conflict
         const virtualBroast = {
           id: 'virtual-arabic-broast',
           name: 'Arabic Injected Broast',
