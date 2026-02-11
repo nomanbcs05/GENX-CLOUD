@@ -249,14 +249,20 @@ const ProductGrid = () => {
 
       {/* Products Grid */}
       <ScrollArea className="flex-1 p-4">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {filteredProducts.map((product) => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-              onAdd={handleAddToCart} 
-            />
-          ))}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          {productsLoading ? (
+            Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="aspect-square bg-slate-100 animate-pulse rounded-xl" />
+            ))
+          ) : (
+            filteredProducts.map((product) => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                onAdd={handleAddToCart} 
+              />
+            ))
+          )}
         </div>
         
         {filteredProducts.length === 0 && (
@@ -309,23 +315,23 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
       whileTap={{ scale: 0.98 }}
       onClick={() => onAdd(product)}
       className={cn(
-        "relative w-full aspect-square p-4 bg-white rounded-2xl border border-slate-100 shadow-sm transition-all",
+        "relative w-full aspect-square p-3 bg-white rounded-xl border border-slate-100 shadow-sm transition-all",
         "hover:shadow-md hover:border-blue-200 hover:bg-blue-50/30",
         "focus:outline-none focus:ring-2 focus:ring-blue-500/20",
-        "flex flex-col items-center justify-center text-center gap-2 group"
+        "flex flex-col items-center justify-center text-center gap-1.5 group"
       )}
     >
       {!isArabicBroast && product.image && (
-        <div className="relative mb-1 h-20 w-full flex items-center justify-center overflow-hidden rounded-xl bg-slate-50/50">
+        <div className="relative mb-0.5 h-14 w-full flex items-center justify-center overflow-hidden rounded-lg bg-slate-50/50">
           {product.image.startsWith('http') ? (
             <>
               {!imageLoaded && !imageError && (
                 <div className="absolute inset-0 animate-pulse bg-slate-200/50 flex items-center justify-center">
-                  <div className="w-8 h-8 rounded-full border-2 border-slate-300 border-t-blue-500 animate-spin" />
+                  <div className="w-6 h-6 rounded-full border-2 border-slate-300 border-t-blue-500 animate-spin" />
                 </div>
               )}
               {imageError ? (
-                <span className="text-2xl opacity-50">📦</span>
+                <span className="text-xl opacity-50">📦</span>
               ) : (
                 <img 
                   src={product.image} 
@@ -333,14 +339,14 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
                   onLoad={() => setImageLoaded(true)}
                   onError={() => setImageError(true)}
                   className={cn(
-                    "h-full w-full object-contain p-1 transition-all duration-500",
+                    "h-full w-full object-contain p-0.5 transition-all duration-500",
                     imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
                   )} 
                 />
               )}
             </>
           ) : (
-            <span className="text-3xl group-hover:scale-110 transition-transform duration-300">
+            <span className="text-2xl group-hover:scale-110 transition-transform duration-300">
               {product.image}
             </span>
           )}
@@ -348,8 +354,8 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
       )}
       
       <h3 className={cn(
-        "font-bold text-slate-800 leading-tight line-clamp-2 px-2",
-        isArabicBroast ? "text-sm md:text-base" : "text-xs md:text-sm"
+        "font-bold text-slate-800 leading-tight line-clamp-2 px-1 text-[11px] md:text-xs",
+        isArabicBroast && "text-xs md:text-sm"
       )}>
         {product.name}
       </h3>
