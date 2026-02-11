@@ -33,6 +33,7 @@ interface CartState {
   customer: Customer | null;
   tableId: number | null; // Added tableId
   rider: { name: string } | null; // Added rider
+  customerAddress: string | null; // Added customerAddress
   orderType: 'dine_in' | 'take_away' | 'delivery';
   discount: number;
   discountType: 'percentage' | 'fixed';
@@ -52,6 +53,7 @@ interface CartState {
   setCustomer: (customer: Customer | null) => void;
   setTableId: (tableId: number | null) => void; // Added setTableId
   setRider: (rider: { name: string } | null) => void; // Added setRider
+  setCustomerAddress: (address: string | null) => void; // Added setCustomerAddress
   setOrderType: (type: 'dine_in' | 'take_away' | 'delivery') => void;
   setDiscount: (discount: number, type: 'percentage' | 'fixed') => void;
   clearCart: () => void;
@@ -63,6 +65,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   customer: null,
   tableId: null, // Initialize tableId
   rider: null, // Initialize rider
+  customerAddress: null, // Initialize customerAddress
   orderType: 'dine_in',
   discount: 0,
   discountType: 'percentage',
@@ -144,11 +147,21 @@ export const useCartStore = create<CartState>((set, get) => ({
   setCustomer: (customer) => set({ customer }),
   setTableId: (tableId) => set({ tableId }), // Added implementation
   setRider: (rider) => set({ rider }), // Added setRider implementation
+  setCustomerAddress: (customerAddress) => set({ customerAddress }), // Added setCustomerAddress implementation
   setOrderType: (orderType) => {
     set((state) => {
       const deliveryFee = orderType === 'delivery' ? 30 : 0;
       const total = state.subtotal - state.discountAmount + state.taxAmount + deliveryFee;
-      return { orderType, deliveryFee, total };
+      
+      // Clear relevant fields when switching types
+      return { 
+        orderType, 
+        deliveryFee, 
+        total,
+        tableId: orderType === 'dine_in' ? state.tableId : null,
+        rider: orderType === 'delivery' ? state.rider : null,
+        customerAddress: orderType === 'delivery' ? state.customerAddress : null
+      };
     });
   },
 
@@ -170,6 +183,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     customer: null,
     tableId: null, // Clear tableId
     rider: null, // Clear rider
+    customerAddress: null, // Clear customerAddress
     discount: 0,
     discountType: 'percentage',
     subtotal: 0,

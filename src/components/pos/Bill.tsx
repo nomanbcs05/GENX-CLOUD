@@ -17,6 +17,7 @@ interface Order {
   createdAt: Date;
   cashierName: string;
   rider?: { name: string } | null;
+  customerAddress?: string | null;
 }
 
 interface BillProps {
@@ -107,11 +108,15 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
               <span>CELL#:</span>
               <span>{order.customer.phone}</span>
             </div>
-            {/* Address Placeholder if available */}
-             {/* <div className="mt-1">
-              <span>Address :</span>
-              <p className="break-words">House A69 back street...</p>
-            </div> */}
+          </div>
+        )}
+
+        {order.customerAddress && (
+          <div className="mt-1 border-t border-dotted border-black pt-1">
+            <span className="font-bold">Address :</span>
+            <p className="break-words uppercase text-[11px] leading-tight mt-0.5">
+              {order.customerAddress}
+            </p>
           </div>
         )}
       </div>

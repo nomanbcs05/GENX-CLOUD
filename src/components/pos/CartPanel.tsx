@@ -32,18 +32,20 @@ const CartPanel = () => {
     total, 
     updateQuantity, 
     removeItem, 
-    setCustomer,
-    orderType,
-    setOrderType,
-    clearCart,
-    discount,
-    discountType,
-    setDiscount,
-    deliveryFee,
-    tableId,
-    setTableId,
-    rider,
-    setRider
+    setCustomer, 
+    orderType, 
+    setOrderType, 
+    clearCart, 
+    discount, 
+    discountType, 
+    setDiscount, 
+    deliveryFee, 
+    tableId, 
+    setTableId, 
+    rider, 
+    setRider,
+    customerAddress,
+    setCustomerAddress
   } = useCartStore();
   
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'wallet'>('cash');
@@ -163,6 +165,7 @@ const CartPanel = () => {
       items: [...items],
       customer,
       rider, // Include rider
+      customerAddress, // Include address
       orderType,
       subtotal,
       taxAmount,

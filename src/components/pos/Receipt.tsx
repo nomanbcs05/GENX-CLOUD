@@ -17,6 +17,7 @@ interface Order {
   createdAt: Date;
   cashierName: string;
   rider?: { name: string } | null;
+  customerAddress?: string | null;
 }
 
 interface ReceiptProps {
@@ -70,6 +71,12 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
         )}
         {order.customer && (
           <p><strong>Customer:</strong> {order.customer.name}</p>
+        )}
+        {order.customerAddress && (
+          <p className="mt-1">
+            <strong>Address:</strong><br/>
+            <span className="uppercase text-[10px] break-words">{order.customerAddress}</span>
+          </p>
         )}
       </div>
 
