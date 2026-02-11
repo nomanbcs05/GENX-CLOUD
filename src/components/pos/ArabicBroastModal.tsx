@@ -82,9 +82,6 @@ const ArabicBroastModal = ({ isOpen, onClose, products, onAdd }: ArabicBroastMod
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="font-black text-slate-900">Rs {item.price.toLocaleString()}</span>
-                        <div className="h-10 w-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all">
-                          <ShoppingCart className="h-5 w-5" />
-                        </div>
                       </div>
                     </button>
                   ))}
@@ -111,9 +108,6 @@ const ArabicBroastModal = ({ isOpen, onClose, products, onAdd }: ArabicBroastMod
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="font-black text-slate-900 whitespace-nowrap">Rs {item.price.toLocaleString()}</span>
-                        <div className="h-10 w-10 bg-white shadow-sm rounded-xl flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all">
-                          <ShoppingCart className="h-5 w-5" />
-                        </div>
                       </div>
                     </button>
                   ))}

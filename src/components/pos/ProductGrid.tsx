@@ -299,35 +299,26 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onAdd }: ProductCardProps) => {
-  const isLowStock = product.stock <= 10;
-  
   return (
     <motion.button
-      whileHover={{ scale: 1.02 }}
+      whileHover={{ scale: 1.02, translateY: -2 }}
       whileTap={{ scale: 0.98 }}
       onClick={() => onAdd(product)}
       className={cn(
-        "relative w-full p-4 bg-card rounded-lg border shadow-card transition-all",
-        "hover:shadow-hover hover:border-primary/20",
-        "focus:outline-none focus:ring-2 focus:ring-primary/20",
-        "flex flex-col items-center text-center"
+        "relative w-full aspect-square p-4 bg-white rounded-2xl border border-slate-100 shadow-sm transition-all",
+        "hover:shadow-md hover:border-blue-200 hover:bg-blue-50/30",
+        "focus:outline-none focus:ring-2 focus:ring-blue-500/20",
+        "flex flex-col items-center justify-center text-center gap-2"
       )}
     >
-      {isLowStock && (
-        <span className="low-stock-badge">Low Stock</span>
-      )}
-      
-      <div className="mb-3 h-24 w-full flex items-center justify-center bg-secondary/20 rounded-md overflow-hidden">
-        {product.image?.startsWith('http') ? (
-          <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
-        ) : (
-          <span className="text-4xl">{product.image}</span>
-        )}
-      </div>
-      
-      <h3 className="font-medium text-sm leading-tight mb-1 line-clamp-2">
+      <h3 className="font-bold text-slate-800 text-sm md:text-base leading-tight line-clamp-3 px-2">
         {product.name}
       </h3>
+      <div className="mt-1">
+        <span className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
+          Rs {product.price.toLocaleString()}
+        </span>
+      </div>
     </motion.button>
   );
 };
