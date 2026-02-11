@@ -71,7 +71,7 @@ const ProductGrid = () => {
   // Combine default "All" category with fetched categories
   const allCategories = useMemo(() => [
     { id: 'all', name: 'All Items', icon: 'Grid3x3' },
-    ...categories
+    ...categories.map(c => ({ id: c.name, name: c.name, icon: c.icon }))
   ], [categories]);
 
   const fuse = useMemo(() => new Fuse(allProducts, {
@@ -113,6 +113,9 @@ const ProductGrid = () => {
           products = [...products, virtualBroast as any];
         }
       }
+    } else {
+      // If we ARE in the "Arabic Broast" category, don't show the virtual card
+      products = products.filter(p => !(p as any).isVirtual);
     }
 
     // Then filter by search
