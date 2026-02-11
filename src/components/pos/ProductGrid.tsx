@@ -92,29 +92,61 @@ const ProductGrid = () => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Order Type Selection */}
+      {/* Search and Order Type Selection */}
       <div className="p-4 border-b bg-card">
-        <Tabs value={orderType} onValueChange={(v) => {
-            setOrderType(v as any);
-            if (v === 'dine_in' && !tableId) setShowTableModal(true);
-            if (v === 'take_away') setShowCustomerModal(true);
-            if (v === 'delivery') setShowRiderModal(true);
-          }} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 h-11">
-            <TabsTrigger value="dine_in" className="flex items-center gap-2 h-9">
-              <Utensils className="h-4 w-4" />
-              <span className="hidden sm:inline">Dine In</span>
-            </TabsTrigger>
-            <TabsTrigger value="take_away" className="flex items-center gap-2 h-9">
-              <ShoppingBag className="h-4 w-4" />
-              <span className="hidden sm:inline">Take Away</span>
-            </TabsTrigger>
-            <TabsTrigger value="delivery" className="flex items-center gap-2 h-9">
-              <Truck className="h-4 w-4" />
-              <span className="hidden sm:inline">Delivery</span>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white" />
+            <Input
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-11 bg-blue-600 text-white placeholder:text-blue-100 border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+          </div>
+          <Button 
+            variant={orderType === 'dine_in' ? "default" : "outline"}
+            className={cn(
+              "h-11 flex items-center justify-center gap-2 text-base font-medium transition-all",
+              orderType === 'dine_in' ? "bg-blue-600 text-white hover:bg-blue-700 border-none" : "bg-blue-600 text-white hover:bg-blue-700 border-none"
+            )}
+            onClick={() => {
+              setOrderType('dine_in');
+              if (!tableId) setShowTableModal(true);
+            }}
+          >
+            <Utensils className="h-5 w-5" />
+            Dine In
+          </Button>
+          <Button 
+            variant={orderType === 'take_away' ? "default" : "outline"}
+            className={cn(
+              "h-11 flex items-center justify-center gap-2 text-base font-medium transition-all",
+              orderType === 'take_away' ? "bg-blue-600 text-white hover:bg-blue-700 border-none" : "bg-blue-600 text-white hover:bg-blue-700 border-none"
+            )}
+            onClick={() => {
+              setOrderType('take_away');
+              setShowCustomerModal(true);
+            }}
+          >
+            <ShoppingBag className="h-5 w-5" />
+            Take Away
+          </Button>
+          <Button 
+            variant={orderType === 'delivery' ? "default" : "outline"}
+            className={cn(
+              "h-11 flex items-center justify-center gap-2 text-base font-medium transition-all",
+              orderType === 'delivery' ? "bg-blue-600 text-white hover:bg-blue-700 border-none" : "bg-blue-600 text-white hover:bg-blue-700 border-none"
+            )}
+            onClick={() => {
+              setOrderType('delivery');
+              setShowRiderModal(true);
+            }}
+          >
+            <Truck className="h-5 w-5" />
+            Delivery
+          </Button>
+        </div>
       </div>
 
       {/* Category Tabs */}
