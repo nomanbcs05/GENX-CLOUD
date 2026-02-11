@@ -39,8 +39,9 @@ const ManageProductsPage = () => {
   // Form State
   const [productForm, setProductForm] = useState({
     name: '',
-    description: '',
+    sku: '',
     price: '',
+    cost: '0',
     category_id: '',
     kitchen_id: '',
     image: '',
@@ -107,11 +108,11 @@ const ManageProductsPage = () => {
     mutationFn: async (data: any) => {
       const productPayload = {
         name: data.name,
-        description: data.description,
+        sku: data.sku || `SKU-${Date.now()}`,
         price: parseFloat(data.price) || 0,
+        cost: parseFloat(data.cost) || 0,
         category: categories.find((c: any) => c.id === data.category_id)?.name || '',
         image: data.image,
-        available: true,
       };
 
       let product;
@@ -159,8 +160,9 @@ const ManageProductsPage = () => {
   const resetForm = () => {
     setProductForm({
       name: '',
-      description: '',
+      sku: '',
       price: '',
+      cost: '0',
       category_id: '',
       kitchen_id: '',
       image: '',
@@ -220,8 +222,9 @@ const ManageProductsPage = () => {
     setEditingProduct(product);
     setProductForm({
       name: product.name,
-      description: product.description || '',
+      sku: product.sku || '',
       price: product.price.toString(),
+      cost: (product.cost || 0).toString(),
       category_id: categories.find((c: any) => c.name === product.category)?.id || '',
       kitchen_id: '', // Not in DB yet
       image: product.image || '',
@@ -326,10 +329,9 @@ const ManageProductsPage = () => {
               <TableHeader className="bg-emerald-400 hover:bg-emerald-400">
                 <TableRow className="border-none hover:bg-emerald-400">
                   <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4">Name</TableHead>
+                  <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4">SKU</TableHead>
                   <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4">Price</TableHead>
                   <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4">Category</TableHead>
-                  <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4">Name of Kitchen</TableHead>
-                  <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4">Available</TableHead>
                   <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4 text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
@@ -343,26 +345,12 @@ const ManageProductsPage = () => {
                 ) : filteredProducts.map((product: any) => (
                   <TableRow key={product.id} className="hover:bg-slate-50/50 border-slate-100">
                     <TableCell className="font-bold text-slate-700 py-4">{product.name}</TableCell>
+                    <TableCell className="text-slate-500 py-4">{product.sku}</TableCell>
                     <TableCell className="font-bold text-slate-700 py-4">Rs {product.price.toLocaleString()}</TableCell>
                     <TableCell className="py-4">
-                      <select className="bg-slate-50 border-none rounded-lg p-1.5 px-3 text-sm font-medium outline-none w-full max-w-[150px]">
-                        <option>{product.category}</option>
-                      </select>
-                    </TableCell>
-                    <TableCell className="py-4">
-                      <select className="bg-slate-50 border-none rounded-lg p-1.5 px-3 text-sm font-medium outline-none w-full max-w-[150px]">
-                        <option>Name of Kitchen</option>
-                      </select>
-                    </TableCell>
-                    <TableCell className="py-4">
-                      <Switch 
-                        checked={product.available}
-                        onCheckedChange={(checked) => {
-                          api.products.update(product.id, { available: checked })
-                            .then(() => queryClient.invalidateQueries({ queryKey: ['products-with-details'] }));
-                        }}
-                        className="data-[state=checked]:bg-indigo-500" 
-                      />
+                      <Badge variant="outline" className="bg-slate-50 border-none text-slate-600 font-medium">
+                        {product.category}
+                      </Badge>
                     </TableCell>
                     <TableCell className="py-4 text-right">
                       <div className="flex justify-end gap-2">
@@ -427,23 +415,34 @@ const ManageProductsPage = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm font-black text-slate-900">Description</Label>
-                    <textarea 
-                      value={productForm.description}
-                      onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
-                      className="w-full h-24 bg-slate-50 border-none rounded-xl p-4 text-sm outline-none resize-none" 
-                      placeholder="Enter description"
+                    <Label className="text-sm font-black text-slate-900">SKU</Label>
+                    <Input 
+                      value={productForm.sku}
+                      onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })}
+                      className="h-12 bg-slate-50 border-none rounded-xl" 
+                      placeholder="Enter product SKU" 
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-sm font-black text-slate-900">Price</Label>
-                    <Input 
-                      value={productForm.price}
-                      onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-                      className="h-12 bg-slate-50 border-none rounded-xl" 
-                      placeholder="0.00" 
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-black text-slate-900">Price</Label>
+                      <Input 
+                        value={productForm.price}
+                        onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+                        className="h-12 bg-slate-50 border-none rounded-xl" 
+                        placeholder="0.00" 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-black text-slate-900">Cost</Label>
+                      <Input 
+                        value={productForm.cost}
+                        onChange={(e) => setProductForm({ ...productForm, cost: e.target.value })}
+                        className="h-12 bg-slate-50 border-none rounded-xl" 
+                        placeholder="0.00" 
+                      />
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between">
