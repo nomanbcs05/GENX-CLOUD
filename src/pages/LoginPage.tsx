@@ -57,24 +57,6 @@ const LoginPage = () => {
       navigate("/");
     } catch (error: any) {
       console.error("Login error:", error);
-      
-      // If login fails (e.g. invalid login or rate limit or email not confirmed), fall back to local mode if requested
-      // For now, let's allow a fallback if the user is stuck
-      if (error.message?.includes("Email not confirmed") || error.message?.includes("Invalid login credentials")) {
-         const shouldBypass = window.confirm(`Login failed: ${error.message}. \n\nWould you like to enter Offline Mode to access the dashboard?`);
-         if (shouldBypass) {
-            const localUser = {
-                name: email.split('@')[0],
-                email,
-                role
-            };
-            localStorage.setItem("pos_local_user", JSON.stringify(localUser));
-            toast.success("Entered Offline Mode");
-            navigate("/");
-            return;
-         }
-      }
-
       toast.error(error.message || "Failed to login");
     } finally {
       setLoading(false);

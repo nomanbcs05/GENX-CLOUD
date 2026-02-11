@@ -10,14 +10,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   useEffect(() => {
-    // Check local dev mode first
-    const localUser = localStorage.getItem('pos_local_user');
-    if (localUser) {
-      setSession(true); // Fake session for local mode
-      setLoading(false);
-      return;
-    }
-
     // Check active Supabase session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);

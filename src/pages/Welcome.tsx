@@ -53,14 +53,8 @@ const Welcome = () => {
         />
       </div>
 
-      <div className="mt-12">
-        <Button 
-          variant="outline" 
-          className="text-slate-500 hover:text-primary border-slate-200"
-          onClick={() => navigate("/signup")}
-        >
-          Create New Account
-        </Button>
+      <div className="mt-12 text-slate-400 text-sm">
+        © 2024 Gen XCloud POS. All rights reserved.
       </div>
     </div>
   );
