@@ -353,11 +353,6 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
       )}>
         {product.name}
       </h3>
-      <div className="mt-auto">
-        <span className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
-          Rs {product.price.toLocaleString()}
-        </span>
-      </div>
     </motion.button>
   );
 };
