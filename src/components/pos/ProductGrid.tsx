@@ -299,6 +299,8 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onAdd }: ProductCardProps) => {
+  const isArabicBroast = product.category === 'Arabic Broast';
+
   return (
     <motion.button
       whileHover={{ scale: 1.02, translateY: -2 }}
@@ -311,7 +313,20 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
         "flex flex-col items-center justify-center text-center gap-2"
       )}
     >
-      <h3 className="font-bold text-slate-800 text-sm md:text-base leading-tight line-clamp-3 px-2">
+      {!isArabicBroast && product.image && (
+        <div className="mb-1 h-16 w-full flex items-center justify-center overflow-hidden">
+          {product.image.startsWith('http') ? (
+            <img src={product.image} alt={product.name} className="h-full w-full object-contain" />
+          ) : (
+            <span className="text-3xl">{product.image}</span>
+          )}
+        </div>
+      )}
+      
+      <h3 className={cn(
+        "font-bold text-slate-800 leading-tight line-clamp-3 px-2",
+        isArabicBroast ? "text-sm md:text-base" : "text-xs md:text-sm"
+      )}>
         {product.name}
       </h3>
       <div className="mt-1">
