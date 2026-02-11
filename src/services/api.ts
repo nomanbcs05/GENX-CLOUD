@@ -134,9 +134,16 @@ export const api = {
         { name: "COMBO 2 (Half Broast, Fries, 2 Bun, 2 Sauce, Drink)", price: 1300, cost: 0, sku: "COMBO-2", category: "Arabic Broast", image: "🍱", stock: 100 },
         { name: "COMBO 3 (Full Broast, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 2450, cost: 0, sku: "COMBO-3", category: "Arabic Broast", image: "🍱", stock: 100 },
         { name: "COMBO 4 (Jumbo Pizza, 1 Kukkar, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 3500, cost: 0, sku: "COMBO-4", category: "Arabic Broast", image: "🍱", stock: 100 },
-        { name: "Cold Drink 300ml", price: 120, cost: 0, sku: "DRINK-300", category: "Beverages", image: "https://pakola.com.pk/cdn/shop/files/Pakola-Ice-Cream-Soda-345ml-PET-Bottle.png", stock: 100 },
-            { name: "Mineral Water Small", price: 60, cost: 0, sku: "WATER-S", category: "Beverages", image: "💧", stock: 100 },
-            // ALA CART Items
+        // Beverages
+        { name: "Next Cola / Fizz Up 345 ml", price: 80, cost: 0, sku: "DRINK-345", category: "Beverages", image: "", stock: 100 },
+        { name: "Next Cola / Fizz Up 500 ml", price: 120, cost: 0, sku: "DRINK-500", category: "Beverages", image: "", stock: 100 },
+        { name: "Next Cola / Fizz Up 1 liter", price: 150, cost: 0, sku: "DRINK-1L", category: "Beverages", image: "", stock: 100 },
+        { name: "Next Cola / KababJees 1.5 liter", price: 200, cost: 0, sku: "DRINK-1.5L", category: "Beverages", image: "", stock: 100 },
+        { name: "Next Cola / Fizz Up Jumbo", price: 250, cost: 0, sku: "DRINK-JUMBO", category: "Beverages", image: "", stock: 100 },
+        { name: "Sting 500 ml", price: 130, cost: 0, sku: "DRINK-STING", category: "Beverages", image: "", stock: 100 },
+        { name: "Mineral Water Small", price: 50, cost: 0, sku: "WATER-S", category: "Beverages", image: "", stock: 100 },
+        { name: "Mineral Water Large", price: 100, cost: 0, sku: "WATER-L", category: "Beverages", image: "", stock: 100 },
+        // ALA CART Items
             { name: "Club Sandwich", price: 400, cost: 0, sku: "ALC-CLUB-S", category: "ALA CART", image: "🥪", stock: 100 },
             { name: "Malai Boti Sandwich", price: 450, cost: 0, sku: "ALC-MALAI-S", category: "ALA CART", image: "🥪", stock: 100 },
             { name: "Mexican Sandwich", price: 500, cost: 0, sku: "ALC-MEX-S", category: "ALA CART", image: "🥪", stock: 100 },
