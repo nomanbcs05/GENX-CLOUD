@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { api } from '@/services/api';
@@ -100,8 +100,16 @@ const TableSelectionModal = ({ isOpen, onClose }: TableSelectionModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[700px] p-0 overflow-hidden bg-background">
-        <DialogHeader className="p-4 border-b flex flex-row items-center justify-between bg-muted/20">
-          <DialogTitle className="text-xl font-bold">Select Table</DialogTitle>
+        <DialogHeader className="flex flex-row items-center justify-between p-4 border-b bg-muted/20">
+          <div>
+            <DialogTitle className="text-2xl font-bold">Select a Table</DialogTitle>
+            <DialogDescription>
+              Choose an available table for dine-in orders.
+            </DialogDescription>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+            <X className="h-5 w-5" />
+          </Button>
         </DialogHeader>
 
         <div className="p-4 space-y-4">

@@ -19,6 +19,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
@@ -151,6 +152,9 @@ const CustomersPage = () => {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Add New Customer</DialogTitle>
+                  <DialogDescription>
+                    Enter the details of the new customer below.
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
@@ -211,7 +215,7 @@ const CustomersPage = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredCustomers.slice(0, 100).map((customer, index) => (
-                  <Card key={customer.id || index} className="card-hover">
+                  <Card key={customer.customer_id || index} className="card-hover">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
@@ -221,7 +225,7 @@ const CustomersPage = () => {
                           <div>
                             <h3 className="font-semibold">{customer.name}</h3>
                             <p className="text-xs text-muted-foreground">
-                              {customer.visit_count} visits
+                              {customer.total_orders || 0} visits
                             </p>
                           </div>
                         </div>
@@ -238,7 +242,7 @@ const CustomersPage = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               className="text-destructive"
-                              onClick={() => deleteCustomerMutation.mutate(customer.id)}
+                              onClick={() => deleteCustomerMutation.mutate(customer.customer_id)}
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete

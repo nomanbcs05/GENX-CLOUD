@@ -132,6 +132,7 @@ const CartPanel = () => {
       console.error('Order creation failed:', error);
       // Supabase errors are objects with a message property, not necessarily Error instances
       const errorMessage = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+      console.error('Detailed error message:', errorMessage);
       toast.error(`Failed to save order: ${errorMessage}`);
     }
   });
@@ -217,19 +218,12 @@ const CartPanel = () => {
     }
 
     const orderInsert = {
-      customer_id: customer?.id || null,
+      customer_id: customer?.id ? parseInt(customer.id) : null,
       total_amount: total,
       status: 'completed',
       payment_method: paymentMethod,
       order_type: orderType,
-      subtotal: subtotal,
-      tax_amount: taxAmount,
-      discount_amount: discountAmount,
-      delivery_fee: deliveryFee,
-      table_id: tableId,
-      rider_name: rider,
-      customer_address: customerAddress,
-      register_id: openRegister.id
+      table_id: tableId || null,
     };
 
     const orderItemsInsert = items.map(item => ({

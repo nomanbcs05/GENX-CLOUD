@@ -242,32 +242,56 @@ export const api = {
       return count || 0;
     },
     create: async (order: any, items: OrderItemInsert[]) => {
-      // Ensure numeric fields are valid numbers
-      const customerId = order.customer_id ? Number(order.customer_id) : null;
-      
       // Clean order data to match actual Supabase schema
-      const safeOrder = {
-        customer_id: customerId && !isNaN(customerId) ? customerId : null,
+      const safeOrder: any = {
         total_amount: Number(order.total_amount) || 0,
         status: order.status || 'completed',
         payment_method: order.payment_method || 'cash',
         order_type: order.order_type || 'dine_in',
-        delivery_fee: Number(order.delivery_fee) || 0,
-        table_id: order.table_id || null,
-        register_id: order.register_id || null,
-        // Any other fields like rider_name or customer_address 
-        // will be ignored by Supabase if they don't exist, 
-        // but it's safer to only include what we know exists
+        // Removing register_id to prevent 400 error as it doesn't exist in current DB schema
       };
 
+      // Handle customer_id as number if it's an integer-like string or number
+      if (order.customer_id) {
+        const cid = parseInt(String(order.customer_id));
+        if (!isNaN(cid)) {
+          safeOrder.customer_id = cid;
+        }
+      }
+
+      // Handle table_id if present
+      if (order.table_id) {
+        const tid = parseInt(String(order.table_id));
+        if (!isNaN(tid)) {
+          safeOrder.table_id = tid;
+        }
+      }
+
+      // Validate safeOrder object before inserting
+      if (!safeOrder.total_amount || typeof safeOrder.total_amount !== 'number') {
+        throw new Error('Invalid or missing total_amount');
+      }
+      if (!safeOrder.payment_method || typeof safeOrder.payment_method !== 'string') {
+        throw new Error('Invalid or missing payment_method');
+      }
+
+      console.log("Validated safeOrder object for Supabase insertion:", safeOrder);
+
+      // Attempt to insert order into Supabase
       const { data: newOrder, error: orderError } = await supabase
         .from('orders')
         .insert(safeOrder)
         .select()
         .single();
-      
+
       if (orderError) {
-        console.error("Supabase Order Insert Error:", orderError);
+        console.error("Supabase Order Insert Error:", {
+          message: orderError.message,
+          details: orderError.details,
+          hint: orderError.hint,
+          code: orderError.code,
+          payload: safeOrder
+        });
         throw orderError;
       }
       if (!newOrder) throw new Error('Failed to create order');
@@ -298,7 +322,7 @@ export const api = {
       
       if (!orders || orders.length === 0) return;
       
-      const orderIds = orders.map(o => o.id);
+      const orderIds = orders.map(o => (o as any).id);
 
       // 2. Delete associated order items first (Manual Cascade)
       const { error: itemsError } = await supabase

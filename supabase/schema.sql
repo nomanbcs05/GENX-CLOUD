@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS orders (
   status TEXT NOT NULL DEFAULT 'completed',
   payment_method TEXT NOT NULL,
   order_type TEXT NOT NULL DEFAULT 'dine_in',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  register_id UUID
 );
 
 -- Create order_items table

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/stores/cartStore';
 import { toast } from 'sonner';
@@ -58,6 +58,9 @@ const RiderSelectionModal = ({ isOpen, onClose }: RiderSelectionModalProps) => {
           <DialogTitle className="text-2xl font-bold text-center">
             {selectedRider ? 'Customer Address' : 'Select Rider'}
           </DialogTitle>
+          <DialogDescription className="text-center">
+            {selectedRider ? 'Provide delivery details for the selected rider.' : 'Choose a rider to assign this delivery order.'}
+          </DialogDescription>
         </DialogHeader>
         
         {!selectedRider ? (
