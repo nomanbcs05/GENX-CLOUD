@@ -130,10 +130,10 @@ export const api = {
         { name: "Skin Spicy injected Broast Chest/Wing 2Pcs", price: 600, cost: 0, sku: "SIB-CW-2", category: "Arabic Broast", image: "🍗" },
         { name: "Skin Spicy injected Half Broast 4Pcs", price: 1100, cost: 0, sku: "SIB-HALF-4", category: "Arabic Broast", image: "🍗" },
         { name: "Skin Spicy injected Full Broast 8Pcs", price: 2200, cost: 0, sku: "SIB-FULL-8", category: "Arabic Broast", image: "🍗" },
-        { name: "COMBO 1", price: 999, cost: 0, sku: "COMBO-1", category: "Arabic Broast", image: "🍱" },
-        { name: "COMBO 2", price: 1300, cost: 0, sku: "COMBO-2", category: "Arabic Broast", image: "🍱" },
-        { name: "COMBO 3", price: 2450, cost: 0, sku: "COMBO-3", category: "Arabic Broast", image: "🍱" },
-        { name: "COMBO 4", price: 3500, cost: 0, sku: "COMBO-4", category: "Arabic Broast", image: "🍱" }
+        { name: "COMBO 1 (1 Qtr Broast, 1 Zinger, Drink, Bun, Fries)", price: 999, cost: 0, sku: "COMBO-1", category: "Arabic Broast", image: "🍱" },
+        { name: "COMBO 2 (Half Broast, Fries, 2 Bun, 2 Sauce, Drink)", price: 1300, cost: 0, sku: "COMBO-2", category: "Arabic Broast", image: "🍱" },
+        { name: "COMBO 3 (Full Broast, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 2450, cost: 0, sku: "COMBO-3", category: "Arabic Broast", image: "🍱" },
+        { name: "COMBO 4 (Jumbo Pizza, 1 Kukkar, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 3500, cost: 0, sku: "COMBO-4", category: "Arabic Broast", image: "🍱" }
       ];
 
       // Create category first

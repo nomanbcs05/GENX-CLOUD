@@ -56,10 +56,11 @@ const ProductGrid = () => {
   });
 
   useEffect(() => {
-    if (!productsLoading && allProducts.length === 0) {
+    const hasArabicBroast = allProducts.some(p => p.category === 'Arabic Broast');
+    if (!productsLoading && !hasArabicBroast) {
       seedMenu();
     }
-  }, [allProducts.length, productsLoading, seedMenu]);
+  }, [allProducts, productsLoading, seedMenu]);
 
   // Fetch Categories
   const { data: categories = [] } = useQuery({
