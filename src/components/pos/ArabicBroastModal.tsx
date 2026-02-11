@@ -33,7 +33,7 @@ const ArabicBroastModal = ({ isOpen, onClose, products, onAdd }: ArabicBroastMod
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
         {/* Header Section */}
         <div className="bg-emerald-500 bg-gradient-to-br from-emerald-500 to-emerald-600 px-6 py-5 text-white shrink-0 relative">
           <div className="flex items-center justify-between mb-4">
@@ -45,7 +45,7 @@ const ArabicBroastModal = ({ isOpen, onClose, products, onAdd }: ArabicBroastMod
             </div>
             <button 
               onClick={onClose}
-              className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all active:scale-90 z-50"
             >
               <Plus className="h-6 w-6 rotate-45" />
             </button>
@@ -62,8 +62,8 @@ const ArabicBroastModal = ({ isOpen, onClose, products, onAdd }: ArabicBroastMod
           </div>
         </div>
 
-        {/* Content Section */}
-        <ScrollArea className="flex-1 min-h-0 bg-slate-50/30">
+        {/* Content Section - Using standard overflow for better scroll visibility */}
+        <div className="flex-1 overflow-y-auto bg-slate-50/30 custom-scrollbar">
           <div className="p-6 space-y-8">
             {/* Broast Items Section */}
             {broastItems.length > 0 && (
@@ -135,7 +135,7 @@ const ArabicBroastModal = ({ isOpen, onClose, products, onAdd }: ArabicBroastMod
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
         
         {/* Footer Section */}
         <div className="px-6 py-4 bg-white border-t border-slate-100 flex justify-end shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
