@@ -8,11 +8,13 @@ import {
   BarChart3, 
   Settings, 
   LogOut,
-  Coffee
+  Coffee,
+  PlusCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
+import StartDayModal from '@/components/pos/StartDayModal';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutGrid },
@@ -28,6 +30,7 @@ const AppSidebar = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("Loading...");
   const [userRole, setUserRole] = useState("Staff");
+  const [showNewOrderModal, setShowNewOrderModal] = useState(false);
   
   useEffect(() => {
     const fetchUser = async () => {
@@ -90,6 +93,14 @@ const AppSidebar = () => {
 
       {/* Navigation */}
       <nav className="flex-1 p-2 space-y-1">
+        <button
+          onClick={() => setShowNewOrderModal(true)}
+          className="w-full flex items-center gap-2 px-2 py-3 mb-2 rounded-lg text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+        >
+          <PlusCircle className="h-5 w-5" />
+          <span>New Order</span>
+        </button>
+
         {navigation.map((item) => {
           const isActive = location.pathname === item.href;
           
@@ -140,6 +151,16 @@ const AppSidebar = () => {
           <span>Log out</span>
         </button>
       </div>
+
+      <StartDayModal 
+        isOpen={showNewOrderModal} 
+        onSuccess={() => {
+          setShowNewOrderModal(false);
+          navigate('/');
+        }} 
+        onClose={() => setShowNewOrderModal(false)}
+        forceNewSession={true}
+      />
     </aside>
   );
 };
