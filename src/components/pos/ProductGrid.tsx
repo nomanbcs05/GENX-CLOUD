@@ -22,6 +22,13 @@ const ProductGrid = () => {
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [showRiderModal, setShowRiderModal] = useState(false);
   
+  const { data: openRegister } = useQuery({
+    queryKey: ['open-register'],
+    queryFn: api.registers.getOpen,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+  });
+
   const { 
     addItem,
     orderType,
@@ -71,8 +78,12 @@ const ProductGrid = () => {
   }, [searchQuery, selectedCategory, fuse]);
 
   const handleAddToCart = useCallback((product: Product) => {
+    if (!openRegister) {
+      toast.error('Please start the day shift before taking orders');
+      return;
+    }
     addItem(product);
-  }, [addItem]);
+  }, [addItem, openRegister]);
 
   const handleClearSearch = () => {
     setSearchQuery('');

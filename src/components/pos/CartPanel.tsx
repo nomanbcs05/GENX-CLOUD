@@ -1,14 +1,14 @@
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Minus, Plus, Trash2, User, Search, X, Printer, CreditCard, Banknote, Wallet, Utensils, ShoppingBag, Truck, Tag, Percent, ChefHat, FileText } from 'lucide-react';
+import { Minus, Plus, Trash2, User, Search, X, Printer, Wallet, ChefHat, FileText } from 'lucide-react';
 import Fuse from 'fuse.js';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCartStore, Customer } from '@/stores/cartStore';
 import Receipt from './Receipt';
 import KOT from './KOT';
@@ -76,7 +76,7 @@ const CartPanel = () => {
   const { data: tables = [] } = useQuery({
     queryKey: ['tables'],
     queryFn: api.tables.getAll,
-  });
+  }) as any;
 
   // Fetch customers
   const { data: dbCustomers = [] } = useQuery({
@@ -100,6 +100,13 @@ const CartPanel = () => {
     tables.find((t: any) => t.table_id === tableId),
     [tables, tableId]
   );
+
+  const { data: openRegister } = useQuery({
+    queryKey: ['open-register'],
+    queryFn: api.registers.getOpen,
+    retry: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
   const createOrderMutation = useMutation({
     mutationFn: async (orderData: any) => {
@@ -204,6 +211,11 @@ const CartPanel = () => {
       return;
     }
 
+    if (!openRegister) {
+      toast.error('Cannot complete sale. Please start the day first.');
+      return;
+    }
+
     const orderInsert = {
       customer_id: customer?.id || null,
       total_amount: total,
@@ -211,9 +223,13 @@ const CartPanel = () => {
       payment_method: paymentMethod,
       order_type: orderType,
       subtotal: subtotal,
-      tax: taxAmount,
-      discount: discountAmount,
-      delivery_fee: deliveryFee
+      tax_amount: taxAmount,
+      discount_amount: discountAmount,
+      delivery_fee: deliveryFee,
+      table_id: tableId,
+      rider_name: rider,
+      customer_address: customerAddress,
+      register_id: openRegister.id
     };
 
     const orderItemsInsert = items.map(item => ({

@@ -77,8 +77,8 @@ const CustomerSelectionModal = ({ isOpen, onClose }: CustomerSelectionModalProps
         // Update name if changed
         if (existingCustomer.name !== name) {
           const idToUpdate = (existingCustomer as any).customer_id || existingCustomer.id;
-          const { data, error } = await supabase
-            .from('customers')
+          const { data, error } = await (supabase
+            .from('customers') as any)
             .update({ name })
             .eq('customer_id', idToUpdate)
             .select()
