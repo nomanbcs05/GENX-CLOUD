@@ -21,6 +21,28 @@ export interface Category {
   icon: string;
 }
 
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  name: string;
+  price: number;
+  available: boolean;
+  created_at: string;
+}
+
+export interface ProductAddon {
+  id: string;
+  name: string;
+  price: number;
+  created_at: string;
+}
+
+export interface Kitchen {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
 export interface DailyRegister {
   id: string;
   opened_at: string;
@@ -151,6 +173,63 @@ export const api = {
         .getPublicUrl(filePath);
 
       return data.publicUrl;
+    },
+    getWithDetails: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          product_variants(*),
+          product_addons(*)
+        `)
+        .order('name');
+      if (error) throw error;
+      return data;
+    }
+  },
+  addons: {
+    getAll: async () => {
+      const { data, error } = await supabase
+        .from('product_addons')
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      return data as ProductAddon[];
+    },
+    create: async (addon: Omit<ProductAddon, 'id' | 'created_at'>) => {
+      const { data, error } = await supabase
+        .from('product_addons')
+        .insert(addon)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as ProductAddon;
+    },
+    delete: async (id: string) => {
+      const { error } = await supabase
+        .from('product_addons')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    }
+  },
+  kitchens: {
+    getAll: async () => {
+      const { data, error } = await supabase
+        .from('kitchens')
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      return data as Kitchen[];
+    },
+    create: async (name: string) => {
+      const { data, error } = await supabase
+        .from('kitchens')
+        .insert({ name })
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Kitchen;
     }
   },
   customers: {

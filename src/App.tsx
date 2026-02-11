@@ -7,6 +7,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import OngoingOrdersPage from "./pages/OngoingOrdersPage";
 import OrdersPage from "./pages/OrdersPage";
+import ManageProductsPage from "./pages/ManageProductsPage";
 import ProductsPage from "./pages/ProductsPage";
 import CustomersPage from "./pages/CustomersPage";
 import ReportsPage from "./pages/ReportsPage";
@@ -45,6 +46,11 @@ const App = () => (
             <Route path="/orders" element={
               <ProtectedRoute>
                 <OrdersPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/manage-products" element={
+              <ProtectedRoute>
+                <ManageProductsPage />
               </ProtectedRoute>
             } />
             <Route path="/products" element={
