@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Utensils } from 'lucide-react';
+import { Search, Plus, Utensils, ChefHat } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 interface BurgerSelectionModalProps {
