@@ -19,6 +19,7 @@ import ArabicBroastModal from './ArabicBroastModal';
 import PizzaSelectionModal from './PizzaSelectionModal';
 import RollSelectionModal from './RollSelectionModal';
 import BroastSelectionModal from './BroastSelectionModal';
+import BurgerSelectionModal from './BurgerSelectionModal';
 
 const ProductGrid = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,6 +31,7 @@ const ProductGrid = () => {
   const [showPizzaModal, setShowPizzaModal] = useState(false);
   const [showRollModal, setShowRollModal] = useState(false);
   const [showSimpleBroastModal, setShowSimpleBroastModal] = useState(false);
+  const [showBurgerModal, setShowBurgerModal] = useState(false);
   
   const { data: openRegister } = useQuery({
     queryKey: ['open-register'],
@@ -213,6 +215,30 @@ const ProductGrid = () => {
        products = products.filter(p => p.category !== 'Broast' && !(p as any).isVirtual);
      }
 
+     // Special logic for Burgers:
+     const isBurgersVisible = selectedCategory === 'all' || selectedCategory === 'Burgers';
+     
+     if (isBurgersVisible) {
+       const isBurgerItem = (p: any) => p.category === 'Burgers';
+       products = products.filter(p => !isBurgerItem(p));
+       
+       const virtualBurger = {
+         id: 'virtual-burger-menu',
+         name: 'Burgers Menu',
+         price: 0,
+         category: 'Burgers',
+         image: '🍔',
+         isVirtual: true,
+         modalType: 'burger'
+       };
+       
+       if (!searchQuery.trim() || virtualBurger.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+         products = [virtualBurger as any, ...products];
+       }
+     } else {
+       products = products.filter(p => p.category !== 'Burgers' && !(p as any).isVirtual);
+     }
+
      // Then filter by search
     if (searchQuery.trim()) {
       const searchResults = fuse.search(searchQuery);
@@ -233,6 +259,8 @@ const ProductGrid = () => {
         setShowRollModal(true);
       } else if ((product as any).modalType === 'simple-broast') {
         setShowSimpleBroastModal(true);
+      } else if ((product as any).modalType === 'burger') {
+        setShowBurgerModal(true);
       }
       return;
     }
@@ -437,11 +465,17 @@ const ProductGrid = () => {
        />
 
        <BroastSelectionModal
-         isOpen={showSimpleBroastModal}
-         onClose={() => setShowSimpleBroastModal(false)}
-         onAdd={handleAddToCart}
-       />
-    </div>
+          isOpen={showSimpleBroastModal}
+          onClose={() => setShowSimpleBroastModal(false)}
+          onAdd={handleAddToCart}
+        />
+
+        <BurgerSelectionModal
+          isOpen={showBurgerModal}
+          onClose={() => setShowBurgerModal(false)}
+          onAdd={handleAddToCart}
+        />
+      </div>
   );
 };
 
@@ -451,7 +485,7 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onAdd }: ProductCardProps) => {
-  const isNoImageCategory = product.category === 'Arabic Broast' || product.category === 'ALA CART' || product.category === 'Snacks' || product.category === 'Beverages' || product.category === 'Pizzas' || product.category === 'Rolls' || product.category === 'Broast';
+  const isNoImageCategory = product.category === 'Arabic Broast' || product.category === 'ALA CART' || product.category === 'Snacks' || product.category === 'Beverages' || product.category === 'Pizzas' || product.category === 'Rolls' || product.category === 'Broast' || product.category === 'Burgers';
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
