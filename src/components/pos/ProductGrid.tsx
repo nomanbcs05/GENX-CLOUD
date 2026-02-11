@@ -300,8 +300,8 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, onAdd }: ProductCardProps) => {
   const isArabicBroast = product.category === 'Arabic Broast';
-  const [imageLoaded, setImageLoaded] = React.useState(false);
-  const [imageError, setImageError] = React.useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   return (
     <motion.button
