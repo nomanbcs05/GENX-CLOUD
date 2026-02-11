@@ -134,7 +134,7 @@ export const api = {
         { name: "COMBO 2 (Half Broast, Fries, 2 Bun, 2 Sauce, Drink)", price: 1300, cost: 0, sku: "COMBO-2", category: "Arabic Broast", image: "🍱", stock: 100 },
         { name: "COMBO 3 (Full Broast, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 2450, cost: 0, sku: "COMBO-3", category: "Arabic Broast", image: "🍱", stock: 100 },
         { name: "COMBO 4 (Jumbo Pizza, 1 Kukkar, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 3500, cost: 0, sku: "COMBO-4", category: "Arabic Broast", image: "🍱", stock: 100 },
-        { name: "Cold Drink 300ml", price: 120, cost: 0, sku: "DRINK-300", category: "Beverages", image: "🥤", stock: 100 },
+        { name: "Cold Drink 300ml", price: 120, cost: 0, sku: "DRINK-300", category: "Beverages", image: "https://pakola.com.pk/cdn/shop/files/Pakola-Ice-Cream-Soda-345ml-PET-Bottle.png", stock: 100 },
         { name: "Mineral Water Small", price: 60, cost: 0, sku: "WATER-S", category: "Beverages", image: "💧", stock: 100 }
       ];
 
