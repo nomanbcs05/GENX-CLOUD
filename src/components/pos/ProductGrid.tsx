@@ -49,17 +49,30 @@ const ProductGrid = () => {
   const queryClient = useQueryClient();
   const { mutate: seedMenu } = useMutation({
     mutationFn: api.products.seedArabicBroast,
+    onMutate: () => {
+      toast.loading('Seeding menu items...', { id: 'seed-toast' });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      toast.success('Menu items seeded successfully!', { id: 'seed-toast' });
+    },
+    onError: (error: any) => {
+      console.error('Seed error:', error);
+      toast.error(`Failed to seed menu: ${error.message}`, { id: 'seed-toast' });
     }
   });
 
   useEffect(() => {
-    if (!productsLoading && allProducts.length === 0) {
-      seedMenu();
+    if (!productsLoading) {
+      const hasArabicBroast = allProducts.some(p => p.category === 'Arabic Broast');
+      const hasBeverages = allProducts.some(p => p.category === 'Beverages');
+      
+      if (!hasArabicBroast || !hasBeverages) {
+        seedMenu();
+      }
     }
-  }, [allProducts.length, productsLoading, seedMenu]);
+  }, [allProducts, productsLoading, seedMenu]);
 
   // Fetch Categories
   const { data: categories = [] } = useQuery({
@@ -203,24 +216,35 @@ const ProductGrid = () => {
 
       {/* Category Tabs */}
       <div className="p-4 border-b bg-card">
-        <ScrollArea className="w-full">
-          <div className="flex gap-2">
-            {allCategories.map((category) => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? "default" : "outline"}
-                size="sm"
-                className={cn(
-                  "whitespace-nowrap transition-all",
-                  selectedCategory === category.id && "shadow-md"
-                )}
-                onClick={() => setSelectedCategory(category.id)}
-              >
-                {category.name}
-              </Button>
-            ))}
-          </div>
-        </ScrollArea>
+        <div className="flex items-center justify-between gap-4">
+          <ScrollArea className="flex-1 w-full">
+            <div className="flex gap-2">
+              {allCategories.map((category) => (
+                <Button
+                  key={category.id}
+                  variant={selectedCategory === category.id ? "default" : "outline"}
+                  size="sm"
+                  className={cn(
+                    "whitespace-nowrap transition-all",
+                    selectedCategory === category.id && "shadow-md"
+                  )}
+                  onClick={() => setSelectedCategory(category.id)}
+                >
+                  {category.name}
+                </Button>
+              ))}
+            </div>
+          </ScrollArea>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => seedMenu()}
+            className="text-xs text-muted-foreground hover:text-primary transition-colors"
+          >
+            Refresh Menu
+          </Button>
+        </div>
       </div>
 
       {/* Products Grid */}

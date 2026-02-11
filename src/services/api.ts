@@ -125,28 +125,33 @@ export const api = {
   products: {
     seedArabicBroast: async () => {
       const items = [
-        { name: "Skin Spicy Injected Full Kukkar", price: 2000, cost: 0, sku: "SIB-FULL-K", category: "Arabic Broast", image: "🍗" },
-        { name: "Skin Spicy injected Broast Leg/Thai 2Pcs", price: 600, cost: 0, sku: "SIB-LT-2", category: "Arabic Broast", image: "🍗" },
-        { name: "Skin Spicy injected Broast Chest/Wing 2Pcs", price: 600, cost: 0, sku: "SIB-CW-2", category: "Arabic Broast", image: "🍗" },
-        { name: "Skin Spicy injected Half Broast 4Pcs", price: 1100, cost: 0, sku: "SIB-HALF-4", category: "Arabic Broast", image: "🍗" },
-        { name: "Skin Spicy injected Full Broast 8Pcs", price: 2200, cost: 0, sku: "SIB-FULL-8", category: "Arabic Broast", image: "🍗" },
-        { name: "COMBO 1 (1 Qtr Broast, 1 Zinger, Drink, Bun, Fries)", price: 999, cost: 0, sku: "COMBO-1", category: "Arabic Broast", image: "🍱" },
-        { name: "COMBO 2 (Half Broast, Fries, 2 Bun, 2 Sauce, Drink)", price: 1300, cost: 0, sku: "COMBO-2", category: "Arabic Broast", image: "🍱" },
-        { name: "COMBO 3 (Full Broast, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 2450, cost: 0, sku: "COMBO-3", category: "Arabic Broast", image: "🍱" },
-        { name: "COMBO 4 (Jumbo Pizza, 1 Kukkar, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 3500, cost: 0, sku: "COMBO-4", category: "Arabic Broast", image: "🍱" },
-        { name: "Cold Drink 300ml", price: 120, cost: 0, sku: "DRINK-300", category: "Beverages", image: "🥤" },
-        { name: "Mineral Water Small", price: 60, cost: 0, sku: "WATER-S", category: "Beverages", image: "💧" }
+        { name: "Skin Spicy Injected Full Kukkar", price: 2000, cost: 0, sku: "SIB-FULL-K", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "Skin Spicy injected Broast Leg/Thai 2Pcs", price: 600, cost: 0, sku: "SIB-LT-2", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "Skin Spicy injected Broast Chest/Wing 2Pcs", price: 600, cost: 0, sku: "SIB-CW-2", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "Skin Spicy injected Half Broast 4Pcs", price: 1100, cost: 0, sku: "SIB-HALF-4", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "Skin Spicy injected Full Broast 8Pcs", price: 2200, cost: 0, sku: "SIB-FULL-8", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "COMBO 1 (1 Qtr Broast, 1 Zinger, Drink, Bun, Fries)", price: 999, cost: 0, sku: "COMBO-1", category: "Arabic Broast", image: "🍱", stock: 100 },
+        { name: "COMBO 2 (Half Broast, Fries, 2 Bun, 2 Sauce, Drink)", price: 1300, cost: 0, sku: "COMBO-2", category: "Arabic Broast", image: "🍱", stock: 100 },
+        { name: "COMBO 3 (Full Broast, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 2450, cost: 0, sku: "COMBO-3", category: "Arabic Broast", image: "🍱", stock: 100 },
+        { name: "COMBO 4 (Jumbo Pizza, 1 Kukkar, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 3500, cost: 0, sku: "COMBO-4", category: "Arabic Broast", image: "🍱", stock: 100 },
+        { name: "Cold Drink 300ml", price: 120, cost: 0, sku: "DRINK-300", category: "Beverages", image: "🥤", stock: 100 },
+        { name: "Mineral Water Small", price: 60, cost: 0, sku: "WATER-S", category: "Beverages", image: "💧", stock: 100 }
       ];
 
       // Create categories first
-      const categories = [...new Set(items.map(i => i.category))];
-      for (const catName of categories) {
+      const categoryNames = [...new Set(items.map(i => i.category))];
+      for (const catName of categoryNames) {
+        // We use upsert to ensure the category exists
         await supabase.from('categories').upsert({ name: catName, icon: 'Utensils' }, { onConflict: 'name' });
       }
 
-      // Insert products
+      // Insert products with upsert on name to avoid duplicates but ensure they exist
       const { error } = await supabase.from('products').upsert(items, { onConflict: 'name' });
-      if (error) throw error;
+      if (error) {
+        console.error('Error seeding products:', error);
+        throw error;
+      }
+      return true;
     },
     getAll: async () => {
       const { data, error } = await supabase
