@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Minus, Plus, Trash2, User, Search, X, Printer, Wallet, ChefHat, FileText } from 'lucide-react';
+import { Minus, Plus, Trash2, User, Search, X, Printer, Wallet, ChefHat, FileText, Tag } from 'lucide-react';
 import Fuse from 'fuse.js';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
