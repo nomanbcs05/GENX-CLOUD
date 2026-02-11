@@ -195,12 +195,12 @@ const OngoingOrdersPage = () => {
                       <div className="flex justify-between items-start">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900">
+                            <span className="font-black text-slate-900">
                               {order.order_type === 'dine_in' 
-                                ? `Table No. ${order.restaurant_tables?.table_number || '?'}`
+                                ? (order.restaurant_tables?.table_number ? `Table ${order.restaurant_tables.table_number}` : 'Table N/A')
                                 : order.order_type === 'take_away' ? 'Take Away' : 'Delivery'}
                             </span>
-                            <Badge variant="outline" className={cn("text-[10px] uppercase font-bold px-2 py-0", getStatusColor(order.status))}>
+                            <Badge variant="outline" className={cn("text-[10px] uppercase font-black px-2 py-0 border-2", getStatusColor(order.status))}>
                               {order.status}
                             </Badge>
                           </div>
@@ -278,10 +278,12 @@ const OngoingOrdersPage = () => {
               <div className="p-6 border-b space-y-4 bg-slate-50/30">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <h2 className="text-xl font-bold text-slate-900">
+                    <h2 className="text-xl font-black text-slate-900">
                       {selectedOrder.order_type === 'dine_in' 
-                        ? `Table ${selectedOrder.restaurant_tables?.table_number || '?'}`
-                        : 'Order Detail'}
+                        ? (selectedOrder.restaurant_tables?.table_number 
+                            ? `Table ${selectedOrder.restaurant_tables.table_number}` 
+                            : 'Table N/A')
+                        : selectedOrder.order_type === 'take_away' ? 'Take Away' : 'Delivery'}
                     </h2>
                     <p className="text-sm text-slate-500 font-medium">
                       {selectedOrder.customers?.name || 'Walk-in Customer'}
@@ -331,23 +333,25 @@ const OngoingOrdersPage = () => {
                     </div>
                     <div className="space-y-4">
                       {selectedOrder.order_items?.map((item: any) => (
-                        <div key={item.id} className="group flex items-start gap-4">
-                          <div className="h-12 w-12 rounded-xl bg-slate-100 flex items-center justify-center text-xl shadow-sm border border-slate-200/50">
-                            {item.products?.image || '🍽️'}
+                        <div key={item.id} className="group flex items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                          <div className="h-12 w-12 flex-shrink-0 rounded-lg bg-white flex items-center justify-center text-xl shadow-sm overflow-hidden border border-slate-200">
+                            {item.products?.image?.startsWith('http') ? (
+                              <img src={item.products.image} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <span>{item.products?.image || '🍽️'}</span>
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="text-sm font-bold text-slate-900 line-clamp-1">{item.products?.name}</p>
-                              <div className="flex items-center gap-3">
-                                <span className="flex items-center justify-center h-7 w-7 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold">
-                                  {item.quantity}
-                                </span>
-                                <span className="text-sm font-bold text-slate-900 w-16 text-right">
-                                  Rs {item.price.toLocaleString()}
-                                </span>
-                              </div>
-                            </div>
-                            <p className="text-[10px] text-slate-400 font-bold mt-0.5">UNIT: Rs {item.price.toLocaleString()}</p>
+                            <p className="text-sm font-bold text-slate-900 truncate">{item.products?.name}</p>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Unit: Rs {item.price.toLocaleString()}</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="flex items-center justify-center h-8 w-8 bg-blue-100 text-blue-700 rounded-lg text-xs font-black">
+                              x{item.quantity}
+                            </span>
+                            <span className="text-sm font-black text-slate-900 min-w-[70px] text-right">
+                              Rs {(item.price * item.quantity).toLocaleString()}
+                            </span>
                           </div>
                         </div>
                       ))}
