@@ -244,14 +244,19 @@ export const api = {
       // Ensure numeric fields are valid numbers
       const customerId = order.customer_id ? Number(order.customer_id) : null;
       
+      // Clean order data to match actual Supabase schema
       const safeOrder = {
-        ...order,
-        customer_id: customerId && !isNaN(customerId) ? customerId : null, // Handle potential mock string IDs or stringified numbers
-        subtotal: Number(order.subtotal) || 0,
-        tax: Number(order.tax) || 0,
-        discount: Number(order.discount) || 0,
-        delivery_fee: Number(order.delivery_fee) || 0,
+        customer_id: customerId && !isNaN(customerId) ? customerId : null,
         total_amount: Number(order.total_amount) || 0,
+        status: order.status || 'completed',
+        payment_method: order.payment_method || 'cash',
+        order_type: order.order_type || 'dine_in',
+        delivery_fee: Number(order.delivery_fee) || 0,
+        table_id: order.table_id || null,
+        register_id: order.register_id || null,
+        // Any other fields like rider_name or customer_address 
+        // will be ignored by Supabase if they don't exist, 
+        // but it's safer to only include what we know exists
       };
 
       const { data: newOrder, error: orderError } = await supabase
