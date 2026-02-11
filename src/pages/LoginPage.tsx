@@ -22,6 +22,11 @@ const LoginPage = () => {
   const [savedUsers, setSavedUsers] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    if (role === 'cashier') {
+      setEmail("syedabuzarzaidi07@gmail.com");
+      return;
+    }
+
     const saved = localStorage.getItem("pos_saved_users");
     if (saved) {
       try {
@@ -31,6 +36,8 @@ const LoginPage = () => {
       } catch (e) {
         console.error("Failed to parse saved users", e);
       }
+    } else {
+      setEmail(""); // Clear if no saved user for other roles
     }
   }, [role]);
 
