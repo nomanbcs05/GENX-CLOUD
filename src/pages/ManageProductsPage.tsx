@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Search, Plus, Edit, Trash2, Package, Loader2, Settings, 
-  X, ChevronRight, Upload, Check, MoreVertical
+  X, ChevronRight, Upload, Check, MoreVertical, Database
 } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Input } from '@/components/ui/input';
@@ -57,6 +57,18 @@ const ManageProductsPage = () => {
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const seedMutation = useMutation({
+    mutationFn: api.products.seedArabicBroast,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products-with-details'] });
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      toast({ title: "Success", description: "Arabic Broast items added successfully" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
 
   // Queries
   const { data: products = [], isLoading: isProductsLoading } = useQuery({
@@ -269,13 +281,24 @@ const ManageProductsPage = () => {
         <div className="p-8 space-y-6 flex-1 overflow-hidden flex flex-col">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-black text-slate-900">Manage Products</h1>
-            <Button 
-              onClick={() => { resetForm(); setIsProductModalOpen(true); }}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl px-6"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add New Product
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => seedMutation.mutate()}
+                disabled={seedMutation.isPending}
+                className="flex items-center gap-2 font-bold rounded-xl px-6 border-slate-200"
+              >
+                <Database className="h-4 w-4" />
+                {seedMutation.isPending ? "Adding..." : "Add Arabic Broast Menu"}
+              </Button>
+              <Button 
+                onClick={() => { resetForm(); setIsProductModalOpen(true); }}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl px-6"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add New Product
+              </Button>
+            </div>
           </div>
 
           {/* Search and Filters */}

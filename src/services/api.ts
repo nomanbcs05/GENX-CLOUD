@@ -123,6 +123,26 @@ export const api = {
     }
   },
   products: {
+    seedArabicBroast: async () => {
+      const items = [
+        { name: "Skin Spicy Injected Full Kukkar", price: 2000, category: "Arabic Broast", image: "🍗" },
+        { name: "Skin Spicy injected Broast Leg/Thai 2Pcs", price: 600, category: "Arabic Broast", image: "🍗" },
+        { name: "Skin Spicy injected Broast Chest/Wing 2Pcs", price: 600, category: "Arabic Broast", image: "🍗" },
+        { name: "Skin Spicy injected Half Broast 4Pcs", price: 1100, category: "Arabic Broast", image: "🍗" },
+        { name: "Skin Spicy injected Full Broast 8Pcs", price: 2200, category: "Arabic Broast", image: "🍗" },
+        { name: "COMBO 1", price: 999, category: "Arabic Broast", image: "🍱", description: "01 Injected Broast Qtr, 01 Zinger Burger, 01 500ml Drink, 01 Bun, 01 Broast Dip Sauce With Fries" },
+        { name: "COMBO 2", price: 1300, category: "Arabic Broast", image: "🍱", description: "01 Injected Broast Half, 01 Plain Fries, 02 Bun, 02 Broast Dip Sauce, 01 500ml Drink" },
+        { name: "COMBO 3", price: 2450, category: "Arabic Broast", image: "🍱", description: "01 Injected Broast Full, 04 Bun, 04 Broast Dip Sauce, 01 1.5Ltr Drink With Fries" },
+        { name: "COMBO 4", price: 3500, category: "Arabic Broast", image: "🍱", description: "01 Jumbo Pizza, 01 Injected Kukkar, 04 Bun, 04 Broast Dip Sauce, 01 1.5Ltr Drink With Fries" }
+      ];
+
+      // Create category first
+      await supabase.from('categories').upsert({ name: 'Arabic Broast', icon: 'Utensils' }, { onConflict: 'name' });
+
+      // Insert products
+      const { error } = await supabase.from('products').upsert(items, { onConflict: 'name' });
+      if (error) throw error;
+    },
     getAll: async () => {
       const { data, error } = await supabase
         .from('products')

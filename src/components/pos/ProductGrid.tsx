@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import TableSelectionModal from './TableSelectionModal';
 import CustomerSelectionModal from './CustomerSelectionModal';
 import RiderSelectionModal from './RiderSelectionModal';
+import ArabicBroastModal from './ArabicBroastModal';
 
 const ProductGrid = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,6 +23,7 @@ const ProductGrid = () => {
   const [showTableModal, setShowTableModal] = useState(false);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [showRiderModal, setShowRiderModal] = useState(false);
+  const [showBroastModal, setShowBroastModal] = useState(false);
   
   const { data: openRegister } = useQuery({
     queryKey: ['open-register'],
@@ -68,17 +70,49 @@ const ProductGrid = () => {
       products = products.filter(p => p.category === selectedCategory);
     }
 
+    // Special logic for Arabic Broast: 
+    // If not in the "Arabic Broast" category, hide individual items and only show the main "Injected Broast" card
+    if (selectedCategory !== 'Arabic Broast') {
+      const isBroastItem = (p: any) => p.category === 'Arabic Broast';
+      const broastProducts = products.filter(isBroastItem);
+      
+      if (broastProducts.length > 0) {
+        // Remove individual broast items
+        products = products.filter(p => !isBroastItem(p));
+        
+        // Add a single virtual product for "Injected Broast"
+        // We use a unique ID that won't conflict
+        const virtualBroast = {
+          id: 'virtual-arabic-broast',
+          name: 'Arabic Injected Broast',
+          price: 0,
+          category: 'Arabic Broast',
+          image: '🍗',
+          isVirtual: true
+        };
+        
+        // Only show it if it matches search or search is empty
+        if (!searchQuery.trim() || virtualBroast.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+          products = [...products, virtualBroast as any];
+        }
+      }
+    }
+
     // Then filter by search
     if (searchQuery.trim()) {
       const searchResults = fuse.search(searchQuery);
       const searchIds = new Set(searchResults.map(r => r.item.id));
-      products = products.filter(p => searchIds.has(p.id));
+      products = products.filter(p => searchIds.has(p.id) || (p as any).isVirtual);
     }
 
     return products;
-  }, [searchQuery, selectedCategory, fuse]);
+  }, [searchQuery, selectedCategory, fuse, allProducts]);
 
   const handleAddToCart = useCallback((product: Product) => {
+    if ((product as any).isVirtual) {
+      setShowBroastModal(true);
+      return;
+    }
     if (!openRegister) {
       toast.error('Please start the day shift before taking orders');
       return;
@@ -205,6 +239,13 @@ const ProductGrid = () => {
       <RiderSelectionModal
         isOpen={showRiderModal}
         onClose={() => setShowRiderModal(false)}
+      />
+
+      <ArabicBroastModal
+        isOpen={showBroastModal}
+        onClose={() => setShowBroastModal(false)}
+        products={allProducts.filter(p => p.category === 'Arabic Broast')}
+        onAdd={handleAddToCart}
       />
     </div>
   );
