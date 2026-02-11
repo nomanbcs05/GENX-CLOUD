@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Search, X, Grid3x3, Package, Coffee, UtensilsCrossed, Gift, IceCream, Utensils, ShoppingBag, Truck } from 'lucide-react';
+import { Search, X, Grid3x3, Package, Coffee, UtensilsCrossed, Gift, IceCream, Utensils, ShoppingBag, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -155,6 +155,18 @@ const ProductGrid = () => {
     setSearchQuery('');
   };
 
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 200;
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Search and Order Type Selection */}
@@ -215,32 +227,56 @@ const ProductGrid = () => {
       </div>
 
       {/* Category Tabs */}
-      <div className="p-4 border-b bg-card">
-        <div className="flex items-center justify-between gap-4">
-          <ScrollArea className="flex-1 w-full">
-            <div className="flex gap-2">
-              {allCategories.map((category) => (
-                <Button
-                  key={category.id}
-                  variant={selectedCategory === category.id ? "default" : "outline"}
-                  size="sm"
-                  className={cn(
-                    "whitespace-nowrap transition-all",
-                    selectedCategory === category.id && "shadow-md"
-                  )}
-                  onClick={() => setSelectedCategory(category.id)}
-                >
-                  {category.name}
-                </Button>
-              ))}
-            </div>
-          </ScrollArea>
+      <div className="px-4 py-3 border-b bg-white shadow-sm">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 shrink-0 rounded-full hover:bg-slate-100"
+            onClick={() => scroll('left')}
+          >
+            <ChevronLeft className="h-5 w-5 text-slate-600" />
+          </Button>
+
+          <div 
+            ref={scrollContainerRef}
+            className="flex-1 flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth py-1"
+            style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
+          >
+            {allCategories.map((category) => (
+              <Button
+                key={category.id}
+                variant={selectedCategory === category.id ? "default" : "outline"}
+                size="sm"
+                className={cn(
+                  "whitespace-nowrap px-6 h-9 rounded-full transition-all text-sm font-semibold",
+                  selectedCategory === category.id 
+                    ? "bg-blue-600 text-white border-none shadow-md" 
+                    : "bg-slate-50 text-slate-600 border-slate-100 hover:bg-slate-100 hover:text-blue-600"
+                )}
+                onClick={() => setSelectedCategory(category.id)}
+              >
+                {category.name}
+              </Button>
+            ))}
+          </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 shrink-0 rounded-full hover:bg-slate-100"
+            onClick={() => scroll('right')}
+          >
+            <ChevronRight className="h-5 w-5 text-slate-600" />
+          </Button>
+          
+          <div className="w-px h-6 bg-slate-200 mx-1 shrink-0" />
           
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={() => seedMenu()}
-            className="text-xs text-muted-foreground hover:text-primary transition-colors"
+            className="whitespace-nowrap text-xs font-bold text-slate-400 hover:text-blue-600 transition-colors shrink-0"
           >
             Refresh Menu
           </Button>
