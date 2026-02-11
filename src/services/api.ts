@@ -308,6 +308,35 @@ export const api = {
       if (itemsError) throw itemsError;
       return newOrder;
     },
+    getOngoing: async () => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          customers(name, phone),
+          restaurant_tables(table_number),
+          order_items(
+            *,
+            products(name, image)
+          )
+        `)
+        .in('status', ['pending', 'preparing', 'ready'])
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+    updateStatus: async (id: string, status: string) => {
+      const { data, error } = await supabase
+        .from('orders')
+        .update({ status })
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
     deleteTodayOrders: async () => {
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);

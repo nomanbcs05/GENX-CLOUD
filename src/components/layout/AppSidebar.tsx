@@ -18,6 +18,7 @@ import StartDayModal from '@/components/pos/StartDayModal';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutGrid },
+  { name: 'Ongoing Orders', href: '/ongoing-orders', icon: Clock },
   { name: 'Orders', href: '/orders', icon: ClipboardList },
   { name: 'Products', href: '/products', icon: Package },
   { name: 'Customers', href: '/customers', icon: Users },
