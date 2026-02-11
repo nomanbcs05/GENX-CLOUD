@@ -16,6 +16,7 @@ import TableSelectionModal from './TableSelectionModal';
 import CustomerSelectionModal from './CustomerSelectionModal';
 import RiderSelectionModal from './RiderSelectionModal';
 import ArabicBroastModal from './ArabicBroastModal';
+import PizzaSelectionModal from './PizzaSelectionModal';
 
 const ProductGrid = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,6 +25,7 @@ const ProductGrid = () => {
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [showRiderModal, setShowRiderModal] = useState(false);
   const [showBroastModal, setShowBroastModal] = useState(false);
+  const [showPizzaModal, setShowPizzaModal] = useState(false);
   
   const { data: openRegister } = useQuery({
     queryKey: ['open-register'],
@@ -116,7 +118,8 @@ const ProductGrid = () => {
           price: 0,
           category: 'Arabic Broast',
           image: '🍗',
-          isVirtual: true
+          isVirtual: true,
+          modalType: 'broast'
         };
         
         // Only show it if it matches search or search is empty
@@ -126,6 +129,33 @@ const ProductGrid = () => {
       }
     } else {
       // If we ARE in the "Arabic Broast" category, don't show the virtual card
+      products = products.filter(p => !(p as any).isVirtual);
+    }
+
+    // Special logic for Pizzas:
+    // If NOT in the "Pizzas" category, hide individual items and only show the main "Pizza Menu" card
+    if (selectedCategory !== 'Pizzas') {
+      const isPizzaItem = (p: any) => p.category === 'Pizzas';
+      const pizzaProducts = allProducts.filter(isPizzaItem);
+      
+      if (pizzaProducts.length > 0 || selectedCategory === 'all') {
+        products = products.filter(p => !isPizzaItem(p));
+        
+        const virtualPizza = {
+          id: 'virtual-pizza-menu',
+          name: 'Pizzas Menu',
+          price: 0,
+          category: 'Pizzas',
+          image: '🍕',
+          isVirtual: true,
+          modalType: 'pizza'
+        };
+        
+        if (!searchQuery.trim() || virtualPizza.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+          products = [...products, virtualPizza as any];
+        }
+      }
+    } else {
       products = products.filter(p => !(p as any).isVirtual);
     }
 
@@ -141,7 +171,11 @@ const ProductGrid = () => {
 
   const handleAddToCart = useCallback((product: Product) => {
     if ((product as any).isVirtual) {
-      setShowBroastModal(true);
+      if ((product as any).modalType === 'broast') {
+        setShowBroastModal(true);
+      } else if ((product as any).modalType === 'pizza') {
+        setShowPizzaModal(true);
+      }
       return;
     }
     if (!openRegister) {
@@ -331,6 +365,12 @@ const ProductGrid = () => {
         products={allProducts.filter(p => p.category === 'Arabic Broast')}
         onAdd={handleAddToCart}
       />
+
+      <PizzaSelectionModal
+        isOpen={showPizzaModal}
+        onClose={() => setShowPizzaModal(false)}
+        onAdd={handleAddToCart}
+      />
     </div>
   );
 };
@@ -341,7 +381,7 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onAdd }: ProductCardProps) => {
-  const isNoImageCategory = product.category === 'Arabic Broast' || product.category === 'ALA CART' || product.category === 'Snacks' || product.category === 'Beverages';
+  const isNoImageCategory = product.category === 'Arabic Broast' || product.category === 'ALA CART' || product.category === 'Snacks' || product.category === 'Beverages' || product.category === 'Pizzas';
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 

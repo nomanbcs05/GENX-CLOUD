@@ -1,0 +1,186 @@
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, Plus, Pizza, ChevronRight } from 'lucide-react';
+import { cn } from "@/lib/utils";
+import { Product } from '@/stores/cartStore';
+
+interface PizzaSelectionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAdd: (product: any) => void;
+}
+
+const PIZZA_SIZES = ['Small', 'Medium', 'Large', 'Jumbo'] as const;
+type PizzaSize = typeof PIZZA_SIZES[number];
+
+interface PizzaFlavor {
+  name: string;
+  category: 'Classic' | 'Premium';
+  prices: Partial<Record<PizzaSize, number>>;
+}
+
+const PIZZA_DATA: PizzaFlavor[] = [
+  // Classic Flavors
+  { name: "Chicken Fajita", category: 'Classic', prices: { Small: 450, Medium: 800, Large: 1050, Jumbo: 1250 } },
+  { name: "Chicken Tikka", category: 'Classic', prices: { Small: 450, Medium: 800, Large: 1050, Jumbo: 1250 } },
+  { name: "Bonefire Pizza", category: 'Classic', prices: { Small: 450, Medium: 800, Large: 1050, Jumbo: 1250 } },
+  { name: "Creamy Pizza", category: 'Classic', prices: { Small: 450, Medium: 800, Large: 1050, Jumbo: 1250 } },
+  { name: "Cheese Lover Pizza", category: 'Classic', prices: { Small: 450, Medium: 800, Large: 1050, Jumbo: 1250 } },
+  { name: "Vegetable Lover Pizza", category: 'Classic', prices: { Small: 450, Medium: 800, Large: 1050, Jumbo: 1250 } },
+  
+  // Premium Flavors
+  { name: "Special Crown Crust Pizza", category: 'Premium', prices: { Medium: 1000, Large: 1300, Jumbo: 1500 } },
+  { name: "Special Kabab Crown Crust", category: 'Premium', prices: { Medium: 1000, Large: 1300, Jumbo: 1500 } },
+  { name: "Special Sauce Crust Pizza", category: 'Premium', prices: { Small: 500, Medium: 1000, Large: 1200, Jumbo: 1400 } },
+  { name: "Chicken Supreme Pizza", category: 'Premium', prices: { Small: 500, Medium: 1000, Large: 1200, Jumbo: 1400 } },
+  { name: "Zinger Crunchy Pizza", category: 'Premium', prices: { Small: 500, Medium: 1000, Large: 1200, Jumbo: 1400 } },
+  { name: "Peri Peri Sauce Pizza", category: 'Premium', prices: { Small: 500, Medium: 1000, Large: 1200, Jumbo: 1400 } },
+  { name: "Behari Kabab Pizza", category: 'Premium', prices: { Small: 500, Medium: 1000, Large: 1200, Jumbo: 1400 } },
+  { name: "Italian Star Pizza", category: 'Premium', prices: { Small: 500, Medium: 1000, Large: 1200, Jumbo: 1400 } },
+  { name: "Special Lava Pizza", category: 'Premium', prices: { Small: 600, Medium: 1000, Large: 1300, Jumbo: 1500 } },
+];
+
+export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSelectionModalProps) {
+  const [activeTab, setActiveTab] = useState<'Classic' | 'Premium'>('Classic');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredFlavors = PIZZA_DATA.filter(f => 
+    f.category === activeTab && 
+    f.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleAddPizza = (flavor: string, size: PizzaSize, price: number) => {
+    const pizzaProduct = {
+      id: `pizza-${flavor.toLowerCase().replace(/\s+/g, '-')}-${size.toLowerCase()}`,
+      name: `${flavor} (${size})`,
+      price: price,
+      category: 'Pizzas',
+      image: '🍕',
+      sku: `PIZZA-${flavor.substring(0,3).toUpperCase()}-${size.charAt(0)}`
+    };
+    onAdd(pizzaProduct);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
+        {/* Header */}
+        <div className="bg-orange-500 bg-gradient-to-br from-orange-500 to-red-600 px-6 py-5 text-white shrink-0 relative">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <DialogTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
+                <Pizza className="h-7 w-7" />
+                Pizza Menu
+              </DialogTitle>
+              <DialogDescription className="text-orange-50/80 text-xs font-bold uppercase tracking-widest mt-0.5">
+                Freshly Baked • Premium Toppings
+              </DialogDescription>
+            </div>
+            <button 
+              onClick={onClose}
+              className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all active:scale-90"
+            >
+              <Plus className="h-6 w-6 rotate-45" />
+            </button>
+          </div>
+
+          <div className="flex gap-4 items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-100/50" />
+              <Input
+                placeholder="Search flavors..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-white/10 border-none text-white placeholder:text-orange-100/50 pl-10 h-11 text-sm rounded-xl focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0"
+              />
+            </div>
+            <div className="flex bg-black/10 p-1 rounded-xl shrink-0">
+              <button
+                onClick={() => setActiveTab('Classic')}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all",
+                  activeTab === 'Classic' ? "bg-white text-orange-600 shadow-sm" : "text-white/60 hover:text-white"
+                )}
+              >
+                Classic
+              </button>
+              <button
+                onClick={() => setActiveTab('Premium')}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all",
+                  activeTab === 'Premium' ? "bg-white text-orange-600 shadow-sm" : "text-white/60 hover:text-white"
+                )}
+              >
+                Premium
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Matrix Header */}
+        <div className="grid grid-cols-[1fr,repeat(4,100px)] gap-4 px-8 py-3 bg-slate-50 border-b border-slate-100 shrink-0">
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Flavour</span>
+          {PIZZA_SIZES.map(size => (
+            <span key={size} className="text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+              {size}
+            </span>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto bg-white custom-scrollbar">
+          <div className="divide-y divide-slate-50">
+            {filteredFlavors.map((flavor) => (
+              <div 
+                key={flavor.name} 
+                className="grid grid-cols-[1fr,repeat(4,100px)] gap-4 px-8 py-4 items-center hover:bg-orange-50/30 transition-colors group"
+              >
+                <div className="flex flex-col">
+                  <span className="font-bold text-slate-800 text-sm group-hover:text-orange-600 transition-colors">
+                    {flavor.name}
+                  </span>
+                </div>
+
+                {PIZZA_SIZES.map(size => {
+                  const price = flavor.prices[size];
+                  return (
+                    <div key={size} className="flex justify-center">
+                      {price ? (
+                        <button
+                          onClick={() => handleAddPizza(flavor.name, size, price)}
+                          className="w-20 h-10 flex flex-col items-center justify-center rounded-xl border border-slate-100 bg-white hover:border-orange-500 hover:bg-orange-500 hover:text-white transition-all shadow-sm active:scale-95"
+                        >
+                          <span className="text-[10px] font-bold opacity-60 group-hover:text-white/80">Rs</span>
+                          <span className="text-xs font-black">{price}</span>
+                        </button>
+                      ) : (
+                        <div className="w-20 h-10 flex items-center justify-center opacity-20">
+                          <span className="text-[10px] font-bold">---</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between shrink-0">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4">
+            Tap a price button to add to cart
+          </p>
+          <Button 
+            onClick={onClose}
+            className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 rounded-xl h-11"
+          >
+            Done
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
