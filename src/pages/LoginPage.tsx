@@ -26,6 +26,11 @@ const LoginPage = () => {
       setEmail("syedabuzarzaidi07@gmail.com");
       return;
     }
+    
+    if (role === 'admin') {
+      setEmail("noman21cs@gmail.com");
+      return;
+    }
 
     const saved = localStorage.getItem("pos_saved_users");
     if (saved) {
