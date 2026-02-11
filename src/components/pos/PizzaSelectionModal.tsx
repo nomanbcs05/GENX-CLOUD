@@ -121,6 +121,7 @@ export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSel
             </div>
           </div>
         </div>
+      </DialogHeader>
 
         {/* Matrix Header */}
         <div className="grid grid-cols-[1fr,repeat(4,100px)] gap-4 px-8 py-3 bg-slate-50 border-b border-slate-100 shrink-0">
