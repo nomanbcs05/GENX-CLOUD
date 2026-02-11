@@ -138,20 +138,33 @@ export const api = {
         { name: "Mineral Water Small", price: 60, cost: 0, sku: "WATER-S", category: "Beverages", image: "💧", stock: 100 }
       ];
 
-      // Create categories first
-      const categoryNames = [...new Set(items.map(i => i.category))];
-      for (const catName of categoryNames) {
-        // We use upsert to ensure the category exists
-        await supabase.from('categories').upsert({ name: catName, icon: 'Utensils' }, { onConflict: 'name' });
-      }
+      try {
+        // 1. Handle Categories
+        const { data: existingCats } = await supabase.from('categories').select('name');
+        const existingCatNames = new Set(existingCats?.map(c => c.name) || []);
+        const categoryNames = [...new Set(items.map(i => i.category))];
+        
+        for (const catName of categoryNames) {
+          if (!existingCatNames.has(catName)) {
+            await supabase.from('categories').insert({ name: catName, icon: 'Utensils' });
+          }
+        }
 
-      // Insert products with upsert on name to avoid duplicates but ensure they exist
-      const { error } = await supabase.from('products').upsert(items, { onConflict: 'name' });
-      if (error) {
+        // 2. Handle Products
+        const { data: existingProds } = await supabase.from('products').select('name');
+        const existingProdNames = new Set(existingProds?.map(p => p.name) || []);
+        const newItems = items.filter(item => !existingProdNames.has(item.name));
+
+        if (newItems.length > 0) {
+          const { error: prodError } = await supabase.from('products').insert(newItems);
+          if (prodError) throw prodError;
+        }
+
+        return true;
+      } catch (error) {
         console.error('Error seeding products:', error);
         throw error;
       }
-      return true;
     },
     getAll: async () => {
       const { data, error } = await supabase

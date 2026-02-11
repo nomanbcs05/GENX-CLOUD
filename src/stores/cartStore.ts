@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 export interface Product {
+  description: any;
   id: string;
   name: string;
   sku: string;

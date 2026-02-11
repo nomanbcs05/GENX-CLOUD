@@ -105,8 +105,8 @@ const ArabicBroastModal = ({ isOpen, onClose, products, onAdd }: ArabicBroastMod
                     >
                       <div className="flex-1 pr-4">
                         <p className="font-black text-emerald-600 group-hover:text-emerald-700 transition-colors mb-1">{item.name}</p>
-                        {item.description && (
-                          <p className="text-xs text-slate-500 font-medium leading-relaxed">{item.description}</p>
+                        {(item as any).description && (
+                          <p className="text-xs text-slate-500 font-medium leading-relaxed">{(item as any).description}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-4">
