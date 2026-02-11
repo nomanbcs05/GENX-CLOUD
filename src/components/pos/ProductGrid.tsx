@@ -133,30 +133,32 @@ const ProductGrid = () => {
     }
 
     // Special logic for Pizzas:
-    // If NOT in the "Pizzas" category, hide individual items and only show the main "Pizza Menu" card
-    if (selectedCategory !== 'Pizzas') {
+    // We want the Pizza Menu card to ALWAYS show up in 'all' category or 'Pizzas' category
+    const isPizzasVisible = selectedCategory === 'all' || selectedCategory === 'Pizzas';
+    
+    if (isPizzasVisible) {
       const isPizzaItem = (p: any) => p.category === 'Pizzas';
-      const pizzaProducts = allProducts.filter(isPizzaItem);
       
-      if (pizzaProducts.length > 0 || selectedCategory === 'all') {
-        products = products.filter(p => !isPizzaItem(p));
-        
-        const virtualPizza = {
-          id: 'virtual-pizza-menu',
-          name: 'Pizzas Menu',
-          price: 0,
-          category: 'Pizzas',
-          image: '🍕',
-          isVirtual: true,
-          modalType: 'pizza'
-        };
-        
-        if (!searchQuery.trim() || virtualPizza.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-          products = [...products, virtualPizza as any];
-        }
+      // Remove any individual pizza items that might be in the database
+      products = products.filter(p => !isPizzaItem(p));
+      
+      const virtualPizza = {
+        id: 'virtual-pizza-menu',
+        name: 'Pizzas Menu',
+        price: 0,
+        category: 'Pizzas',
+        image: '🍕',
+        isVirtual: true,
+        modalType: 'pizza'
+      };
+      
+      // Add the virtual pizza card at the beginning if it matches search
+      if (!searchQuery.trim() || virtualPizza.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+        products = [virtualPizza as any, ...products];
       }
     } else {
-      products = products.filter(p => !(p as any).isVirtual);
+      // If we are in another category, hide any pizza items
+      products = products.filter(p => p.category !== 'Pizzas' && !(p as any).isVirtual);
     }
 
     // Then filter by search
