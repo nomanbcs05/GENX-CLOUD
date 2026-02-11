@@ -15,7 +15,8 @@ import {
   History,
   CheckCircle2,
   MoreVertical,
-  ClipboardList
+  ClipboardList,
+  Trash2
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -57,6 +58,19 @@ const OngoingOrdersPage = () => {
     },
     onError: (error: any) => {
       toast.error('Failed to update status: ' + error.message);
+    }
+  });
+
+  // Clear all mutation
+  const clearAllMutation = useMutation({
+    mutationFn: api.orders.clearAllToday,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ongoing-orders'] });
+      toast.success('All today\'s orders cleared');
+      setSelectedOrderId(null);
+    },
+    onError: (error: any) => {
+      toast.error('Failed to clear orders: ' + error.message);
     }
   });
 
@@ -111,9 +125,24 @@ const OngoingOrdersPage = () => {
           <div className="p-6 space-y-6">
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold text-slate-900">Ongoing Orders</h1>
-              <Badge variant="outline" className="px-3 py-1 text-sm font-medium bg-white shadow-sm">
-                {orders.length} Active
-              </Badge>
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-red-600 border-red-200 hover:bg-red-50 font-bold"
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to clear all of today\'s orders?')) {
+                      clearAllMutation.mutate();
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Clear All
+                </Button>
+                <Badge variant="outline" className="px-3 py-1 text-sm font-medium bg-white shadow-sm">
+                  {orders.length} Active
+                </Badge>
+              </div>
             </div>
 
             {/* Search Bar */}

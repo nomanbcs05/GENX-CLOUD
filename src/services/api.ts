@@ -309,6 +309,9 @@ export const api = {
       return newOrder;
     },
     getOngoing: async () => {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+
       const { data, error } = await supabase
         .from('orders')
         .select(`
@@ -320,7 +323,7 @@ export const api = {
             products(name, image)
           )
         `)
-        .in('status', ['pending', 'preparing', 'ready'])
+        .gte('created_at', startOfDay.toISOString())
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -336,6 +339,36 @@ export const api = {
       
       if (error) throw error;
       return data;
+    },
+    clearAllToday: async () => {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      const { data: orders, error: fetchError } = await supabase
+        .from('orders')
+        .select('id')
+        .gte('created_at', startOfDay.toISOString());
+      
+      if (fetchError) throw fetchError;
+      if (!orders || orders.length === 0) return;
+      
+      const orderIds = orders.map(o => o.id);
+      
+      // Delete order items first
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .delete()
+        .in('order_id', orderIds);
+      
+      if (itemsError) throw itemsError;
+
+      // Delete orders
+      const { error: ordersError } = await supabase
+        .from('orders')
+        .delete()
+        .in('id', orderIds);
+      
+      if (ordersError) throw ordersError;
     },
     deleteTodayOrders: async () => {
       const startOfDay = new Date();
