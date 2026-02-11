@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Search, X, Grid3x3, Package, Coffee, UtensilsCrossed, Gift, IceCream, Utensils, ShoppingBag, Truck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -44,6 +44,22 @@ const ProductGrid = () => {
     queryKey: ['products'],
     queryFn: api.products.getAll,
   });
+
+  // Automatically seed Arabic Broast items if none exist
+  const queryClient = useQueryClient();
+  const { mutate: seedMenu } = useMutation({
+    mutationFn: api.products.seedArabicBroast,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    }
+  });
+
+  useEffect(() => {
+    if (!productsLoading && allProducts.length === 0) {
+      seedMenu();
+    }
+  }, [allProducts.length, productsLoading, seedMenu]);
 
   // Fetch Categories
   const { data: categories = [] } = useQuery({
