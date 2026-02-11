@@ -30,8 +30,8 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
   return (
     <div 
       ref={ref} 
-      className="receipt-print bg-white text-black p-2 font-mono text-[11px] leading-tight"
-      style={{ width: '80mm', maxWidth: '100%' }}
+      className="receipt-print bg-white text-black p-2 font-mono text-[11px] leading-tight mx-auto"
+      style={{ width: '80mm' }}
     >
       {/* Header */}
       <div className="text-center mb-1">

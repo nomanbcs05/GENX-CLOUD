@@ -209,19 +209,35 @@
 
   /* Receipt print styles */
   @media print {
-    body * {
-      visibility: hidden;
+    @page {
+      size: 80mm auto;
+      margin: 0;
     }
-    .receipt-print,
-    .receipt-print * {
-      visibility: visible;
+    html, body {
+      width: 80mm;
+      margin: 0;
+      padding: 0;
+      background: white;
+      -webkit-print-color-adjust: exact;
+      overflow: visible !important;
     }
     .receipt-print {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 80mm;
-      font-size: 12px;
+      width: 80mm !important;
+      min-width: 80mm !important;
+      max-width: 80mm !important;
+      margin: 0 !important;
+      padding: 4mm !important;
+      background: white !important;
+      display: block !important;
+      position: relative !important;
+      left: 0 !important;
+      top: 0 !important;
+      box-sizing: border-box !important;
+      overflow: visible !important;
+    }
+    /* Hide everything else */
+    body > *:not(.receipt-print) {
+      display: none !important;
     }
   }
 

@@ -20,8 +20,8 @@ const KOT = forwardRef<HTMLDivElement, KOTProps>(({ order }, ref) => {
   return (
     <div 
       ref={ref} 
-      className="receipt-print bg-white text-black p-4 font-mono text-xs"
-      style={{ width: '80mm', maxWidth: '100%' }}
+      className="receipt-print bg-white text-black p-4 font-mono text-xs mx-auto"
+      style={{ width: '80mm' }}
     >
       {/* Header */}
       <div className="text-center mb-4">
