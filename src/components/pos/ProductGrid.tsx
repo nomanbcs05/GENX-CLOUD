@@ -305,7 +305,7 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onAdd }: ProductCardProps) => {
-  const isArabicBroast = product.category === 'Arabic Broast';
+  const isNoImageCategory = product.category === 'Arabic Broast' || product.category === 'ALA CART';
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -321,7 +321,7 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
         "flex flex-col items-center justify-center text-center gap-1.5 group"
       )}
     >
-      {!isArabicBroast && product.image && (
+      {!isNoImageCategory && product.image && (
         <div className="relative mb-0.5 h-14 w-full flex items-center justify-center overflow-hidden rounded-lg bg-slate-50/50">
           {product.image.startsWith('http') ? (
             <>
@@ -355,7 +355,7 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
       
       <h3 className={cn(
         "font-bold text-slate-800 leading-tight line-clamp-2 px-1 text-[11px] md:text-xs",
-        isArabicBroast && "text-xs md:text-sm"
+        isNoImageCategory && "text-xs md:text-sm"
       )}>
         {product.name}
       </h3>
