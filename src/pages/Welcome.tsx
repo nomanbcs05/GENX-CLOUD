@@ -21,10 +21,10 @@ const Welcome = () => {
         className="mb-12 text-center space-y-2"
       >
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-4 shadow-lg shadow-primary/20">
-          <span className="text-3xl font-bold text-primary-foreground">G</span>
+          <span className="text-3xl font-black font-heading text-primary-foreground">G</span>
         </div>
-        <h1 className="text-4xl font-bold tracking-tight text-slate-900">Gen XCloud POS</h1>
-        <p className="text-slate-500 text-lg">Select your role to continue</p>
+        <h1 className="text-5xl font-black tracking-tighter text-slate-900 font-heading uppercase">Gen XCloud POS</h1>
+        <p className="text-slate-500 text-lg font-medium">Select your role to continue</p>
       </motion.div>
 
       <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
@@ -80,8 +80,8 @@ const RoleCard = ({ title, icon: Icon, description, onSelect }: RoleCardProps) =
           <Icon className="w-8 h-8" />
         </div>
         <div>
-          <h3 className="font-bold text-lg text-slate-900">{title}</h3>
-          <p className="text-sm text-slate-500 mt-1">{description}</p>
+          <h3 className="font-black text-xl text-slate-900 font-heading uppercase tracking-tight">{title}</h3>
+          <p className="text-sm text-slate-500 mt-1 font-medium">{description}</p>
         </div>
       </div>
     </motion.div>

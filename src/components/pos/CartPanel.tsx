@@ -380,12 +380,12 @@ const CartPanel = () => {
         {/* Totals */}
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Subtotal</span>
-            <span>Rs {subtotal.toLocaleString()}</span>
+            <span className="text-slate-500 font-bold font-heading uppercase tracking-wider text-[10px]">Subtotal</span>
+            <span className="font-bold">Rs {subtotal.toLocaleString()}</span>
           </div>
           
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="flex items-center gap-2 text-slate-500 font-bold font-heading uppercase tracking-wider text-[10px]">
               <span>Discount</span>
               <Popover>
                 <PopoverTrigger asChild>
@@ -440,13 +440,13 @@ const CartPanel = () => {
 
           {deliveryFee > 0 && (
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Delivery Fee</span>
-              <span>Rs {deliveryFee.toLocaleString()}</span>
+              <span className="text-slate-500 font-bold font-heading uppercase tracking-wider text-[10px]">Delivery Fee</span>
+              <span className="font-bold">Rs {deliveryFee.toLocaleString()}</span>
             </div>
           )}
 
-          <Separator />
-          <div className="flex justify-between text-xl font-black font-heading tracking-tight uppercase">
+          <Separator className="bg-slate-200" />
+          <div className="flex justify-between text-2xl font-black font-heading tracking-tighter uppercase text-slate-900">
             <span>Total</span>
             <span>Rs {total.toLocaleString()}</span>
           </div>

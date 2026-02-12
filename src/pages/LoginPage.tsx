@@ -96,7 +96,7 @@ const LoginPage = () => {
       >
         <Button 
           variant="ghost" 
-          className="mb-6 hover:bg-transparent hover:text-primary pl-0"
+          className="mb-6 hover:bg-transparent hover:text-primary pl-0 font-bold font-heading uppercase tracking-wider text-xs"
           onClick={() => navigate("/auth")}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -110,15 +110,15 @@ const LoginPage = () => {
                 <RoleIcon className="w-6 h-6" />
               </div>
               <div>
-                <CardTitle className="text-xl">Login as {role === 'cashier2' ? 'Cashier 2' : role.charAt(0).toUpperCase() + role.slice(1)}</CardTitle>
-                <CardDescription>Enter your credentials</CardDescription>
+                <CardTitle className="text-2xl font-black font-heading uppercase tracking-tight">Login as {role === 'cashier2' ? 'Cashier 2' : role.charAt(0).toUpperCase() + role.slice(1)}</CardTitle>
+                <CardDescription className="font-medium">Enter your credentials</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4" autoComplete="off">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="font-bold font-heading uppercase tracking-wider text-[10px] text-slate-500 ml-1">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -126,11 +126,11 @@ const LoginPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-white/50"
+                  className="bg-white/50 h-12 rounded-xl"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="font-bold font-heading uppercase tracking-wider text-[10px] text-slate-500 ml-1">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -138,10 +138,10 @@ const LoginPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-white/50"
+                  className="bg-white/50 h-12 rounded-xl"
                 />
               </div>
-              <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={loading}>
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/90 h-12 rounded-xl font-black font-heading uppercase tracking-[0.15em] text-sm shadow-lg shadow-primary/20" disabled={loading}>
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

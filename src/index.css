@@ -5,8 +5,17 @@
 @layer base {
   html {
     font-size: 14px;
+    @apply font-sans;
   }
   
+  body {
+    @apply font-sans antialiased text-slate-900;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-black tracking-tight;
+  }
+
   :root {
     /* Core Background & Foreground */
     --background: 210 20% 98%;

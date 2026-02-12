@@ -602,8 +602,8 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
       )}
       
       <h3 className={cn(
-        "font-bold font-heading text-slate-800 leading-tight line-clamp-2 px-1 text-[11px] md:text-xs tracking-tight",
-        isNoImageCategory && "text-xs md:text-sm"
+        "font-black font-heading text-slate-900 leading-tight line-clamp-2 px-1 text-[10px] md:text-[11px] tracking-tight uppercase",
+        isNoImageCategory && "text-[11px] md:text-xs"
       )}>
         {product.name}
       </h3>

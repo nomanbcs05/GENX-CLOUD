@@ -142,8 +142,8 @@ const AppSidebar = () => {
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold font-heading truncate leading-tight tracking-tight">{userName}</p>
-            <p className="text-[10px] font-bold text-sidebar-foreground/40 uppercase tracking-widest mt-0.5">{userRole}</p>
+            <p className="text-xs font-black font-heading truncate leading-tight tracking-tight uppercase">{userName}</p>
+            <p className="text-[10px] font-black text-sidebar-foreground/40 uppercase tracking-widest mt-0.5">{userRole}</p>
           </div>
         </div>
         
