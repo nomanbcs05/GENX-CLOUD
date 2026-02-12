@@ -71,58 +71,67 @@ const StartDayModal = ({ isOpen, onSuccess, onClose, forceNewSession = false }: 
       >
         <div className="flex justify-between items-center mb-2">
           <DialogHeader className="flex-1">
-            <DialogTitle className="text-xl font-black font-heading uppercase tracking-tight">
+            <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight text-slate-900">
               {forceNewSession ? 'Start New Session' : 'Start of Day'}
             </DialogTitle>
-            <DialogDescription className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+            <DialogDescription className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1.5 leading-relaxed">
               {forceNewSession 
                 ? 'Starting a new session will clear existing order history.' 
                 : 'Please enter details to begin the shift.'}
             </DialogDescription>
           </DialogHeader>
           {onClose && (
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full">
-              <X className="h-4 w-4" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onClose} 
+              className="h-10 w-10 rounded-full hover:bg-slate-100 transition-colors"
+            >
+              <X className="h-5 w-5 text-slate-400" />
             </Button>
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
-          <div className="space-y-2">
-            <Label htmlFor="date" className="text-[10px] font-black font-heading uppercase tracking-widest text-slate-500">Date</Label>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              className="h-11 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
-            />
+        <form onSubmit={handleSubmit} className="space-y-8 mt-8">
+          <div className="space-y-3">
+            <Label htmlFor="date" className="text-[11px] font-black font-heading uppercase tracking-[0.2em] text-slate-500 ml-1">Date</Label>
+            <div className="relative">
+              <Input
+                id="date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+                className="h-14 rounded-2xl border-slate-200 bg-slate-50/50 px-5 font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-base"
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="amount" className="text-[10px] font-black font-heading uppercase tracking-widest text-slate-500">Opening Balance (Rs)</Label>
-            <Input
-              id="amount"
-              type="number"
-              placeholder="0.00"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-              className="h-11 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all font-bold text-lg"
-            />
+          <div className="space-y-3">
+            <Label htmlFor="amount" className="text-[11px] font-black font-heading uppercase tracking-[0.2em] text-slate-500 ml-1">Opening Balance (Rs)</Label>
+            <div className="relative">
+              <Input
+                id="amount"
+                type="number"
+                placeholder="0.00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+                className="h-14 rounded-2xl border-slate-200 bg-slate-50/50 px-5 font-black text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-xl"
+              />
+            </div>
           </div>
 
           <Button 
             type="submit" 
-            className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black font-heading uppercase tracking-widest shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98]"
+            className="w-full h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black font-heading uppercase tracking-[0.15em] shadow-xl shadow-blue-500/25 transition-all active:scale-[0.97] text-sm"
             disabled={startDayMutation.isPending}
           >
             {startDayMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
-              </>
+              <div className="flex items-center gap-3">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>Processing...</span>
+              </div>
             ) : (
               forceNewSession ? 'Start New Session' : 'Start Day'
             )}
