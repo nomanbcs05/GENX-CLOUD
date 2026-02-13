@@ -302,6 +302,12 @@ const ProductGrid = () => {
   }, [searchQuery, selectedCategory, fuse, allProducts]);
 
   const handleAddToCart = useCallback((product: Product) => {
+    // Check for open register before any action
+    if (!openRegister) {
+      toast.error('Please start the day shift before taking orders');
+      return;
+    }
+
     if ((product as any).isVirtual) {
       if ((product as any).modalType === 'broast') {
         setShowBroastModal(true);
@@ -318,10 +324,6 @@ const ProductGrid = () => {
       } else if ((product as any).modalType === 'sauce-topping') {
         setShowSauceToppingModal(true);
       }
-      return;
-    }
-    if (!openRegister) {
-      toast.error('Please start the day shift before taking orders');
       return;
     }
     addItem(product);
@@ -349,19 +351,19 @@ const ProductGrid = () => {
       <div className="p-4 border-b bg-card">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 bg-blue-600 text-white placeholder:text-blue-100 border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="pl-10 h-11 bg-white text-slate-900 placeholder:text-slate-400 border border-slate-200 focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:ring-offset-0"
             />
           </div>
           <Button 
             variant={orderType === 'dine_in' ? "default" : "outline"}
             className={cn(
               "h-11 flex items-center justify-center gap-2 text-base font-medium transition-all",
-              orderType === 'dine_in' ? "bg-blue-600 text-white hover:bg-blue-700 border-none" : "bg-blue-600 text-white hover:bg-blue-700 border-none"
+              orderType === 'dine_in' ? "bg-white text-blue-600 hover:bg-slate-50 border-2 border-blue-600 shadow-sm" : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200"
             )}
             onClick={() => {
               setOrderType('dine_in');
@@ -375,7 +377,7 @@ const ProductGrid = () => {
             variant={orderType === 'take_away' ? "default" : "outline"}
             className={cn(
               "h-11 flex items-center justify-center gap-2 text-base font-medium transition-all",
-              orderType === 'take_away' ? "bg-blue-600 text-white hover:bg-blue-700 border-none" : "bg-blue-600 text-white hover:bg-blue-700 border-none"
+              orderType === 'take_away' ? "bg-white text-blue-600 hover:bg-slate-50 border-2 border-blue-600 shadow-sm" : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200"
             )}
             onClick={() => {
               setOrderType('take_away');
@@ -389,7 +391,7 @@ const ProductGrid = () => {
             variant={orderType === 'delivery' ? "default" : "outline"}
             className={cn(
               "h-11 flex items-center justify-center gap-2 text-base font-medium transition-all",
-              orderType === 'delivery' ? "bg-blue-600 text-white hover:bg-blue-700 border-none" : "bg-blue-600 text-white hover:bg-blue-700 border-none"
+              orderType === 'delivery' ? "bg-white text-blue-600 hover:bg-slate-50 border-2 border-blue-600 shadow-sm" : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200"
             )}
             onClick={() => {
               setOrderType('delivery');
@@ -427,7 +429,7 @@ const ProductGrid = () => {
                 className={cn(
                   "whitespace-nowrap px-6 h-9 rounded-full transition-all text-sm font-bold font-heading uppercase tracking-wide",
                   selectedCategory === category.id 
-                    ? "bg-blue-600 text-white border-none shadow-md" 
+                    ? "bg-white text-blue-600 border-2 border-blue-600 shadow-md" 
                     : "bg-slate-50 text-slate-600 border-slate-100 hover:bg-slate-100 hover:text-blue-600"
                 )}
                 onClick={() => setSelectedCategory(category.id)}
