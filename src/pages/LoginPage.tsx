@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import StartDayModal from '@/components/pos/StartDayModal';
 
 type Role = "admin" | "cashier" | "cashier2";
 
@@ -20,6 +21,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [savedUsers, setSavedUsers] = useState<Record<string, string>>({});
+  const [showStartSessionModal, setShowStartSessionModal] = useState(false);
 
   useEffect(() => {
     if (role === 'cashier') {
@@ -66,13 +68,24 @@ const LoginPage = () => {
       localStorage.setItem("pos_saved_users", JSON.stringify(newSavedUsers));
 
       toast.success(`Welcome back!`);
-      navigate("/");
+
+      // Show Start New Session modal for cashiers
+      if (role === 'cashier') {
+        setShowStartSessionModal(true);
+      } else {
+        navigate("/");
+      }
     } catch (error: any) {
       console.error("Login error:", error);
       toast.error(error.message || "Failed to login");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStartSessionSuccess = () => {
+    setShowStartSessionModal(false);
+    navigate("/"); // Redirect to the root path after starting a new session
   };
 
   const getRoleIcon = () => {
@@ -158,6 +171,10 @@ const LoginPage = () => {
           </CardContent>
         </Card>
       </motion.div>
+      <StartDayModal
+        isOpen={showStartSessionModal}
+        onSuccess={handleStartSessionSuccess}
+      />
     </div>
   );
 };

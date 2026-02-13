@@ -16,6 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
+import { useQueryClient } from '@tanstack/react-query';
 import StartDayModal from '@/components/pos/StartDayModal';
 
 const navigation = [
@@ -34,8 +35,9 @@ const AppSidebar = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("Loading...");
   const [userRole, setUserRole] = useState("Staff");
-  const [showNewOrderModal, setShowNewOrderModal] = useState(false);
-  
+  const [showStartSessionModal, setShowStartSessionModal] = useState(false);
+  const queryClient = useQueryClient();
+
   useEffect(() => {
     const fetchUser = async () => {
       // Check local dev mode first
@@ -80,6 +82,11 @@ const AppSidebar = () => {
     }
   };
 
+  const handleStartSessionSuccess = () => {
+    setShowStartSessionModal(false);
+    queryClient.invalidateQueries({ queryKey: ['registers'] }); // Refresh registers data
+  };
+
   return (
     <aside className="w-[180px] bg-sidebar text-sidebar-foreground flex flex-col h-full">
       {/* Logo */}
@@ -97,14 +104,6 @@ const AppSidebar = () => {
 
       {/* Navigation */}
       <nav className="flex-1 p-2 space-y-1">
-        <button
-          onClick={() => setShowNewOrderModal(true)}
-          className="w-full flex items-center gap-2 px-3 py-3.5 mb-3 rounded-xl text-xs font-black font-heading uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-[0.98]"
-        >
-          <PlusCircle className="h-5 w-5" />
-          <span>New Order</span>
-        </button>
-
         {navigation.map((item) => {
           const isActive = location.pathname === item.href;
           
@@ -119,7 +118,7 @@ const AppSidebar = () => {
                   : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
               )}
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon className="h-5 w-5" />
               <span>{item.name}</span>
               
               {/* Keyboard shortcut hints */}
@@ -156,14 +155,10 @@ const AppSidebar = () => {
         </button>
       </div>
 
-      <StartDayModal 
-        isOpen={showNewOrderModal} 
-        onSuccess={() => {
-          setShowNewOrderModal(false);
-          navigate('/');
-        }} 
-        onClose={() => setShowNewOrderModal(false)}
-        forceNewSession={true}
+      <StartDayModal
+        isOpen={showStartSessionModal}
+        onClose={() => setShowStartSessionModal(false)}
+        onSuccess={handleStartSessionSuccess}
       />
     </aside>
   );
