@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Minus, Plus, Trash2, User, Search, X, Printer, Wallet, ChefHat, FileText, Tag } from 'lucide-react';
 import Fuse from 'fuse.js';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import TableSelectionModal from './TableSelectionModal';
 
 const CartPanel = () => {
+  const navigate = useNavigate();
   const { 
     items, 
     customer, 
@@ -150,8 +152,7 @@ const CartPanel = () => {
     contentRef: kotRef,
     documentTitle: `KOT-${Date.now()}`,
     onAfterPrint: () => {
-      toast.success('KOT printed successfully');
-      setShowKOT(false);
+      // Don't close modal here, let the mutation handle it
     },
   });
 
@@ -186,14 +187,67 @@ const CartPanel = () => {
     };
   };
 
+  const createKOTOrderMutation = useMutation({
+    mutationFn: async (orderData: { order: any; items: any[] }) => {
+      return api.orders.create(orderData.order, orderData.items);
+    },
+    onSuccess: async (newOrder) => {
+      queryClient.invalidateQueries({ queryKey: ['ongoing-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      
+      // Prepare order data for KOT printing
+      const orderData = await prepareOrderData();
+      setLastOrder(orderData);
+      setShowKOT(true);
+      
+      // Print KOT after a short delay
+      setTimeout(() => {
+        handlePrintKOT();
+      }, 500);
+      
+      // Clear cart and navigate after printing
+      setTimeout(() => {
+        setShowKOT(false);
+        clearCart();
+        toast.success('Order sent to kitchen!');
+        navigate('/ongoing-orders');
+      }, 1500);
+    },
+    onError: (error: any) => {
+      console.error('KOT order creation failed:', error);
+      const errorMessage = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+      toast.error(`Failed to create order: ${errorMessage}`);
+    }
+  });
+
   const handleShowKOT = async () => {
     if (items.length === 0) {
       toast.error('Cart is empty');
       return;
     }
-    const orderData = await prepareOrderData();
-    setLastOrder(orderData);
-    setShowKOT(true);
+
+    // Create order with 'pending' status
+    const orderInsert = {
+      customer_id: customer?.id ? parseInt(customer.id) : null,
+      total_amount: total,
+      status: 'pending', // Set as pending for ongoing orders
+      payment_method: 'cash', // Default payment method
+      order_type: orderType,
+      table_id: tableId || null,
+    };
+
+    const orderItemsInsert = items.map(item => ({
+      product_id: item.product.id,
+      quantity: item.quantity,
+      price: item.product.price
+    }));
+
+    const toastId = toast.loading('Creating order...');
+    createKOTOrderMutation.mutate({ order: orderInsert, items: orderItemsInsert }, {
+      onSettled: () => {
+        toast.dismiss(toastId);
+      }
+    });
   };
 
   const handleShowBill = async () => {

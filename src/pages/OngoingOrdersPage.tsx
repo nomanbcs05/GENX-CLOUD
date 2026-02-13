@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { api } from '@/services/api';
 import { 
@@ -16,7 +17,9 @@ import {
   CheckCircle2,
   MoreVertical,
   ClipboardList,
-  Trash2
+  Trash2,
+  Plus,
+  Minus
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -24,9 +27,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { useReactToPrint } from 'react-to-print';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,12 +39,31 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from '@/components/ui/separator';
+import Bill from '@/components/pos/Bill';
+import { supabase } from '@/integrations/supabase/client';
 
 const OngoingOrdersPage = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedItems, setEditedItems] = useState<any[]>([]);
+  const [showBill, setShowBill] = useState(false);
+  const [billOrder, setBillOrder] = useState<any>(null);
+  const billRef = useRef<HTMLDivElement>(null);
+  const [cashierName, setCashierName] = useState('Cashier');
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        setCashierName(user.user_metadata?.name || user.email.split('@')[0]);
+      }
+    };
+    fetchUser();
+  }, []);
 
   // Fetch ongoing orders
   const { data: orders = [], isLoading } = useQuery({
@@ -73,6 +97,158 @@ const OngoingOrdersPage = () => {
       toast.error('Failed to clear orders: ' + error.message);
     }
   });
+
+  // Update order items mutation
+  const updateOrderItemsMutation = useMutation({
+    mutationFn: async ({ orderId, items }: { orderId: string; items: any[] }) => {
+      // Delete existing items
+      const { error: deleteError } = await supabase
+        .from('order_items')
+        .delete()
+        .eq('order_id', orderId);
+      
+      if (deleteError) throw deleteError;
+
+      // Insert new items
+      const itemsToInsert = items.map(item => ({
+        order_id: orderId,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.price
+      }));
+
+      const { error: insertError } = await supabase
+        .from('order_items')
+        .insert(itemsToInsert);
+      
+      if (insertError) throw insertError;
+
+      // Update order total
+      const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({ total_amount: newTotal })
+        .eq('id', orderId);
+      
+      if (updateError) throw updateError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ongoing-orders'] });
+      setIsEditing(false);
+      toast.success('Order updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error('Failed to update order: ' + error.message);
+    }
+  });
+
+  // Pay order mutation
+  const payOrderMutation = useMutation({
+    mutationFn: async ({ orderId, paymentMethod }: { orderId: string; paymentMethod: string }) => {
+      return api.orders.updateStatus(orderId, 'completed');
+    },
+    onSuccess: (updatedOrder) => {
+      queryClient.invalidateQueries({ queryKey: ['ongoing-orders'] });
+      
+      // Prepare bill data
+      const order = selectedOrder;
+      if (order) {
+        const billData = {
+          orderNumber: order.id.slice(0, 8).toUpperCase(),
+          items: order.order_items?.map((item: any) => ({
+            product: {
+              id: item.product_id,
+              name: item.products?.name || 'Item',
+              price: item.price,
+              image: item.products?.image || '🍽️'
+            },
+            quantity: item.quantity,
+            lineTotal: item.price * item.quantity
+          })) || [],
+          customer: order.customers ? {
+            id: order.customer_id?.toString() || '',
+            name: order.customers.name,
+            phone: order.customers.phone || ''
+          } : null,
+          subtotal: order.total_amount,
+          taxAmount: 0,
+          discountAmount: 0,
+          deliveryFee: 0,
+          total: order.total_amount,
+          paymentMethod: 'cash',
+          orderType: order.order_type,
+          createdAt: new Date(order.created_at),
+          cashierName
+        };
+        setBillOrder(billData);
+        setShowBill(true);
+      }
+    },
+    onError: (error: any) => {
+      toast.error('Failed to process payment: ' + error.message);
+    }
+  });
+
+  const handlePrintBill = useReactToPrint({
+    contentRef: billRef,
+    documentTitle: `Bill-${billOrder?.orderNumber || Date.now()}`,
+    onAfterPrint: () => {
+      toast.success('Bill printed successfully');
+      setShowBill(false);
+      setBillOrder(null);
+    },
+  });
+
+  const handleEditOrder = () => {
+    if (selectedOrder) {
+      setEditedItems(selectedOrder.order_items?.map((item: any) => ({
+        ...item,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.price
+      })) || []);
+      setIsEditing(true);
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (selectedOrderId) {
+      updateOrderItemsMutation.mutate({
+        orderId: selectedOrderId,
+        items: editedItems
+      });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditedItems([]);
+  };
+
+  const handleUpdateItemQuantity = (index: number, delta: number) => {
+    const newItems = [...editedItems];
+    newItems[index].quantity = Math.max(1, newItems[index].quantity + delta);
+    setEditedItems(newItems);
+  };
+
+  const handleRemoveItem = (index: number) => {
+    const newItems = editedItems.filter((_, i) => i !== index);
+    setEditedItems(newItems);
+  };
+
+  const handlePayNow = () => {
+    if (selectedOrderId) {
+      payOrderMutation.mutate({ orderId: selectedOrderId, paymentMethod: 'cash' });
+    }
+  };
+
+  useEffect(() => {
+    if (showBill && billOrder) {
+      setTimeout(() => {
+        handlePrintBill();
+      }, 500);
+    }
+  }, [showBill, billOrder]);
 
   const filteredOrders = useMemo(() => {
     let result = orders;
@@ -220,10 +396,14 @@ const OngoingOrdersPage = () => {
                           className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg h-9 shadow-sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            updateStatusMutation.mutate({ id: order.id, status: 'completed' });
+                            setSelectedOrderId(order.id);
+                            setTimeout(() => {
+                              handlePayNow();
+                            }, 100);
                           }}
+                          disabled={order.status === 'completed'}
                         >
-                          Pay
+                          {order.status === 'completed' ? 'Paid' : 'Pay'}
                         </Button>
                         <Button 
                           variant="outline" 
@@ -332,8 +512,8 @@ const OngoingOrdersPage = () => {
                       <span>Qty / Price</span>
                     </div>
                     <div className="space-y-4">
-                      {selectedOrder.order_items?.map((item: any) => (
-                        <div key={item.id} className="group flex items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                      {(isEditing ? editedItems : selectedOrder.order_items)?.map((item: any, index: number) => (
+                        <div key={item.id || index} className="group flex items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
                           <div className="h-12 w-12 flex-shrink-0 rounded-lg bg-white flex items-center justify-center text-xl shadow-sm overflow-hidden border border-slate-200">
                             {item.products?.image?.startsWith('http') ? (
                               <img src={item.products.image} alt="" className="h-full w-full object-cover" />
@@ -346,9 +526,41 @@ const OngoingOrdersPage = () => {
                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Unit: Rs {item.price.toLocaleString()}</p>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="flex items-center justify-center h-8 w-8 bg-blue-100 text-blue-700 rounded-lg text-xs font-black">
-                              x{item.quantity}
-                            </span>
+                            {isEditing ? (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-7 w-7 rounded-lg"
+                                  onClick={() => handleUpdateItemQuantity(index, -1)}
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                <span className="flex items-center justify-center h-8 w-8 bg-blue-100 text-blue-700 rounded-lg text-xs font-black min-w-[32px]">
+                                  {item.quantity}
+                                </span>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-7 w-7 rounded-lg"
+                                  onClick={() => handleUpdateItemQuantity(index, 1)}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-red-500 hover:text-red-600"
+                                  onClick={() => handleRemoveItem(index)}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </>
+                            ) : (
+                              <span className="flex items-center justify-center h-8 w-8 bg-blue-100 text-blue-700 rounded-lg text-xs font-black">
+                                x{item.quantity}
+                              </span>
+                            )}
                             <span className="text-sm font-black text-slate-900 min-w-[70px] text-right">
                               Rs {(item.price * item.quantity).toLocaleString()}
                             </span>
@@ -363,7 +575,11 @@ const OngoingOrdersPage = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm font-medium text-slate-500">
                       <span>Sub Total</span>
-                      <span className="text-slate-900 font-bold">Rs {selectedOrder.total_amount.toLocaleString()}</span>
+                      <span className="text-slate-900 font-bold">
+                        Rs {isEditing 
+                          ? editedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()
+                          : selectedOrder.total_amount.toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm font-medium text-slate-500">
                       <span>Discount</span>
@@ -371,24 +587,62 @@ const OngoingOrdersPage = () => {
                     </div>
                     <div className="flex justify-between text-lg font-black text-slate-900 pt-2 border-t border-dashed border-slate-200">
                       <span>Total Payment</span>
-                      <span>Rs {selectedOrder.total_amount.toLocaleString()}</span>
+                      <span>
+                        Rs {isEditing 
+                          ? editedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()
+                          : selectedOrder.total_amount.toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 </div>
               </ScrollArea>
 
               <div className="p-6 border-t bg-slate-50/50 space-y-3">
-                <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1 h-12 font-bold border-slate-200 text-slate-600 rounded-xl">
-                    Cancel
-                  </Button>
-                  <Button variant="outline" className="flex-1 h-12 font-bold border-slate-200 text-slate-600 rounded-xl">
-                    Add Items
-                  </Button>
-                </div>
-                <Button className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-black text-lg shadow-lg shadow-blue-200 rounded-xl">
-                  Pay Now
-                </Button>
+                {isEditing ? (
+                  <div className="flex gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1 h-12 font-bold border-slate-200 text-slate-600 rounded-xl"
+                      onClick={handleCancelEdit}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl"
+                      onClick={handleSaveEdit}
+                      disabled={updateOrderItemsMutation.isPending}
+                    >
+                      {updateOrderItemsMutation.isPending ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex gap-3">
+                      <Button 
+                        variant="outline" 
+                        className="flex-1 h-12 font-bold border-slate-200 text-slate-600 rounded-xl"
+                        onClick={() => navigate('/')}
+                      >
+                        Back to POS
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="flex-1 h-12 font-bold border-slate-200 text-slate-600 rounded-xl"
+                        onClick={handleEditOrder}
+                      >
+                        <Edit2 className="h-4 w-4 mr-2" />
+                        Edit Order
+                      </Button>
+                    </div>
+                    <Button 
+                      className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-black text-lg shadow-lg shadow-blue-200 rounded-xl"
+                      onClick={handlePayNow}
+                      disabled={payOrderMutation.isPending || selectedOrder.status === 'completed'}
+                    >
+                      {payOrderMutation.isPending ? 'Processing...' : selectedOrder.status === 'completed' ? 'Paid' : 'Pay Now'}
+                    </Button>
+                  </>
+                )}
               </div>
             </>
           ) : (
@@ -404,6 +658,28 @@ const OngoingOrdersPage = () => {
           )}
         </div>
       </div>
+
+      {/* Bill Print Dialog */}
+      <Dialog open={showBill} onOpenChange={setShowBill}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Bill Preview</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[80vh] overflow-auto">
+            {billOrder && (
+              <Bill ref={billRef} order={billOrder} />
+            )}
+          </div>
+          <div className="flex gap-3 mt-4">
+            <Button variant="outline" className="flex-1" onClick={() => setShowBill(false)}>
+              Close
+            </Button>
+            <Button className="flex-1" onClick={() => handlePrintBill()}>
+              Print Bill
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 };
