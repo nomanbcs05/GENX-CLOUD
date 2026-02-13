@@ -58,7 +58,7 @@ export default function RollSelectionModal({ isOpen, onClose, onAdd }: RollSelec
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden" aria-describedby="roll-selection-description">
         {/* Header */}
         <div className="bg-yellow-500 bg-gradient-to-br from-yellow-500 to-amber-600 px-6 py-5 text-white shrink-0 relative">
           <div className="flex items-center justify-between mb-4">
@@ -68,7 +68,7 @@ export default function RollSelectionModal({ isOpen, onClose, onAdd }: RollSelec
               </div>
               <div>
                 <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">Rolls Menu</DialogTitle>
-                <DialogDescription className="text-yellow-50/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">
+                <DialogDescription id="roll-selection-description" className="text-yellow-50/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">
                   Zinger & Bar BQ Special Rolls
                 </DialogDescription>
               </div>

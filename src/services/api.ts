@@ -13,7 +13,17 @@ type Order = Database['public']['Tables']['orders']['Row'];
 type OrderInsert = Database['public']['Tables']['orders']['Insert'];
 
 type OrderItem = Database['public']['Tables']['order_items']['Row'];
-type OrderItemInsert = Database['public']['Tables']['order_items']['Insert'];
+type OrderItemInsert = Database['public']['Tables']['order_items']['Insert'] & { 
+  product_name?: string;
+  product_category?: string;
+};
+
+// Helper to validate UUID - simplified to be more robust
+const isValidUUID = (uuid: string) => {
+  if (!uuid || typeof uuid !== 'string') return false;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+};
 
 export interface Category {
   id: string;
@@ -445,10 +455,26 @@ export const api = {
       }
       if (!newOrder) throw new Error('Failed to create order');
 
-      const itemsWithOrderId = items.map(item => ({
-        ...item,
-        order_id: newOrder.id
-      }));
+      const itemsWithOrderId = items.map(item => {
+        // Strict UUID validation: must match 8-4-4-4-12 hex pattern
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const isProductUUID = typeof item.product_id === 'string' && uuidRegex.test(item.product_id);
+        
+        console.log(`Processing item: ${item.product_name}, product_id: ${item.product_id}, isUUID: ${isProductUUID}`);
+        
+        return {
+          order_id: newOrder.id,
+          // If it's not a valid UUID, set product_id to null to avoid 400 error
+          // The product name and category will be stored in their respective columns
+          product_id: isProductUUID ? item.product_id : null,
+          product_name: item.product_name || null,
+          product_category: item.product_category || null,
+          quantity: item.quantity,
+          price: item.price
+        };
+      });
+
+      console.log("Final items to insert (cleaned):", itemsWithOrderId);
 
       const { error: itemsError } = await supabase
         .from('order_items')
@@ -456,6 +482,63 @@ export const api = {
 
       if (itemsError) throw itemsError;
       return newOrder;
+    },
+    update: async (orderId: string, order: any, items: OrderItemInsert[]) => {
+      // Clean order data to match actual Supabase schema
+      const safeOrder: any = {
+        total_amount: Number(order.total_amount) || 0,
+        status: order.status || 'pending',
+        payment_method: order.payment_method || 'cash',
+        order_type: order.order_type || 'dine_in',
+      };
+
+      if (order.customer_id) {
+        const cid = parseInt(String(order.customer_id));
+        if (!isNaN(cid)) safeOrder.customer_id = cid;
+      }
+
+      if (order.table_id) {
+        const tid = parseInt(String(order.table_id));
+        if (!isNaN(tid)) safeOrder.table_id = tid;
+      }
+
+      // 1. Update order
+      const { error: orderError } = await supabase
+        .from('orders')
+        .update(safeOrder)
+        .eq('id', orderId);
+
+      if (orderError) throw orderError;
+
+      // 2. Delete existing items
+      const { error: deleteError } = await supabase
+        .from('order_items')
+        .delete()
+        .eq('order_id', orderId);
+
+      if (deleteError) throw deleteError;
+
+      // 3. Insert new items
+      const itemsWithOrderId = items.map(item => {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const isProductUUID = typeof item.product_id === 'string' && uuidRegex.test(item.product_id);
+        
+        return {
+          order_id: orderId,
+          product_id: isProductUUID ? item.product_id : null,
+          product_name: item.product_name || null,
+          product_category: item.product_category || null,
+          quantity: item.quantity,
+          price: item.price
+        };
+      });
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(itemsWithOrderId);
+
+      if (itemsError) throw itemsError;
+      return true;
     },
     getOngoing: async () => {
       const startOfDay = new Date();
@@ -469,6 +552,8 @@ export const api = {
           restaurant_tables(table_number),
           order_items(
             *,
+            product_name,
+            product_category,
             products(name, image)
           )
         `)
@@ -573,7 +658,7 @@ export const api = {
     getDashboardStats: async () => {
       const { data: orders, error: ordersError } = await supabase
         .from('orders')
-        .select('*, order_items(*, products(*))')
+        .select('*, order_items(*, product_name, product_category, products(*))')
         .order('created_at', { ascending: false });
 
       if (ordersError) throw ordersError;

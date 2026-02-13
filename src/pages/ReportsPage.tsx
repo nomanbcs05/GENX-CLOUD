@@ -138,7 +138,7 @@ const ReportsPage = () => {
     currentOrders.forEach(order => {
       if (order.order_items) {
         order.order_items.forEach((item: any) => {
-          const categoryId = item.products?.category;
+          const categoryId = item.products?.category || item.product_category;
           const categoryName = categories.find((c: any) => c.id === categoryId)?.name || categoryId || 'Unknown';
           const value = Number(item.price) * item.quantity;
           categoryMap.set(categoryName, (categoryMap.get(categoryName) || 0) + value);
@@ -158,7 +158,7 @@ const ReportsPage = () => {
     currentOrders.forEach(order => {
       if (order.order_items) {
         order.order_items.forEach((item: any) => {
-          const name = item.products?.name || 'Unknown';
+          const name = item.products?.name || item.product_name || 'Unknown';
           const existing = productMap.get(name) || { sold: 0, revenue: 0 };
           productMap.set(name, {
             sold: existing.sold + item.quantity,

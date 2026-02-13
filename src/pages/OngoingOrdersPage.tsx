@@ -41,9 +41,11 @@ import {
 import { Separator } from '@/components/ui/separator';
 import Bill from '@/components/pos/Bill';
 import { supabase } from '@/integrations/supabase/client';
+import { useCartStore } from '@/stores/cartStore';
 
 const OngoingOrdersPage = () => {
   const navigate = useNavigate();
+  const loadOrder = useCartStore(state => state.loadOrder);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -158,7 +160,7 @@ const OngoingOrdersPage = () => {
           items: order.order_items?.map((item: any) => ({
             product: {
               id: item.product_id,
-              name: item.products?.name || 'Item',
+              name: item.products?.name || item.product_name || 'Item',
               price: item.price,
               image: item.products?.image || '🍽️'
             },
@@ -201,13 +203,8 @@ const OngoingOrdersPage = () => {
 
   const handleEditOrder = () => {
     if (selectedOrder) {
-      setEditedItems(selectedOrder.order_items?.map((item: any) => ({
-        ...item,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: item.price
-      })) || []);
-      setIsEditing(true);
+      loadOrder(selectedOrder);
+      navigate('/');
     }
   };
 
@@ -476,7 +473,10 @@ const OngoingOrdersPage = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 rounded-xl">
-                      <DropdownMenuItem className="py-2.5">Edit Order</DropdownMenuItem>
+                      <DropdownMenuItem className="py-2.5" onClick={handleEditOrder}>
+                        <Edit2 className="h-4 w-4 mr-2" />
+                        Edit Order
+                      </DropdownMenuItem>
                       <DropdownMenuItem className="py-2.5">Transfer Table</DropdownMenuItem>
                       <DropdownMenuItem className="py-2.5 text-red-600">Cancel Order</DropdownMenuItem>
                     </DropdownMenuContent>
@@ -522,7 +522,7 @@ const OngoingOrdersPage = () => {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-slate-900 truncate">{item.products?.name}</p>
+                            <p className="text-sm font-bold text-slate-900 truncate">{item.products?.name || item.product_name}</p>
                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Unit: Rs {item.price.toLocaleString()}</p>
                           </div>
                           <div className="flex items-center gap-3">

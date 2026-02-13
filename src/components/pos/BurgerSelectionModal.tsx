@@ -50,7 +50,7 @@ export default function BurgerSelectionModal({ isOpen, onClose, onAdd }: BurgerS
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden" aria-describedby="burger-selection-description">
         {/* Header */}
         <div className="bg-red-600 bg-gradient-to-br from-red-600 to-rose-700 px-6 py-5 text-white shrink-0 relative">
           <div className="flex items-center justify-between mb-4">
@@ -60,7 +60,7 @@ export default function BurgerSelectionModal({ isOpen, onClose, onAdd }: BurgerS
               </div>
               <div>
                 <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">Burgers Menu</DialogTitle>
-                <DialogDescription className="text-red-50/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">
+                <DialogDescription id="burger-selection-description" className="text-red-50/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">
                   Premium & Juicy Burgers
                 </DialogDescription>
               </div>

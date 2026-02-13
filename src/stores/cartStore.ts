@@ -40,6 +40,8 @@ interface CartState {
   discountType: 'percentage' | 'fixed';
   taxRate: number;
   
+  editingOrderId: string | null; // Track if we're editing an existing order
+  
   // Computed values
   subtotal: number;
   taxAmount: number;
@@ -59,6 +61,7 @@ interface CartState {
   setDiscount: (discount: number, type: 'percentage' | 'fixed') => void;
   clearCart: () => void;
   calculateTotals: () => void;
+  loadOrder: (order: any) => void; // Added loadOrder
 }
 
 export const useCartStore = create<CartState>((set, get) => ({
@@ -71,6 +74,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   discount: 0,
   discountType: 'percentage',
   taxRate: 0, // No tax
+  editingOrderId: null,
   
   subtotal: 0,
   taxAmount: 0,
@@ -192,7 +196,48 @@ export const useCartStore = create<CartState>((set, get) => ({
     discountAmount: 0,
     deliveryFee: 0,
     total: 0,
+    editingOrderId: null,
   }),
+  
+  loadOrder: (order) => {
+    const items = order.order_items.map((item: any) => ({
+      product: {
+        id: item.product_id || `virtual-${Date.now()}-${Math.random()}`,
+        name: item.products?.name || item.product_name || 'Unknown Product',
+        price: item.price,
+        sku: item.products?.sku || '',
+        cost: item.products?.cost || 0,
+        stock: item.products?.stock || 0,
+        category: item.products?.category || item.product_category || 'General',
+        image: item.products?.image || '🍽️',
+        description: item.products?.description || ''
+      },
+      quantity: item.quantity,
+      lineTotal: item.price * item.quantity
+    }));
+
+    const customer = order.customers ? {
+      id: order.customer_id?.toString() || '',
+      name: order.customers.name,
+      phone: order.customers.phone || '',
+      email: order.customers.email || '',
+      loyaltyPoints: order.customers.loyalty_points || 0,
+      totalSpent: order.customers.total_spent || 0,
+      visitCount: order.customers.visit_count || 0
+    } : null;
+
+    set({
+      items,
+      customer,
+      tableId: order.table_id,
+      orderType: order.order_type as any,
+      editingOrderId: order.id,
+      discount: 0, // Assuming no discount for now or we could load it if it's in DB
+      discountType: 'percentage'
+    });
+    
+    get().calculateTotals();
+  },
   
   calculateTotals: () => {
     set((state) => {

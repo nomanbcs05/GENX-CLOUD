@@ -47,7 +47,8 @@ const CartPanel = () => {
     rider, 
     setRider,
     customerAddress,
-    setCustomerAddress
+    setCustomerAddress,
+    editingOrderId
   } = useCartStore();
   
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'wallet'>('cash');
@@ -112,14 +113,22 @@ const CartPanel = () => {
 
   const createOrderMutation = useMutation({
     mutationFn: async (orderData: any) => {
+      if (editingOrderId) {
+        return api.orders.update(editingOrderId, orderData.order, orderData.items);
+      }
       return api.orders.create(orderData.order, orderData.items);
     },
     onSuccess: (newOrder) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
-      // Update the local lastOrder with the ID from the server if needed, 
-      // but we already constructed a rich object for printing.
-      // We keep our generated orderNumber (Daily ID)
-      setLastOrder((prev: any) => ({ ...prev, id: newOrder.id }));
+      queryClient.invalidateQueries({ queryKey: ['ongoing-orders'] });
+      
+      // If it was an update, newOrder might just be 'true' or the updated order
+      // We need to handle both cases for setLastOrder
+      if (editingOrderId) {
+        setLastOrder((prev: any) => ({ ...prev, id: editingOrderId }));
+      } else if (newOrder && typeof newOrder === 'object') {
+        setLastOrder((prev: any) => ({ ...prev, id: newOrder.id }));
+      }
       
       setShowReceipt(true);
       
@@ -127,7 +136,7 @@ const CartPanel = () => {
       setTimeout(() => {
         handlePrint();
         clearCart();
-        toast.success(`Order completed!`);
+        toast.success(editingOrderId ? `Order updated!` : `Order completed!`);
       }, 300);
     },
     onError: (error: any) => {
@@ -189,6 +198,9 @@ const CartPanel = () => {
 
   const createKOTOrderMutation = useMutation({
     mutationFn: async (orderData: { order: any; items: any[] }) => {
+      if (editingOrderId) {
+        return api.orders.update(editingOrderId, orderData.order, orderData.items);
+      }
       return api.orders.create(orderData.order, orderData.items);
     },
     onSuccess: async (newOrder) => {
@@ -197,6 +209,11 @@ const CartPanel = () => {
       
       // Prepare order data for KOT printing
       const orderData = await prepareOrderData();
+      if (editingOrderId) {
+        orderData.id = editingOrderId;
+      } else if (newOrder && typeof newOrder === 'object') {
+        orderData.id = newOrder.id;
+      }
       setLastOrder(orderData);
       setShowKOT(true);
       
@@ -209,7 +226,7 @@ const CartPanel = () => {
       setTimeout(() => {
         setShowKOT(false);
         clearCart();
-        toast.success('Order sent to kitchen!');
+        toast.success(editingOrderId ? 'Order updated in kitchen!' : 'Order sent to kitchen!');
         navigate('/ongoing-orders');
       }, 1500);
     },
@@ -238,6 +255,8 @@ const CartPanel = () => {
 
     const orderItemsInsert = items.map(item => ({
       product_id: item.product.id,
+      product_name: item.product.name,
+      product_category: item.product.category,
       quantity: item.quantity,
       price: item.product.price
     }));
@@ -277,6 +296,8 @@ const CartPanel = () => {
 
     const orderItemsInsert = items.map(item => ({
       product_id: item.product.id,
+      product_name: item.product.name,
+      product_category: item.product.category,
       quantity: item.quantity,
       price: item.product.price
     }));
@@ -585,11 +606,11 @@ const CartPanel = () => {
 
       {/* Bill Dialog */}
       <Dialog open={showBill} onOpenChange={setShowBill}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Bill Preview</DialogTitle>
-            <DialogDescription className="sr-only">Order Bill</DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-md" aria-describedby="bill-description">
+            <DialogHeader>
+              <DialogTitle>Bill Preview</DialogTitle>
+              <DialogDescription id="bill-description" className="sr-only">Customer Bill</DialogDescription>
+            </DialogHeader>
           {lastOrder && (
             <div className="max-h-[70vh] overflow-auto">
               <Bill ref={billRef} order={lastOrder} />

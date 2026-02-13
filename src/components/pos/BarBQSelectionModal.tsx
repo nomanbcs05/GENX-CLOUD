@@ -50,7 +50,7 @@ export default function BarBQSelectionModal({ isOpen, onClose, onAdd }: BarBQSel
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden" aria-describedby="barbq-selection-description">
         {/* Header */}
         <div className="bg-slate-900 bg-gradient-to-br from-slate-900 to-slate-800 px-6 py-5 text-white shrink-0 relative">
           <div className="flex items-center justify-between mb-4">
@@ -60,7 +60,7 @@ export default function BarBQSelectionModal({ isOpen, onClose, onAdd }: BarBQSel
               </div>
               <div>
                 <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">BAR BQ Menu</DialogTitle>
-                <DialogDescription className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-0.5">
+                <DialogDescription id="barbq-selection-description" className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-0.5">
                   Fresh & Smoky Charcoal Grill
                 </DialogDescription>
               </div>

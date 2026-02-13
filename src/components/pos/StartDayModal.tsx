@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -17,8 +17,14 @@ interface StartDayModalProps {
 
 const StartDayModal = ({ isOpen, onSuccess, onClose, forceNewSession = false }: StartDayModalProps) => {
   const [amount, setAmount] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState('');
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (isOpen) {
+      setDate(new Date().toISOString().split('T')[0]); // Update date when modal opens
+    }
+  }, [isOpen]);
 
   const startDayMutation = useMutation({
     mutationFn: async ({ amount, date }: { amount: number; date: string }) => {
@@ -68,13 +74,14 @@ const StartDayModal = ({ isOpen, onSuccess, onClose, forceNewSession = false }: 
         hideCloseButton={!onClose}
         onPointerDownOutside={(e) => { if (!onClose) e.preventDefault(); }}
         onEscapeKeyDown={(e) => { if (!onClose) e.preventDefault(); }}
+        aria-describedby="start-day-description"
       >
         <div className="flex justify-between items-center mb-2">
           <DialogHeader className="flex-1">
             <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight text-slate-900">
               {forceNewSession ? 'Start New Session' : 'Start of Day'}
             </DialogTitle>
-            <DialogDescription className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1.5 leading-relaxed">
+            <DialogDescription id="start-day-description" className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1.5 leading-relaxed">
               {forceNewSession 
                 ? 'Starting a new session will clear existing order history.' 
                 : 'Please enter details to begin the shift.'}
@@ -102,6 +109,7 @@ const StartDayModal = ({ isOpen, onSuccess, onClose, forceNewSession = false }: 
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
+                disabled // Make the date field static
                 className="h-14 rounded-2xl border-slate-200 bg-slate-50/50 px-5 font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-base"
               />
             </div>
