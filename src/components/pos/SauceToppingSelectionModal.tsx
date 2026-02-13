@@ -5,9 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Search, Plus, Droplets, Layers } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from 'sonner';
-import { useQuery } from '@tanstack/react-query';
-import { api } from '@/services/api';
 
 interface SauceToppingSelectionModalProps {
   isOpen: boolean;
@@ -44,13 +41,6 @@ export default function SauceToppingSelectionModal({ isOpen, onClose, onAdd }: S
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'sauces' | 'toppings'>('sauces');
 
-  const { data: openRegister } = useQuery({
-    queryKey: ['open-register'],
-    queryFn: api.registers.getOpen,
-    retry: false,
-    staleTime: 1000 * 60 * 5,
-  });
-
   const filteredSauces = SAUCES.filter(s => 
     s.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -60,10 +50,6 @@ export default function SauceToppingSelectionModal({ isOpen, onClose, onAdd }: S
   );
 
   const handleAddItem = (item: Item) => {
-    if (!openRegister) {
-      toast.error('Please start the day shift before taking orders');
-      return;
-    }
     const product = {
       id: `${item.type}-${item.name.toLowerCase().replace(/\s+/g, '-')}`,
       name: item.name,

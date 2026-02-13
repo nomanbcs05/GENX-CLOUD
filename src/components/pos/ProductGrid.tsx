@@ -302,12 +302,6 @@ const ProductGrid = () => {
   }, [searchQuery, selectedCategory, fuse, allProducts]);
 
   const handleAddToCart = useCallback((product: Product) => {
-    // Check for open register before any action
-    if (!openRegister) {
-      toast.error('Please start the day shift before taking orders');
-      return;
-    }
-
     if ((product as any).isVirtual) {
       if ((product as any).modalType === 'broast') {
         setShowBroastModal(true);
@@ -327,7 +321,7 @@ const ProductGrid = () => {
       return;
     }
     addItem(product);
-  }, [addItem, openRegister]);
+  }, [addItem]);
 
   const handleClearSearch = () => {
     setSearchQuery('');

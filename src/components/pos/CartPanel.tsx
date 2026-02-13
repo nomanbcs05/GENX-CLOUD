@@ -212,11 +212,6 @@ const CartPanel = () => {
       return;
     }
 
-    if (!openRegister) {
-      toast.error('Cannot complete sale. Please start the day first.');
-      return;
-    }
-
     const orderInsert = {
       customer_id: customer?.id ? parseInt(customer.id) : null,
       total_amount: total,
