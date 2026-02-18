@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -132,8 +132,21 @@ const CustomerSelectionModal = ({ isOpen, onClose }: CustomerSelectionModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md p-0 overflow-hidden bg-white border-none rounded-3xl shadow-2xl">
-        <DialogHeader className="bg-slate-900 px-6 py-6 text-white">
+      <DialogContent hideCloseButton className="max-w-md p-0 overflow-hidden bg-white border-none rounded-3xl shadow-2xl">
+        <DialogHeader className="relative bg-slate-900 px-6 py-6 text-white">
+          <DialogClose asChild>
+            <button
+              aria-label="Close"
+              className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+            >
+              <span className="sr-only">Close</span>
+              {/* X icon via CSS to avoid extra import, using two lines */}
+              <span className="relative block h-4 w-4">
+                <span className="absolute left-1/2 top-1/2 h-[2px] w-4 -translate-x-1/2 -translate-y-1/2 rotate-45 bg-white"></span>
+                <span className="absolute left-1/2 top-1/2 h-[2px] w-4 -translate-x-1/2 -translate-y-1/2 -rotate-45 bg-white"></span>
+              </span>
+            </button>
+          </DialogClose>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/10 rounded-lg">
               <User className="h-6 w-6 text-blue-400" />

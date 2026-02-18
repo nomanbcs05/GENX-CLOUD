@@ -16,8 +16,10 @@ interface Order {
   orderType?: 'dine_in' | 'take_away' | 'delivery';
   createdAt: Date;
   cashierName: string;
+  serverName?: string | null;
   rider?: { name: string } | null;
   customerAddress?: string | null;
+  tableId?: number | null;
 }
 
 interface ReceiptProps {
@@ -33,17 +35,17 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
   };
 
   return (
-    <div 
-      ref={ref} 
+    <div
+      ref={ref}
       className="receipt-print bg-white text-black p-4 font-mono text-xs mx-auto"
       style={{ width: '80mm' }}
     >
       {/* Header */}
       <div className="text-center mb-4">
         {!logoError ? (
-          <img 
+          <img
             src={`/logo.jpeg?v=${Date.now()}`}
-            alt="Logo" 
+            alt="Logo"
             className="max-w-[120px] mx-auto mb-1 object-contain"
             onError={() => setLogoError(true)}
           />
@@ -66,6 +68,12 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
         <p><strong>Type:</strong> {order.orderType?.replace('_', ' ').toUpperCase() || 'DINE IN'}</p>
         <p><strong>Date:</strong> {format(order.createdAt, 'yyyy-MM-dd HH:mm:ss')}</p>
         <p><strong>Cashier:</strong> {order.cashierName}</p>
+        {order.serverName && (
+          <p><strong>Server:</strong> {order.serverName.replace(/^\[.*?\]\s*/, '')}</p>
+        )}
+        {order.tableId && (
+          <p><strong>Table:</strong> {order.tableId}</p>
+        )}
         {order.orderType === 'delivery' && order.rider && (
           <p><strong>Rider:</strong> {order.rider.name}</p>
         )}
@@ -74,7 +82,7 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
         )}
         {order.customerAddress && (
           <p className="mt-1">
-            <strong>Address:</strong><br/>
+            <strong>Address:</strong><br />
             <span className="uppercase text-[10px] break-words">{order.customerAddress}</span>
           </p>
         )}
@@ -141,17 +149,17 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
 
       {/* Footer */}
       <div className="border-t-2 border-dashed border-black my-3" />
-      
+
       <div className="text-center mt-4">
         <p className="font-bold">Thank you for your visit!</p>
         <p>Come back soon!</p>
         <p className="mt-2">{businessInfo.website}</p>
-        
+
         {/* QR Code placeholder */}
         <div className="mt-4 mx-auto w-20 h-20 border-2 border-black flex items-center justify-center">
-          <span className="text-[8px] text-center">QR Code<br/>Digital Receipt</span>
+          <span className="text-[8px] text-center">QR Code<br />Digital Receipt</span>
         </div>
-        
+
         <p className="mt-4 font-bold">Genai Nawabshah contact 923342826675</p>
       </div>
 

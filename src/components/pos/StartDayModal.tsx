@@ -22,7 +22,11 @@ const StartDayModal = ({ isOpen, onSuccess, onClose, forceNewSession = false }: 
 
   useEffect(() => {
     if (isOpen) {
-      setDate(new Date().toISOString().split('T')[0]); // Update date when modal opens
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      setDate(`${yyyy}-${mm}-${dd}`); // Local date (YYYY-MM-DD) to avoid UTC shift
     }
   }, [isOpen]);
 

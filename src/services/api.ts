@@ -13,7 +13,7 @@ type Order = Database['public']['Tables']['orders']['Row'];
 type OrderInsert = Database['public']['Tables']['orders']['Insert'];
 
 type OrderItem = Database['public']['Tables']['order_items']['Row'];
-type OrderItemInsert = Database['public']['Tables']['order_items']['Insert'] & { 
+type OrderItemInsert = Database['public']['Tables']['order_items']['Insert'] & {
   product_name?: string;
   product_category?: string;
 };
@@ -67,41 +67,41 @@ export const api = {
   registers: {
     getOpen: async () => {
       const { data, error } = await supabase
-        .from('daily_registers')
+        .from('daily_registers' as any)
         .select('*')
         .eq('status', 'open')
         .maybeSingle();
-      
+
       if (error) throw error;
       return data as DailyRegister | null;
     },
     start: async (startingAmount: number, openedAt?: string) => {
       const { data, error } = await supabase
-        .from('daily_registers')
+        .from('daily_registers' as any)
         .insert({
           starting_amount: startingAmount,
           status: 'open',
           opened_at: openedAt || new Date().toISOString()
-        })
+        } as any)
         .select()
         .single();
-        
+
       if (error) throw error;
       return data as DailyRegister;
     },
     close: async (id: string, endingAmount: number, notes?: string) => {
       const { data, error } = await supabase
-        .from('daily_registers')
+        .from('daily_registers' as any)
         .update({
           status: 'closed',
           closed_at: new Date().toISOString(),
           ending_amount: endingAmount,
           notes: notes
-        })
+        } as any)
         .eq('id', id)
         .select()
         .single();
-        
+
       if (error) throw error;
       return data as DailyRegister;
     }
@@ -109,7 +109,7 @@ export const api = {
   categories: {
     getAll: async () => {
       const { data, error } = await supabase
-        .from('categories')
+        .from('categories' as any)
         .select('*')
         .order('name');
       if (error) throw error;
@@ -117,8 +117,8 @@ export const api = {
     },
     create: async (category: Omit<Category, 'id'>) => {
       const { data, error } = await supabase
-        .from('categories')
-        .insert(category)
+        .from('categories' as any)
+        .insert(category as any)
         .select()
         .single();
       if (error) throw error;
@@ -126,7 +126,7 @@ export const api = {
     },
     delete: async (id: string) => {
       const { error } = await supabase
-        .from('categories')
+        .from('categories' as any)
         .delete()
         .eq('id', id);
       if (error) throw error;
@@ -154,33 +154,33 @@ export const api = {
         { name: "Mineral Water Small", price: 50, cost: 0, sku: "WATER-S", category: "Beverages", image: "", stock: 100 },
         { name: "Mineral Water Large", price: 100, cost: 0, sku: "WATER-L", category: "Beverages", image: "", stock: 100 },
         // ALA CART Items
-            { name: "Club Sandwich", price: 400, cost: 0, sku: "ALC-CLUB-S", category: "ALA CART", image: "🥪", stock: 100 },
-            { name: "Malai Boti Sandwich", price: 450, cost: 0, sku: "ALC-MALAI-S", category: "ALA CART", image: "🥪", stock: 100 },
-            { name: "Mexican Sandwich", price: 500, cost: 0, sku: "ALC-MEX-S", category: "ALA CART", image: "🥪", stock: 100 },
-            { name: "Spring Rolls 4 Pcs", price: 400, cost: 0, sku: "ALC-ROLLS-4", category: "ALA CART", image: "🌯", stock: 100 },
-            { name: "Macroni Pasta Large", price: 650, cost: 0, sku: "ALC-MAC-L", category: "ALA CART", image: "🍝", stock: 100 },
-            { name: "Macroni Pasta Small", price: 350, cost: 0, sku: "ALC-MAC-S", category: "ALA CART", image: "🍝", stock: 100 },
-            { name: "Oven Backed Wings 6Pcs", price: 350, cost: 0, sku: "ALC-OBW-6", category: "ALA CART", image: "🍗", stock: 100 },
-            { name: "Oven Backed Wings 12Pcs", price: 650, cost: 0, sku: "ALC-OBW-12", category: "ALA CART", image: "🍗", stock: 100 },
-            { name: "Crispy Wings 6Pcs", price: 350, cost: 0, sku: "ALC-CW-6", category: "ALA CART", image: "🍗", stock: 100 },
-            { name: "Crispy Wings 12Pcs", price: 650, cost: 0, sku: "ALC-CW-12", category: "ALA CART", image: "🍗", stock: 100 },
-            { name: "Hotshot 10Pcs", price: 450, cost: 0, sku: "ALC-HS-10", category: "ALA CART", image: "🍿", stock: 100 },
-            { name: "Hotshot 5Pcs", price: 250, cost: 0, sku: "ALC-HS-5", category: "ALA CART", image: "🍿", stock: 100 },
-            // Snacks (Fries)
-            { name: "Plain Fries", price: 150, cost: 0, sku: "SNK-FRIES-P", category: "Snacks", image: "", stock: 100 },
-            { name: "Masala Fries", price: 170, cost: 0, sku: "SNK-FRIES-M", category: "Snacks", image: "", stock: 100 },
-            { name: "Garlic Mayo Fries", price: 200, cost: 0, sku: "SNK-FRIES-GM", category: "Snacks", image: "", stock: 100 },
-            { name: "Loaded Fries", price: 300, cost: 0, sku: "SNK-FRIES-L", category: "Snacks", image: "", stock: 100 },
-            { name: "Pizza Loaded Fries Small", price: 250, cost: 0, sku: "SNK-FRIES-PLS", category: "Snacks", image: "", stock: 100 },
-            { name: "Pizza Loaded Fries Large", price: 450, cost: 0, sku: "SNK-FRIES-PLL", category: "Snacks", image: "", stock: 100 }
-          ];
+        { name: "Club Sandwich", price: 400, cost: 0, sku: "ALC-CLUB-S", category: "ALA CART", image: "🥪", stock: 100 },
+        { name: "Malai Boti Sandwich", price: 450, cost: 0, sku: "ALC-MALAI-S", category: "ALA CART", image: "🥪", stock: 100 },
+        { name: "Mexican Sandwich", price: 500, cost: 0, sku: "ALC-MEX-S", category: "ALA CART", image: "🥪", stock: 100 },
+        { name: "Spring Rolls 4 Pcs", price: 400, cost: 0, sku: "ALC-ROLLS-4", category: "ALA CART", image: "🌯", stock: 100 },
+        { name: "Macroni Pasta Large", price: 650, cost: 0, sku: "ALC-MAC-L", category: "ALA CART", image: "🍝", stock: 100 },
+        { name: "Macroni Pasta Small", price: 350, cost: 0, sku: "ALC-MAC-S", category: "ALA CART", image: "🍝", stock: 100 },
+        { name: "Oven Backed Wings 6Pcs", price: 350, cost: 0, sku: "ALC-OBW-6", category: "ALA CART", image: "🍗", stock: 100 },
+        { name: "Oven Backed Wings 12Pcs", price: 650, cost: 0, sku: "ALC-OBW-12", category: "ALA CART", image: "🍗", stock: 100 },
+        { name: "Crispy Wings 6Pcs", price: 350, cost: 0, sku: "ALC-CW-6", category: "ALA CART", image: "🍗", stock: 100 },
+        { name: "Crispy Wings 12Pcs", price: 650, cost: 0, sku: "ALC-CW-12", category: "ALA CART", image: "🍗", stock: 100 },
+        { name: "Hotshot 10Pcs", price: 450, cost: 0, sku: "ALC-HS-10", category: "ALA CART", image: "🍿", stock: 100 },
+        { name: "Hotshot 5Pcs", price: 250, cost: 0, sku: "ALC-HS-5", category: "ALA CART", image: "🍿", stock: 100 },
+        // Snacks (Fries)
+        { name: "Plain Fries", price: 150, cost: 0, sku: "SNK-FRIES-P", category: "Snacks", image: "", stock: 100 },
+        { name: "Masala Fries", price: 170, cost: 0, sku: "SNK-FRIES-M", category: "Snacks", image: "", stock: 100 },
+        { name: "Garlic Mayo Fries", price: 200, cost: 0, sku: "SNK-FRIES-GM", category: "Snacks", image: "", stock: 100 },
+        { name: "Loaded Fries", price: 300, cost: 0, sku: "SNK-FRIES-L", category: "Snacks", image: "", stock: 100 },
+        { name: "Pizza Loaded Fries Small", price: 250, cost: 0, sku: "SNK-FRIES-PLS", category: "Snacks", image: "", stock: 100 },
+        { name: "Pizza Loaded Fries Large", price: 450, cost: 0, sku: "SNK-FRIES-PLL", category: "Snacks", image: "", stock: 100 }
+      ];
 
       try {
         // 1. Handle Categories
         const { data: existingCats } = await supabase.from('categories').select('name');
         const existingCatNames = new Set(existingCats?.map(c => c.name) || []);
         const categoryNames = [...new Set(items.map(i => i.category))];
-        
+
         for (const catName of categoryNames) {
           if (!existingCatNames.has(catName)) {
             await supabase.from('categories').insert({ name: catName, icon: 'Utensils' });
@@ -255,61 +255,36 @@ export const api = {
       return data.publicUrl;
     },
     getWithDetails: async () => {
+      // Missing tables fix: Only fetch products, ignore variants/addons
       const { data, error } = await supabase
         .from('products')
-        .select(`
-          *,
-          product_variants(*),
-          product_addons(*)
-        `)
+        .select('*') // Removed '*, product_variants(*), product_addons(*)'
         .order('name');
+
       if (error) throw error;
       return data;
     }
   },
   addons: {
     getAll: async () => {
-      const { data, error } = await supabase
-        .from('product_addons')
-        .select('*')
-        .order('name');
-      if (error) throw error;
-      return data as ProductAddon[];
+      // Missing table fix: Return empty array immediately
+      return [] as ProductAddon[];
     },
     create: async (addon: Omit<ProductAddon, 'id' | 'created_at'>) => {
-      const { data, error } = await supabase
-        .from('product_addons')
-        .insert(addon)
-        .select()
-        .single();
-      if (error) throw error;
-      return data as ProductAddon;
+      // Mock implementation or throw error
+      throw new Error("Addons table not implemented");
     },
     delete: async (id: string) => {
-      const { error } = await supabase
-        .from('product_addons')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
+      throw new Error("Addons table not implemented");
     }
   },
   kitchens: {
     getAll: async () => {
-      const { data, error } = await supabase
-        .from('kitchens')
-        .select('*')
-        .order('name');
-      if (error) throw error;
-      return data as Kitchen[];
+      // Missing table fix: Return empty array immediately
+      return [] as Kitchen[];
     },
     create: async (name: string) => {
-      const { data, error } = await supabase
-        .from('kitchens')
-        .insert({ name })
-        .select()
-        .single();
-      if (error) throw error;
-      return data as Kitchen;
+      throw new Error("Kitchens table not implemented");
     }
   },
   customers: {
@@ -384,20 +359,38 @@ export const api = {
       if (error) throw error;
       return data;
     },
+    getByIdWithItems: async (id: string) => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          customers(name, phone, email),
+          restaurant_tables(table_number),
+          order_items(
+            *,
+            products(id, name, price, image, category, cost, stock)
+          )
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
     getDailyCount: async () => {
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
-      
+
       const { count, error } = await supabase
         .from('orders')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', startOfDay.toISOString());
-        
+
       if (error) {
         console.error('Error fetching daily order count:', error);
         return 0;
       }
-      
+
       return count || 0;
     },
     create: async (order: any, items: OrderItemInsert[]) => {
@@ -407,8 +400,11 @@ export const api = {
         status: order.status || 'completed',
         payment_method: order.payment_method || 'cash',
         order_type: order.order_type || 'dine_in',
-        // Removing register_id to prevent 400 error as it doesn't exist in current DB schema
       };
+
+      if (order.server_name) {
+        safeOrder.server_name = order.server_name;
+      }
 
       // Handle customer_id as number if it's an integer-like string or number
       if (order.customer_id) {
@@ -455,32 +451,44 @@ export const api = {
       }
       if (!newOrder) throw new Error('Failed to create order');
 
-      const itemsWithOrderId = items.map(item => {
-        // Strict UUID validation: must match 8-4-4-4-12 hex pattern
+      const itemsWithOrderIdFull = items.map(item => {
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        const isProductUUID = typeof item.product_id === 'string' && uuidRegex.test(item.product_id);
-        
-        console.log(`Processing item: ${item.product_name}, product_id: ${item.product_id}, isUUID: ${isProductUUID}`);
-        
-        return {
+        const digitsOnly = /^\d+$/;
+        const candidate = (item as any).product_id;
+        const dbItem: any = {
           order_id: newOrder.id,
-          // If it's not a valid UUID, set product_id to null to avoid 400 error
-          // The product name and category will be stored in their respective columns
-          product_id: isProductUUID ? item.product_id : null,
-          product_name: item.product_name || null,
-          product_category: item.product_category || null,
           quantity: item.quantity,
-          price: item.price
+          price: item.price,
+          product_name: (item as any).product_name,
+          product_category: (item as any).product_category
         };
+        if (candidate != null) {
+          if (typeof candidate === 'string' && uuidRegex.test(candidate)) {
+            dbItem.product_id = candidate;
+          } else if ((typeof candidate === 'string' && digitsOnly.test(candidate)) || typeof candidate === 'number') {
+            const n = typeof candidate === 'number' ? candidate : parseInt(candidate, 10);
+            if (!Number.isNaN(n)) dbItem.product_id = n as any;
+          }
+        }
+        return dbItem;
       });
 
-      console.log("Final items to insert (cleaned):", itemsWithOrderId);
-
-      const { error: itemsError } = await supabase
+      // Try inserting with product_name/category; if columns don't exist, fallback to minimal shape
+      const { error: firstTryError } = await supabase
         .from('order_items')
-        .insert(itemsWithOrderId);
+        .insert(itemsWithOrderIdFull);
 
-      if (itemsError) throw itemsError;
+      if (firstTryError) {
+        console.warn("Enhanced tracking columns (product_name/category) missing in DB. Falling back to basic storage.");
+        // Fallback without product_name/category
+        const itemsWithOrderId = itemsWithOrderIdFull.map(({ product_name, product_category, ...rest }) => rest);
+        const { error: fallbackError } = await supabase
+          .from('order_items')
+          .insert(itemsWithOrderId);
+        if (fallbackError) {
+          throw fallbackError;
+        }
+      }
       return newOrder;
     },
     update: async (orderId: string, order: any, items: OrderItemInsert[]) => {
@@ -491,6 +499,10 @@ export const api = {
         payment_method: order.payment_method || 'cash',
         order_type: order.order_type || 'dine_in',
       };
+
+      if (order.server_name) {
+        safeOrder.server_name = order.server_name;
+      }
 
       if (order.customer_id) {
         const cid = parseInt(String(order.customer_id));
@@ -519,23 +531,32 @@ export const api = {
       if (deleteError) throw deleteError;
 
       // 3. Insert new items
-      const itemsWithOrderId = items.map(item => {
+      const itemsWithOrderIdFull = items.map(item => {
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        const isProductUUID = typeof item.product_id === 'string' && uuidRegex.test(item.product_id);
-        
-        return {
+        const digitsOnly = /^\d+$/;
+        const candidate = (item as any).product_id;
+        const dbItem: any = {
           order_id: orderId,
-          product_id: isProductUUID ? item.product_id : null,
-          product_name: item.product_name || null,
-          product_category: item.product_category || null,
           quantity: item.quantity,
-          price: item.price
+          price: item.price,
+          product_name: (item as any).product_name,
+          product_category: (item as any).product_category
         };
+        if (candidate != null) {
+          if (typeof candidate === 'string' && uuidRegex.test(candidate)) {
+            dbItem.product_id = candidate;
+          } else if ((typeof candidate === 'string' && digitsOnly.test(candidate)) || typeof candidate === 'number') {
+            const n = typeof candidate === 'number' ? candidate : parseInt(candidate, 10);
+            if (!Number.isNaN(n)) dbItem.product_id = n as any;
+          }
+        }
+        return dbItem;
       });
 
+      // Insert new items with strict snapshotting
       const { error: itemsError } = await supabase
         .from('order_items')
-        .insert(itemsWithOrderId);
+        .insert(itemsWithOrderIdFull);
 
       if (itemsError) throw itemsError;
       return true;
@@ -552,14 +573,12 @@ export const api = {
           restaurant_tables(table_number),
           order_items(
             *,
-            product_name,
-            product_category,
             products(name, image)
           )
         `)
         .gte('created_at', startOfDay.toISOString())
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return data;
     },
@@ -570,30 +589,48 @@ export const api = {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
+    },
+    delete: async (id: string) => {
+      // 1. Delete associated order items first
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .delete()
+        .eq('order_id', id);
+
+      if (itemsError) throw itemsError;
+
+      // 2. Delete the order
+      const { error: orderError } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', id);
+
+      if (orderError) throw orderError;
+      return true;
     },
     clearAllToday: async () => {
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
-      
+
       const { data: orders, error: fetchError } = await supabase
         .from('orders')
         .select('id')
         .gte('created_at', startOfDay.toISOString());
-      
+
       if (fetchError) throw fetchError;
       if (!orders || orders.length === 0) return;
-      
+
       const orderIds = orders.map(o => o.id);
-      
+
       // Delete order items first
       const { error: itemsError } = await supabase
         .from('order_items')
         .delete()
         .in('order_id', orderIds);
-      
+
       if (itemsError) throw itemsError;
 
       // Delete orders
@@ -601,23 +638,23 @@ export const api = {
         .from('orders')
         .delete()
         .in('id', orderIds);
-      
+
       if (ordersError) throw ordersError;
     },
     deleteTodayOrders: async () => {
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
-      
+
       // 1. Get IDs of orders to delete
       const { data: orders, error: fetchError } = await supabase
         .from('orders')
         .select('id')
         .gte('created_at', startOfDay.toISOString());
-      
+
       if (fetchError) throw fetchError;
-      
+
       if (!orders || orders.length === 0) return;
-      
+
       const orderIds = orders.map(o => (o as any).id);
 
       // 2. Delete associated order items first (Manual Cascade)
@@ -625,7 +662,7 @@ export const api = {
         .from('order_items')
         .delete()
         .in('order_id', orderIds);
-        
+
       if (itemsError) throw itemsError;
 
       // 3. Delete the orders
@@ -633,7 +670,7 @@ export const api = {
         .from('orders')
         .delete()
         .in('id', orderIds);
-      
+
       if (ordersError) throw ordersError;
     },
     deleteAllOrders: async () => {
@@ -642,7 +679,7 @@ export const api = {
         .from('order_items')
         .delete()
         .neq('id', '00000000-0000-0000-0000-000000000000');
-        
+
       if (itemsError) throw itemsError;
 
       // 2. Delete ALL orders
@@ -650,7 +687,7 @@ export const api = {
         .from('orders')
         .delete()
         .neq('id', '00000000-0000-0000-0000-000000000000');
-      
+
       if (ordersError) throw ordersError;
     }
   },
@@ -658,7 +695,7 @@ export const api = {
     getDashboardStats: async () => {
       const { data: orders, error: ordersError } = await supabase
         .from('orders')
-        .select('*, order_items(*, product_name, product_category, products(*))')
+        .select('*, order_items(*, products(*))')
         .order('created_at', { ascending: false });
 
       if (ordersError) throw ordersError;

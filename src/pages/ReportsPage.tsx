@@ -49,19 +49,6 @@ const ReportsPage = () => {
     return data.orders.filter(order => order.created_at && isAfter(parseISO(order.created_at), today));
   }, [data?.orders]);
 
-  if (isError) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center space-y-4">
-            <p className="text-destructive font-medium">Failed to load reports</p>
-            <p className="text-sm text-muted-foreground">{error instanceof Error ? error.message : 'Unknown error'}</p>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
-
   const stats = useMemo(() => {
     if (!data?.orders || !data?.customers) return null;
 
@@ -130,9 +117,6 @@ const ReportsPage = () => {
 
     const salesData = Array.from(salesDataMap.entries()).map(([name, sales]) => ({ name, sales }));
     
-    // Sort sales data if needed (e.g. by hour or day) - simplified here by Map insertion order if data is sorted by time
-    // But data.orders is sorted by time, so it should be fine.
-
     // Category Data
     const categoryMap = new Map<string, number>();
     currentOrders.forEach(order => {
@@ -187,6 +171,19 @@ const ReportsPage = () => {
       topProducts
     };
   }, [data, timeRange, categories]);
+
+  if (isError) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center space-y-4">
+            <p className="text-destructive font-medium">Failed to load reports</p>
+            <p className="text-sm text-muted-foreground">{error instanceof Error ? error.message : 'Unknown error'}</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   if (isReportsLoading) {
     return (

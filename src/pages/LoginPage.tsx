@@ -15,7 +15,7 @@ type Role = "admin" | "cashier" | "cashier2";
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const role = (location.state?.role as Role) || "cashier"; 
+  const role = (location.state?.role as Role) || "cashier";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,13 +24,21 @@ const LoginPage = () => {
   const [showStartSessionModal, setShowStartSessionModal] = useState(false);
 
   useEffect(() => {
+    // Save current role to localStorage for other components to use
+    localStorage.setItem('active_role', role);
+
     if (role === 'cashier') {
-      setEmail("syedabuzarzaidi07@gmail.com");
+      setEmail("atifzaidi1978@Gmail.com");
       return;
     }
-    
+
     if (role === 'admin') {
       setEmail("noman21cs@gmail.com");
+      return;
+    }
+
+    if (role === 'cashier2') {
+      setEmail("na727175@gmail.com");
       return;
     }
 
@@ -100,15 +108,21 @@ const LoginPage = () => {
   const RoleIcon = getRoleIcon();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4 font-sans">
+    <div className="relative min-h-screen flex flex-col items-center justify-center p-4 font-sans overflow-hidden">
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/restaurant-hero.jpg?v=1'), url('/restaurant-luxury.png?v=2')" }}
+      />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
-        className="w-full max-w-md"
+        className="relative z-10 w-full max-w-md"
       >
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className="mb-6 hover:bg-transparent hover:text-primary pl-0 font-bold font-heading uppercase tracking-wider text-xs"
           onClick={() => navigate("/auth")}
         >
@@ -116,14 +130,14 @@ const LoginPage = () => {
           Back to Roles
         </Button>
 
-        <Card className="border-none shadow-xl bg-white/80 backdrop-blur-sm">
+        <Card className="border-none shadow-xl bg-white/85 backdrop-blur-md">
           <CardHeader className="space-y-1">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
                 <RoleIcon className="w-6 h-6" />
               </div>
               <div>
-                <CardTitle className="text-2xl font-black font-heading uppercase tracking-tight">Login as {role === 'cashier2' ? 'Cashier 2' : role.charAt(0).toUpperCase() + role.slice(1)}</CardTitle>
+                <CardTitle className="text-2xl font-black font-heading uppercase tracking-tight">Login as {role === 'cashier' ? 'Anas' : (role === 'cashier2' ? 'Cashier 2' : role.charAt(0).toUpperCase() + role.slice(1))}</CardTitle>
                 <CardDescription className="font-medium">Enter your credentials</CardDescription>
               </div>
             </div>

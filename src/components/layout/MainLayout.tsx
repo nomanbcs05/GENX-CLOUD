@@ -10,6 +10,14 @@ interface MainLayoutProps {
 
 const MainLayout = ({ children }: MainLayoutProps) => {
   const [showStartDayModal, setShowStartDayModal] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem('sidebar_collapsed');
+    return saved === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sidebar_collapsed', isSidebarCollapsed.toString());
+  }, [isSidebarCollapsed]);
 
   // Check for an open register
   const { data: openRegister, isLoading } = useQuery({
@@ -30,7 +38,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
-      <AppSidebar />
+      <AppSidebar isCollapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
       <main className="flex-1 overflow-hidden">
         {children}
       </main>

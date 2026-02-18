@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Minus, Plus, Trash2, User, Search, X, Printer, Wallet, ChefHat, FileText, Tag } from 'lucide-react';
+import { Minus, Plus, Trash2, User, Search, X, Printer, Wallet, ChefHat, FileText, Tag, CheckCircle2 } from 'lucide-react';
 import Fuse from 'fuse.js';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import { useCartStore, Customer } from '@/stores/cartStore';
 import Receipt from './Receipt';
 import KOT from './KOT';
 import Bill from './Bill';
+import RiderSelectionModal from './RiderSelectionModal';
 import { useReactToPrint } from 'react-to-print';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -25,55 +26,71 @@ import TableSelectionModal from './TableSelectionModal';
 
 const CartPanel = () => {
   const navigate = useNavigate();
-  const { 
-    items, 
-    customer, 
-    subtotal, 
-    taxAmount, 
-    discountAmount, 
-    total, 
-    updateQuantity, 
-    removeItem, 
-    setCustomer, 
-    orderType, 
-    setOrderType, 
-    clearCart, 
-    discount, 
-    discountType, 
-    setDiscount, 
-    deliveryFee, 
-    tableId, 
-    setTableId, 
-    rider, 
+  const {
+    items,
+    customer,
+    subtotal,
+    taxAmount,
+    discountAmount,
+    total,
+    updateQuantity,
+    removeItem,
+    setCustomer,
+    orderType,
+    setOrderType,
+    clearCart,
+    discount,
+    discountType,
+    setDiscount,
+    deliveryFee,
+    tableId,
+    setTableId,
+    rider,
     setRider,
     customerAddress,
     setCustomerAddress,
+    serverName,
+    setServerName,
     editingOrderId
   } = useCartStore();
-  
+
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'wallet'>('cash');
   const [discountInput, setDiscountInput] = useState('');
   const [showReceipt, setShowReceipt] = useState(false);
   const [showKOT, setShowKOT] = useState(false);
   const [showBill, setShowBill] = useState(false);
   const [showTableModal, setShowTableModal] = useState(false);
+  const [showRiderModal, setShowRiderModal] = useState(false);
+  const [pendingAfterRider, setPendingAfterRider] = useState<'none' | 'bill' | 'complete'>('none');
   const [lastOrder, setLastOrder] = useState<any>(null);
   const [cashierName, setCashierName] = useState('Anas');
   const receiptRef = useRef<HTMLDivElement>(null);
   const kotRef = useRef<HTMLDivElement>(null);
   const billRef = useRef<HTMLDivElement>(null);
-  
+
   const queryClient = useQueryClient();
 
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.email) {
-        setCashierName(user.user_metadata?.name || user.email.split('@')[0]);
+        if (user.email?.toLowerCase() === 'atifzaidi1978@gmail.com') {
+          setCashierName('Anas');
+        } else {
+          setCashierName(user.user_metadata?.name || user.email.split('@')[0]);
+        }
       }
     };
     fetchUser();
   }, []);
+
+  const getServerNameWithRole = () => {
+    const role = localStorage.getItem('active_role');
+    if (role && role !== 'admin') {
+      return `[${role}] ${serverName || ''}`.trim();
+    }
+    return serverName || null;
+  };
 
   // Fetch tables to display selected table number
   const { data: tables = [] } = useQuery({
@@ -99,7 +116,7 @@ const CartPanel = () => {
     }));
   }, [dbCustomers]);
 
-  const selectedTable = useMemo(() => 
+  const selectedTable = useMemo(() =>
     tables.find((t: any) => t.table_id === tableId),
     [tables, tableId]
   );
@@ -121,7 +138,7 @@ const CartPanel = () => {
     onSuccess: (newOrder) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['ongoing-orders'] });
-      
+
       // If it was an update, newOrder might just be 'true' or the updated order
       // We need to handle both cases for setLastOrder
       if (editingOrderId) {
@@ -129,13 +146,14 @@ const CartPanel = () => {
       } else if (newOrder && typeof newOrder === 'object') {
         setLastOrder((prev: any) => ({ ...prev, id: newOrder.id }));
       }
-      
+
       setShowReceipt(true);
-      
+
       // Small delay to allow dialog to open, then print
       setTimeout(() => {
         handlePrint();
-        clearCart();
+        // Fallback close in case onAfterPrint doesn't fire (some browsers)
+        setTimeout(() => setShowReceipt(false), 2000);
         toast.success(editingOrderId ? `Order updated!` : `Order completed!`);
       }, 300);
     },
@@ -154,6 +172,8 @@ const CartPanel = () => {
     onAfterPrint: () => {
       toast.success('Receipt printed successfully');
       setShowReceipt(false);
+      clearCart();
+      navigate('/ongoing-orders');
     },
   });
 
@@ -161,29 +181,109 @@ const CartPanel = () => {
     contentRef: kotRef,
     documentTitle: `KOT-${Date.now()}`,
     onAfterPrint: () => {
-      // Don't close modal here, let the mutation handle it
+      toast.success('KOT printed successfully');
+      setShowKOT(false);
+      clearCart();
+      navigate('/ongoing-orders');
     },
   });
 
   const handlePrintBill = useReactToPrint({
     contentRef: billRef,
     documentTitle: `Bill-${Date.now()}`,
-    onAfterPrint: () => {
+    onAfterPrint: async () => {
       toast.success('Bill printed successfully');
+
+      // When bill is printed from the cart, we should save the order as completed
+      // because the user wants to "save all the orders whose bills was printed once"
+      if (items.length > 0) {
+        try {
+          const orderInsert = {
+            customer_id: customer?.id ? parseInt(customer.id) : null,
+            total_amount: total,
+            status: 'completed',
+            payment_method: paymentMethod,
+            order_type: orderType,
+            table_id: tableId || null,
+            server_name: getServerNameWithRole(),
+          };
+
+          const orderItemsInsert = items.map(item => ({
+            product_id: item.product.id,
+            product_name: item.product.name,
+            product_category: item.product.category,
+            quantity: item.quantity,
+            price: item.product.price
+          }));
+
+          const toastId = toast.loading('Saving order after bill print...');
+
+          if (editingOrderId) {
+            await api.orders.update(editingOrderId, orderInsert, orderItemsInsert);
+          } else {
+            await api.orders.create(orderInsert, orderItemsInsert);
+          }
+
+          queryClient.invalidateQueries({ queryKey: ['orders'] });
+          queryClient.invalidateQueries({ queryKey: ['ongoing-orders'] });
+
+          toast.dismiss(toastId);
+          toast.success('Order saved as completed');
+
+          // Clear cart after printing bill if it's considered a completion action
+          clearCart();
+        } catch (error) {
+          console.error('Failed to auto-save order after bill print:', error);
+          toast.error('Failed to save order');
+        }
+      }
+
       setShowBill(false);
     },
   });
 
-  const prepareOrderData = async () => {
+  const performShowBill = async () => {
+    const orderData = await prepareOrderData();
+    setLastOrder(orderData);
+    setShowBill(true);
+  };
+
+  const prepareOrderData = async (): Promise<{
+    id?: string;
+    orderNumber: string;
+    items: typeof items;
+    customer: typeof customer;
+    rider: typeof rider;
+    customerAddress: typeof customerAddress;
+    serverName: typeof serverName;
+    tableId: typeof tableId;
+    orderType: typeof orderType;
+    subtotal: number;
+    taxAmount: number;
+    discountAmount: number;
+    deliveryFee: number;
+    total: number;
+    paymentMethod: typeof paymentMethod;
+    createdAt: Date;
+    cashierName: typeof cashierName;
+  }> => {
     const count = await api.orders.getDailyCount();
     const dailyId = (count + 1).toString().padStart(2, '0');
-    
+
     return {
       orderNumber: dailyId,
       items: [...items],
       customer,
       rider, // Include rider
       customerAddress, // Include address
+      serverName: (() => {
+        const role = localStorage.getItem('active_role');
+        if (role && role !== 'admin') {
+          return `[${role}] ${serverName || ''}`.trim();
+        }
+        return serverName;
+      })(), // Include server name with role tag
+      tableId, // Include tableId
       orderType,
       subtotal,
       taxAmount,
@@ -206,7 +306,7 @@ const CartPanel = () => {
     onSuccess: async (newOrder) => {
       queryClient.invalidateQueries({ queryKey: ['ongoing-orders'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
-      
+
       // Prepare order data for KOT printing
       const orderData = await prepareOrderData();
       if (editingOrderId) {
@@ -216,28 +316,22 @@ const CartPanel = () => {
       }
       setLastOrder(orderData);
       setShowKOT(true);
-      
-      // Print KOT after a short delay
+
+      // Print KOT after a short delay to allow dialog render
       setTimeout(() => {
         handlePrintKOT();
       }, 500);
-      
-      // Clear cart and navigate after printing
-      setTimeout(() => {
-        setShowKOT(false);
-        clearCart();
-        toast.success(editingOrderId ? 'Order updated in kitchen!' : 'Order sent to kitchen!');
-        navigate('/ongoing-orders');
-      }, 1500);
     },
     onError: (error: any) => {
-      console.error('KOT order creation failed:', error);
+      console.error('Order creation failed:', error);
       const errorMessage = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
-      toast.error(`Failed to create order: ${errorMessage}`);
+      toast.error(`Failed to save order: ${errorMessage}`);
     }
   });
 
-  const handleShowKOT = async () => {
+
+
+  const handleDone = async () => {
     if (items.length === 0) {
       toast.error('Cart is empty');
       return;
@@ -251,6 +345,7 @@ const CartPanel = () => {
       payment_method: 'cash', // Default payment method
       order_type: orderType,
       table_id: tableId || null,
+      server_name: getServerNameWithRole(),
     };
 
     const orderItemsInsert = items.map(item => ({
@@ -261,7 +356,7 @@ const CartPanel = () => {
       price: item.product.price
     }));
 
-    const toastId = toast.loading('Creating order...');
+    const toastId = toast.loading('Saving order...');
     createKOTOrderMutation.mutate({ order: orderInsert, items: orderItemsInsert }, {
       onSettled: () => {
         toast.dismiss(toastId);
@@ -274,17 +369,15 @@ const CartPanel = () => {
       toast.error('Cart is empty');
       return;
     }
-    const orderData = await prepareOrderData();
-    setLastOrder(orderData);
-    setShowBill(true);
-  };
-
-  const handleCompleteSale = async () => {
-    if (items.length === 0) {
-      toast.error('Cart is empty');
+    if (orderType === 'delivery' && !rider) {
+      setPendingAfterRider('bill');
+      setShowRiderModal(true);
       return;
     }
+    await performShowBill();
+  };
 
+  const performCompleteSale = async () => {
     const orderInsert = {
       customer_id: customer?.id ? parseInt(customer.id) : null,
       total_amount: total,
@@ -292,6 +385,7 @@ const CartPanel = () => {
       payment_method: paymentMethod,
       order_type: orderType,
       table_id: tableId || null,
+      server_name: getServerNameWithRole(),
     };
 
     const orderItemsInsert = items.map(item => ({
@@ -302,10 +396,9 @@ const CartPanel = () => {
       price: item.product.price
     }));
 
-    // Prepare local object for receipt
     const localOrder = await prepareOrderData();
     setLastOrder(localOrder);
-    
+
     const toastId = toast.loading('Processing order...');
     createOrderMutation.mutate({ order: orderInsert, items: orderItemsInsert }, {
       onSettled: () => {
@@ -314,11 +407,41 @@ const CartPanel = () => {
     });
   };
 
+  const handleCompleteSale = async () => {
+    if (items.length === 0) {
+      toast.error('Cart is empty');
+      return;
+    }
+    if (orderType === 'delivery' && !rider) {
+      setPendingAfterRider('complete');
+      setShowRiderModal(true);
+      return;
+    }
+    await performCompleteSale();
+  };
+
   const handleClearCart = () => {
     if (items.length === 0) return;
     clearCart();
     toast.info('Cart cleared');
   };
+
+  useEffect(() => {
+    if (orderType !== 'delivery') {
+      if (pendingAfterRider !== 'none') {
+        setPendingAfterRider('none');
+      }
+      return;
+    }
+    if (!rider || pendingAfterRider === 'none') return;
+    const action = pendingAfterRider;
+    setPendingAfterRider('none');
+    if (action === 'bill') {
+      performShowBill();
+    } else if (action === 'complete') {
+      performCompleteSale();
+    }
+  }, [orderType, rider, pendingAfterRider]);
 
   return (
     <div className="flex flex-col h-full bg-card border-l font-sans">
@@ -332,14 +455,14 @@ const CartPanel = () => {
 
       {/* Customer Selection */}
       <div className="p-4 border-b space-y-4">
-        <CustomerSelector 
-          selectedCustomer={customer} 
+        <CustomerSelector
+          selectedCustomer={customer}
           onSelect={setCustomer}
           customers={customers}
         />
 
         {orderType === 'dine_in' && (
-          <div 
+          <div
             className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border cursor-pointer hover:bg-muted/70 transition-colors"
             onClick={() => setShowTableModal(true)}
           >
@@ -369,7 +492,7 @@ const CartPanel = () => {
       <ScrollArea className="flex-1 p-4">
         <AnimatePresence mode="popLayout">
           {items.length === 0 ? (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex flex-col items-center justify-center py-12 text-muted-foreground"
@@ -394,14 +517,14 @@ const CartPanel = () => {
                       <span className="text-xl">{item.product.image}</span>
                     )}
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <p className="font-bold font-heading text-sm truncate tracking-tight">{item.product.name}</p>
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                       Rs {item.product.price.toLocaleString()} each
                     </p>
                   </div>
-                  
+
                   <div className="flex items-center gap-1">
                     <Button
                       variant="outline"
@@ -411,11 +534,11 @@ const CartPanel = () => {
                     >
                       <Minus className="h-3 w-3" />
                     </Button>
-                    
+
                     <span className="w-8 text-center font-medium text-sm">
                       {item.quantity}
                     </span>
-                    
+
                     <Button
                       variant="outline"
                       size="icon"
@@ -425,11 +548,11 @@ const CartPanel = () => {
                       <Plus className="h-3 w-3" />
                     </Button>
                   </div>
-                  
+
                   <div className="text-right min-w-[60px]">
                     <p className="font-semibold text-sm">Rs {item.lineTotal.toLocaleString()}</p>
                   </div>
-                  
+
                   <Button
                     variant="ghost"
                     size="icon"
@@ -453,7 +576,7 @@ const CartPanel = () => {
             <span className="text-slate-500 font-bold font-heading uppercase tracking-wider text-[10px]">Subtotal</span>
             <span className="font-bold">Rs {subtotal.toLocaleString()}</span>
           </div>
-          
+
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2 text-slate-500 font-bold font-heading uppercase tracking-wider text-[10px]">
               <span>Discount</span>
@@ -476,8 +599,8 @@ const CartPanel = () => {
                       </TabsList>
                       <div className="pt-4">
                         <div className="flex gap-2">
-                          <Input 
-                            type="number" 
+                          <Input
+                            type="number"
                             placeholder={discountType === 'percentage' ? "Percentage (0-100)" : "Amount (Rs)"}
                             value={discountInput}
                             onChange={(e) => {
@@ -488,9 +611,9 @@ const CartPanel = () => {
                         </div>
                       </div>
                     </Tabs>
-                    <Button 
-                      variant="destructive" 
-                      size="sm" 
+                    <Button
+                      variant="destructive"
+                      size="sm"
                       className="w-full"
                       onClick={() => {
                         setDiscount(0, 'percentage');
@@ -525,14 +648,14 @@ const CartPanel = () => {
         {/* Action Buttons */}
         <div className="flex flex-col gap-2">
           <div className="flex gap-2">
-             <Button variant="outline" className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11" onClick={handleShowKOT} disabled={items.length === 0}>
-               <ChefHat className="h-4 w-4 mr-2" />
-               KOT
-             </Button>
-             <Button variant="outline" className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11" onClick={handleShowBill} disabled={items.length === 0}>
-               <FileText className="h-4 w-4 mr-2" />
-               Bill
-             </Button>
+            <Button variant="outline" className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11 border-2 border-emerald-500/20 hover:bg-emerald-50 hover:text-emerald-600 transition-all" onClick={handleDone} disabled={items.length === 0}>
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Done
+            </Button>
+            <Button variant="outline" className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11" onClick={handleShowBill} disabled={items.length === 0}>
+              <FileText className="h-4 w-4 mr-2" />
+              Bill
+            </Button>
           </div>
           <div className="flex gap-2">
             <Button
@@ -558,10 +681,10 @@ const CartPanel = () => {
 
       {/* Receipt Dialog */}
       <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md" aria-describedby="receipt-description">
           <DialogHeader>
             <DialogTitle>Receipt Preview</DialogTitle>
-            <DialogDescription className="sr-only">Order Receipt</DialogDescription>
+            <DialogDescription id="receipt-description" className="sr-only">Order Receipt</DialogDescription>
           </DialogHeader>
           {lastOrder && (
             <div className="max-h-[70vh] overflow-auto">
@@ -572,7 +695,10 @@ const CartPanel = () => {
             <Button variant="outline" className="flex-1" onClick={() => setShowReceipt(false)}>
               Close
             </Button>
-            <Button className="flex-1" onClick={() => handlePrint()}>
+            <Button className="flex-1" onClick={() => {
+              handlePrint();
+              setTimeout(() => setShowReceipt(false), 2000);
+            }}>
               <Printer className="h-4 w-4 mr-2" />
               Print Again
             </Button>
@@ -582,10 +708,10 @@ const CartPanel = () => {
 
       {/* KOT Dialog */}
       <Dialog open={showKOT} onOpenChange={setShowKOT}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md" aria-describedby="kot-description">
           <DialogHeader>
             <DialogTitle>KOT Preview</DialogTitle>
-            <DialogDescription className="sr-only">Kitchen Order Ticket</DialogDescription>
+            <DialogDescription id="kot-description" className="sr-only">Kitchen Order Ticket</DialogDescription>
           </DialogHeader>
           {lastOrder && (
             <div className="max-h-[70vh] overflow-auto">
@@ -607,10 +733,10 @@ const CartPanel = () => {
       {/* Bill Dialog */}
       <Dialog open={showBill} onOpenChange={setShowBill}>
         <DialogContent className="max-w-md" aria-describedby="bill-description">
-            <DialogHeader>
-              <DialogTitle>Bill Preview</DialogTitle>
-              <DialogDescription id="bill-description" className="sr-only">Customer Bill</DialogDescription>
-            </DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Bill Preview</DialogTitle>
+            <DialogDescription id="bill-description" className="sr-only">Customer Bill</DialogDescription>
+          </DialogHeader>
           {lastOrder && (
             <div className="max-h-[70vh] overflow-auto">
               <Bill ref={billRef} order={lastOrder} />
@@ -627,9 +753,13 @@ const CartPanel = () => {
           </div>
         </DialogContent>
       </Dialog>
-      <TableSelectionModal 
-        isOpen={showTableModal} 
-        onClose={() => setShowTableModal(false)} 
+      <RiderSelectionModal
+        isOpen={showRiderModal}
+        onClose={() => setShowRiderModal(false)}
+      />
+      <TableSelectionModal
+        isOpen={showTableModal}
+        onClose={() => setShowTableModal(false)}
       />
     </div>
   );
@@ -686,7 +816,7 @@ const CustomerSelector = ({ selectedCustomer, onSelect, customers }: CustomerSel
             />
           </div>
         </div>
-        
+
         <ScrollArea className="h-64">
           <div className="p-2">
             {selectedCustomer && (
@@ -702,7 +832,7 @@ const CustomerSelector = ({ selectedCustomer, onSelect, customers }: CustomerSel
                 Clear Selection
               </Button>
             )}
-            
+
             {filteredCustomers.map((customer) => (
               <Button
                 key={customer.id}
@@ -719,7 +849,7 @@ const CustomerSelector = ({ selectedCustomer, onSelect, customers }: CustomerSel
                 </div>
               </Button>
             ))}
-            
+
             {filteredCustomers.length === 0 && (
               <div className="text-center py-4 text-muted-foreground text-sm">
                 No customers found
@@ -727,7 +857,7 @@ const CustomerSelector = ({ selectedCustomer, onSelect, customers }: CustomerSel
             )}
           </div>
         </ScrollArea>
-        
+
         <div className="p-2 border-t text-xs text-center text-muted-foreground">
           Showing {filteredCustomers.length} of {customers.length} customers
         </div>

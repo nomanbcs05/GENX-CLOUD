@@ -31,21 +31,36 @@ const BARBQ_DATA: BarBQItem[] = [
 
 export default function BarBQSelectionModal({ isOpen, onClose, onAdd }: BarBQSelectionModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [quantityPrefix, setQuantityPrefix] = useState<string>('');
 
   const filteredBarBQ = BARBQ_DATA.filter(b => 
     b.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAddBarBQ = (item: BarBQItem) => {
+    const qty = parseInt(quantityPrefix) || 1;
     const bbqProduct = {
       id: `barbq-${item.name.toLowerCase().replace(/\s+/g, '-')}`,
       name: item.name,
       price: item.price,
       category: 'BAR BQ',
       image: '🔥',
-      sku: `BBQ-${item.name.substring(0,3).toUpperCase()}`
+      sku: `BBQ-${item.name.substring(0,3).toUpperCase()}`,
+      quantity: qty
     };
-    onAdd(bbqProduct);
+    
+    for (let i = 0; i < qty; i++) {
+      onAdd(bbqProduct);
+    }
+    
+    setQuantityPrefix('');
+  };
+
+  const handleNumberClick = (num: number) => {
+    setQuantityPrefix(prev => {
+      const newPrefix = prev + num.toString();
+      return newPrefix.length > 2 ? newPrefix.slice(-2) : newPrefix;
+    });
   };
 
   return (
@@ -81,6 +96,42 @@ export default function BarBQSelectionModal({ isOpen, onClose, onAdd }: BarBQSel
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-white/10 border-none text-white placeholder:text-slate-500 pl-10 h-11 text-sm rounded-xl focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0"
             />
+          </div>
+
+          {/* Number Pad */}
+          <div className="mt-4 bg-white/10 p-2 rounded-2xl border border-white/10">
+            <div className="flex items-center justify-between mb-2 px-1">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Select Quantity</span>
+              {quantityPrefix && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black bg-white text-slate-900 px-2 py-0.5 rounded-full animate-pulse">
+                    Adding {quantityPrefix} items
+                  </span>
+                  <button 
+                    onClick={() => setQuantityPrefix('')}
+                    className="text-[10px] font-bold text-white/50 hover:text-white underline uppercase tracking-tighter"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-10 gap-1.5">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => handleNumberClick(num)}
+                  className={cn(
+                    "h-9 rounded-lg font-black text-sm transition-all active:scale-90 flex items-center justify-center",
+                    quantityPrefix.includes(num.toString()) 
+                      ? "bg-white text-slate-900 shadow-lg shadow-black/10" 
+                      : "bg-white/10 text-white hover:bg-white/20"
+                  )}
+                >
+                  {num}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

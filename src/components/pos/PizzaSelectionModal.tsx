@@ -45,6 +45,7 @@ const PIZZA_DATA: PizzaFlavor[] = [
 export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSelectionModalProps) {
   const [activeTab, setActiveTab] = useState<'Classic' | 'Premium'>('Classic');
   const [searchQuery, setSearchQuery] = useState('');
+  const [quantityPrefix, setQuantityPrefix] = useState<string>('');
 
   const filteredFlavors = PIZZA_DATA.filter(f => 
     f.category === activeTab && 
@@ -52,15 +53,29 @@ export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSel
   );
 
   const handleAddPizza = (flavor: string, size: PizzaSize, price: number) => {
+    const qty = parseInt(quantityPrefix) || 1;
     const pizzaProduct = {
       id: `pizza-${flavor.toLowerCase().replace(/\s+/g, '-')}-${size.toLowerCase()}`,
       name: `${flavor} (${size})`,
       price: price,
       category: 'Pizzas',
       image: '🍕',
-      sku: `PIZZA-${flavor.substring(0,3).toUpperCase()}-${size.charAt(0)}`
+      sku: `PIZZA-${flavor.substring(0,3).toUpperCase()}-${size.charAt(0)}`,
+      quantity: qty
     };
-    onAdd(pizzaProduct);
+    
+    for (let i = 0; i < qty; i++) {
+      onAdd(pizzaProduct);
+    }
+    
+    setQuantityPrefix('');
+  };
+
+  const handleNumberClick = (num: number) => {
+    setQuantityPrefix(prev => {
+      const newPrefix = prev + num.toString();
+      return newPrefix.length > 2 ? newPrefix.slice(-2) : newPrefix;
+    });
   };
 
   return (
@@ -89,7 +104,7 @@ export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSel
               </button>
             </div>
 
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-4 items-center mb-4">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-100/50" />
               <Input
@@ -118,6 +133,42 @@ export default function PizzaSelectionModal({ isOpen, onClose, onAdd }: PizzaSel
               >
                 Premium
               </button>
+            </div>
+          </div>
+
+          {/* Number Pad */}
+          <div className="bg-white/10 p-2 rounded-2xl border border-white/10">
+            <div className="flex items-center justify-between mb-2 px-1">
+              <span className="text-[10px] font-black uppercase tracking-widest text-orange-100/70">Select Quantity</span>
+              {quantityPrefix && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black bg-white text-orange-600 px-2 py-0.5 rounded-full animate-pulse">
+                    Adding {quantityPrefix} items
+                  </span>
+                  <button 
+                    onClick={() => setQuantityPrefix('')}
+                    className="text-[10px] font-bold text-white/50 hover:text-white underline uppercase tracking-tighter"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-10 gap-1.5">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => handleNumberClick(num)}
+                  className={cn(
+                    "h-9 rounded-lg font-black text-sm transition-all active:scale-90 flex items-center justify-center",
+                    quantityPrefix.includes(num.toString()) 
+                      ? "bg-white text-orange-600 shadow-lg shadow-black/10" 
+                      : "bg-white/10 text-white hover:bg-white/20"
+                  )}
+                >
+                  {num}
+                </button>
+              ))}
             </div>
           </div>
         </div>

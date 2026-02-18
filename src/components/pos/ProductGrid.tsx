@@ -94,7 +94,7 @@ const ProductGrid = () => {
 
   // Combine default "All" category with fetched categories
   const allCategories = useMemo(() => [
-    { id: 'all', name: 'All Items', icon: 'Grid3x3' },
+    { id: 'all', name: 'All Category', icon: 'Grid3x3' },
     ...categories.map(c => ({ id: c.name, name: c.name, icon: c.icon }))
   ], [categories]);
 
@@ -157,7 +157,8 @@ const ProductGrid = () => {
         name: 'Pizzas Menu',
         price: 0,
         category: 'Pizzas',
-        image: '🍕',
+        image: '/Pizzas.png',
+        imageFallbacks: ['/Pizzas.jpg', '/Pizza.png', '/pizza.png', '/pizza.jpg', '/Pizzas.jpeg'],
         isVirtual: true,
         modalType: 'pizza'
       };
@@ -183,7 +184,8 @@ const ProductGrid = () => {
          name: 'Rolls Menu',
          price: 0,
          category: 'Rolls',
-         image: '🌯',
+          image: '/Rolls.png',
+          imageFallbacks: ['/Rolls.jpg', '/Roll.png', '/roll.png', '/roll.jpg', '/Rolls.jpeg'],
          isVirtual: true,
          modalType: 'roll'
        };
@@ -207,7 +209,8 @@ const ProductGrid = () => {
          name: 'Broast Menu',
          price: 0,
          category: 'Broast',
-         image: '🍗',
+         image: '/Broast.png',
+         imageFallbacks: ['/Broast.jpg', '/broast.png', '/broast.jpg', '/Broast.jpeg'],
          isVirtual: true,
          modalType: 'simple-broast'
        };
@@ -226,12 +229,13 @@ const ProductGrid = () => {
        const isBurgerItem = (p: any) => p.category === 'Burgers';
        products = products.filter(p => !isBurgerItem(p));
        
-       const virtualBurger = {
+      const virtualBurger = {
          id: 'virtual-burger-menu',
          name: 'Burgers Menu',
          price: 0,
          category: 'Burgers',
-         image: '🍔',
+        image: '/Burgers.png',
+        imageFallbacks: ['/Burgers.jpg', '/Burger.png', '/burger.png', '/burger.jpg', '/Burgers.jpeg'],
          isVirtual: true,
          modalType: 'burger'
        };
@@ -250,12 +254,13 @@ const ProductGrid = () => {
        const isBarBQItem = (p: any) => p.category === 'BAR BQ';
        products = products.filter(p => !isBarBQItem(p));
        
-       const virtualBarBQ = {
+      const virtualBarBQ = {
          id: 'virtual-barbq-menu',
          name: 'BAR BQ Menu',
          price: 0,
          category: 'BAR BQ',
-         image: '🔥',
+        image: '/Barbq.png',
+        imageFallbacks: ['/Barbq.jpg', '/Barbq.jpeg', '/barbq.png', '/barbq.jpg'],
          isVirtual: true,
          modalType: 'barbq'
        };
@@ -274,12 +279,12 @@ const ProductGrid = () => {
        const isSauceToppingItem = (p: any) => p.category === 'Sauces' || p.category === 'Toppings';
        products = products.filter(p => !isSauceToppingItem(p));
        
-       const virtualSauceTopping = {
+      const virtualSauceTopping = {
          id: 'virtual-sauce-topping-menu',
          name: 'Sauces & Toppings',
          price: 0,
          category: 'ALA CART',
-         image: '🥣',
+        image: '/sauces.png',
          isVirtual: true,
          modalType: 'sauce-topping'
        };
@@ -550,8 +555,20 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, onAdd }: ProductCardProps) => {
   const isNoImageCategory = product.category === 'Arabic Broast' || product.category === 'ALA CART' || product.category === 'Snacks' || product.category === 'Beverages' || product.category === 'Pizzas' || product.category === 'Rolls' || product.category === 'Broast' || product.category === 'Burgers' || product.category === 'BAR BQ' || product.category === 'Sauces' || product.category === 'Toppings';
+  const isVirtualSauce = (product as any).id === 'virtual-sauce-topping-menu';
+  const isVirtualBarbq = (product as any).id === 'virtual-barbq-menu';
+  const isVirtualBurger = (product as any).id === 'virtual-burger-menu';
+  const isVirtualPizza = (product as any).id === 'virtual-pizza-menu';
+  const isVirtualRoll = (product as any).id === 'virtual-roll-menu';
+  const isVirtualSimpleBroast = (product as any).id === 'virtual-broast-menu';
+  const isLoadedFries = (product as any).name?.toLowerCase?.().includes('loaded fries');
+  const forceShowImage = isVirtualSauce || isVirtualBarbq || isVirtualBurger || isVirtualPizza || isVirtualRoll || isVirtualSimpleBroast || isLoadedFries;
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState<string | undefined>((product.image as any) || (isLoadedFries ? '/LoadedFries.png' : undefined));
+  const [fallbackIndex, setFallbackIndex] = useState(0);
+  const fallbacks: string[] = (product as any).imageFallbacks || (isLoadedFries ? ['/LoadedFries.jpg', '/loadedfries.png', '/loadedfries.jpg'] : []);
+  const imageHeightClass = forceShowImage ? "h-24 md:h-28" : "h-14";
 
   return (
     <motion.button
@@ -565,9 +582,12 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
         "flex flex-col items-center justify-center text-center gap-1.5 group"
       )}
     >
-      {!isNoImageCategory && product.image && (
-        <div className="relative mb-0.5 h-14 w-full flex items-center justify-center overflow-hidden rounded-lg bg-slate-50/50">
-          {product.image.startsWith('http') ? (
+      {(product.image && (!isNoImageCategory || forceShowImage)) && (
+        <div className={cn(
+          "relative mb-2 w-full flex items-center justify-center overflow-hidden rounded-lg bg-slate-50/50",
+          imageHeightClass
+        )}>
+          {currentSrc && (currentSrc.startsWith('http') || currentSrc.startsWith('/')) ? (
             <>
               {!imageLoaded && !imageError && (
                 <div className="absolute inset-0 animate-pulse bg-slate-200/50 flex items-center justify-center">
@@ -578,14 +598,22 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
                 <span className="text-xl opacity-50">📦</span>
               ) : (
                 <img 
-                  src={product.image} 
+                  src={currentSrc} 
                   alt={product.name} 
                   onLoad={() => setImageLoaded(true)}
-                  onError={() => setImageError(true)}
+                  onError={() => {
+                    if (fallbackIndex < fallbacks.length) {
+                      setCurrentSrc(fallbacks[fallbackIndex]);
+                      setFallbackIndex(fallbackIndex + 1);
+                    } else {
+                      setImageError(true);
+                    }
+                  }}
                   className={cn(
-                    "h-full w-full object-contain p-0.5 transition-all duration-500",
+                    "h-full w-full p-0.5 transition-all duration-500",
+                    (isVirtualBarbq || isVirtualBurger || isVirtualPizza || isVirtualRoll || isVirtualSimpleBroast) ? "object-cover" : "object-contain",
                     imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
-                  )} 
+                  )}
                 />
               )}
             </>

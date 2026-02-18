@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export interface Product {
-  description: any;
+  description?: string | null;
   id: string;
   name: string;
   sku: string;
@@ -33,6 +33,7 @@ interface CartState {
   items: CartItem[];
   customer: Customer | null;
   tableId: number | null; // Added tableId
+  serverName: string | null; // Added serverName
   rider: { name: string } | null; // Added rider
   customerAddress: string | null; // Added customerAddress
   orderType: 'dine_in' | 'take_away' | 'delivery';
@@ -55,6 +56,7 @@ interface CartState {
   updateQuantity: (productId: string, quantity: number) => void;
   setCustomer: (customer: Customer | null) => void;
   setTableId: (tableId: number | null) => void; // Added setTableId
+  setServerName: (name: string | null) => void; // Added setServerName
   setRider: (rider: { name: string } | null) => void; // Added setRider
   setCustomerAddress: (address: string | null) => void; // Added setCustomerAddress
   setOrderType: (type: 'dine_in' | 'take_away' | 'delivery') => void;
@@ -68,6 +70,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   items: [],
   customer: null,
   tableId: null, // Initialize tableId
+  serverName: null, // Initialize serverName
   rider: null, // Initialize rider
   customerAddress: null, // Initialize customerAddress
   orderType: 'dine_in',
@@ -151,6 +154,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   
   setCustomer: (customer) => set({ customer }),
   setTableId: (tableId) => set({ tableId }), // Added implementation
+  setServerName: (serverName) => set({ serverName }), // Added setServerName implementation
   setRider: (rider) => set({ rider }), // Added setRider implementation
   setCustomerAddress: (customerAddress) => set({ customerAddress }), // Added setCustomerAddress implementation
   setOrderType: (orderType) => {

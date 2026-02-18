@@ -20,12 +20,16 @@ const LicenseGenerator = () => {
     }
 
     const expiryDate = new Date();
-    expiryDate.setMonth(expiryDate.getMonth() + parseInt(months));
-    
+    if (months === "7d") {
+      expiryDate.setDate(expiryDate.getDate() + 7);
+    } else {
+      expiryDate.setMonth(expiryDate.getMonth() + parseInt(months));
+    }
+
     const data: LicenseData = {
       storeName,
       expiryDate: expiryDate.toISOString(),
-      type: 'monthly'
+      type: months === "7d" ? 'weekly' : 'monthly'
     };
 
     const key = licenseService.generateLicense(data);
@@ -48,13 +52,13 @@ const LicenseGenerator = () => {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Store Name</label>
-            <Input 
-              value={storeName} 
-              onChange={(e) => setStoreName(e.target.value)} 
+            <Input
+              value={storeName}
+              onChange={(e) => setStoreName(e.target.value)}
               placeholder="e.g. Lahore Coffee Shop"
             />
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Duration</label>
             <Select value={months} onValueChange={setMonths}>
@@ -62,6 +66,7 @@ const LicenseGenerator = () => {
                 <SelectValue placeholder="Select duration" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="7d">7 Days</SelectItem>
                 <SelectItem value="1">1 Month</SelectItem>
                 <SelectItem value="3">3 Months</SelectItem>
                 <SelectItem value="6">6 Months</SelectItem>
@@ -79,9 +84,9 @@ const LicenseGenerator = () => {
               <code className="text-green-400 text-xs break-all block pr-10">
                 {generatedKey}
               </code>
-              <Button 
-                size="icon" 
-                variant="ghost" 
+              <Button
+                size="icon"
+                variant="ghost"
                 className="absolute top-2 right-2 text-white hover:bg-white/20"
                 onClick={copyToClipboard}
               >

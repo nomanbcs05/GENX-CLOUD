@@ -13,21 +13,34 @@ const Welcome = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4 font-sans">
+    <div className="relative min-h-screen flex flex-col items-center justify-center p-4 font-sans overflow-hidden">
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/restaurant-hero.jpg?v=1'), url('/restaurant-luxury.png?v=2')" }}
+      />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="mb-12 text-center space-y-2"
+        className="relative z-10 mb-8 text-center space-y-2 text-white"
       >
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-4 shadow-lg shadow-primary/20">
-          <span className="text-3xl font-black font-heading text-primary-foreground">G</span>
+        <div className="mx-auto inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/85 mb-4 shadow-lg ring-2 ring-white/30 overflow-hidden backdrop-blur">
+          <img
+            src="/gx.png"
+            alt="GX"
+            className="object-contain w-16 h-16"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = 'none';
+            }}
+          />
         </div>
-        <h1 className="text-5xl font-black tracking-tighter text-slate-900 font-heading uppercase">Gen XCloud POS</h1>
-        <p className="text-slate-500 text-lg font-medium">Select your role to continue</p>
+        <h1 className="text-5xl font-black tracking-tighter font-heading uppercase drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">Gen XCloud POS</h1>
+        <p className="text-white/80 text-lg font-medium">Select your role to continue</p>
       </motion.div>
 
-      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
+      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
         {/* Admin Card */}
         <RoleCard
           title="Administrator"
@@ -38,7 +51,7 @@ const Welcome = () => {
 
         {/* Cashier Card */}
         <RoleCard
-          title="Cashier"
+          title="Anas"
           icon={User}
           description="Process orders and manage payments"
           onSelect={() => handleRoleSelect("cashier")}
@@ -53,8 +66,8 @@ const Welcome = () => {
         />
       </div>
 
-      <div className="mt-12 text-slate-400 text-sm">
-        © 2024 Gen XCloud POS. All rights reserved.
+      <div className="absolute bottom-6 right-6 z-10 text-white/80 text-sm">
+        © 2026 Gen XCloud POS. All rights reserved.
       </div>
     </div>
   );

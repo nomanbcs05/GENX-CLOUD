@@ -14,15 +14,25 @@ interface Order {
 
 interface KOTProps {
   order: Order;
+  isDuplicate?: boolean;
 }
 
-const KOT = forwardRef<HTMLDivElement, KOTProps>(({ order }, ref) => {
+const KOT = forwardRef<HTMLDivElement, KOTProps>(({ order, isDuplicate = false }, ref) => {
   return (
     <div 
       ref={ref} 
       className="receipt-print bg-white text-black p-4 font-mono text-xs mx-auto"
       style={{ width: '80mm' }}
     >
+      {/* Duplicate Badge */}
+      {isDuplicate && (
+        <div className="text-center mb-2">
+          <div className="border-2 border-black font-black text-lg py-1 px-4 inline-block transform -rotate-2">
+            *** DUPLICATE ***
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="text-center mb-4">
         <h1 className="text-xl font-bold border-2 border-black p-1 inline-block">KITCHEN TICKET</h1>
@@ -53,18 +63,26 @@ const KOT = forwardRef<HTMLDivElement, KOTProps>(({ order }, ref) => {
           </tr>
         </thead>
         <tbody>
-          {order.items.map((item) => (
-            <tr key={item.product.id}>
-              <td className="py-2 pr-2 align-top w-12 text-lg">
-                {item.quantity}
-              </td>
-              <td className="py-2 align-top">
-                <div className="text-lg">{item.product.name}</div>
-                {/* Placeholder for notes if we add them later */}
-                {/* <div className="text-xs font-normal">No onions</div> */}
-              </td>
-            </tr>
-          ))}
+          {order.items.map((rawItem, idx) => {
+            const item: any = rawItem as any;
+            const qty: number = item?.quantity ?? 1;
+            const name: string =
+              item?.product?.name ??
+              item?.product_name ??
+              item?.name ??
+              'Item';
+            const key = item?.product?.id ?? `${idx}-${name}`;
+            return (
+              <tr key={key}>
+                <td className="py-2 pr-2 align-top w-12 text-lg">
+                  {qty}
+                </td>
+                <td className="py-2 align-top">
+                  <div className="text-lg">{name}</div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 

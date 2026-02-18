@@ -16,6 +16,8 @@ interface Order {
   orderType?: 'dine_in' | 'take_away' | 'delivery';
   createdAt: Date;
   cashierName: string;
+  serverName?: string | null;
+  tableId?: number | null;
   rider?: { name: string } | null;
   customerAddress?: string | null;
 }
@@ -28,18 +30,18 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
   const [logoError, setLogoError] = useState(false);
 
   return (
-    <div 
-      ref={ref} 
+    <div
+      ref={ref}
       className="receipt-print bg-white text-black p-2 font-mono text-[11px] leading-tight mx-auto"
       style={{ width: '80mm' }}
     >
       {/* Header */}
       <div className="text-center mb-1">
         {!logoError ? (
-          <img 
+          <img
             src={`/logo.jpeg?v=${Date.now()}`}
-            alt="Logo" 
-            className="max-w-[120px] mx-auto mb-1 object-contain"
+            alt="Logo"
+            className="mx-auto mb-1 object-contain h-16 max-w-[120px] w-auto"
             onError={() => setLogoError(true)}
           />
         ) : (
@@ -77,14 +79,28 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
           <span className="font-bold uppercase">{businessInfo.name}</span>
         </div>
         <div className="flex justify-between mt-1">
-          <span>{order.cashierName} / CASH 2</span>
+          <span>{order.cashierName}</span>
           <span className="uppercase">{order.orderType}</span>
         </div>
         <div className="flex justify-between mt-1">
           <span>{format(order.createdAt, 'd-MMM-yy')}</span>
           <span>{format(order.createdAt, 'h:mm a')}</span>
         </div>
-        
+
+        {order.serverName && (
+          <div className="flex justify-between mt-1 border-t border-dotted border-black pt-1">
+            <span className="font-bold">Server:</span>
+            <span className="font-bold uppercase">{order.serverName.replace(/^\[.*?\]\s*/, '')}</span>
+          </div>
+        )}
+
+        {order.tableId && (
+          <div className="flex justify-between mt-1">
+            <span className="font-bold">Table:</span>
+            <span className="font-bold uppercase">{order.tableId}</span>
+          </div>
+        )}
+
         {order.rider && (
           <div className="flex justify-between items-center mt-1">
             <span className="font-bold text-lg">Rider :</span>
@@ -123,7 +139,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
 
       {/* Items Table */}
       <div className="border-x border-b border-black">
-        <table className="w-full text-[10px]">
+        <table className="w-full table-fixed text-[10px]">
           <thead>
             <tr className="border-b border-black bg-gray-100">
               <th className="text-left py-1 pl-1 w-8">Qty</th>
@@ -136,7 +152,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
             {order.items.map((item) => (
               <tr key={item.product.id}>
                 <td className="py-1 pl-1 align-top">{item.quantity}</td>
-                <td className="py-1 align-top uppercase">
+                <td className="py-1 align-top uppercase break-words">
                   {item.product.name}
                   {/* Modifiers could go here */}
                 </td>
