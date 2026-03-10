@@ -17,6 +17,8 @@ import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import NotFound from "./pages/NotFound";
 import LicenseGenerator from "./pages/LicenseGenerator";
+import SuperAdminDashboard from "./pages/SuperAdminDashboard";
+import CreateRestaurantPage from "./pages/CreateRestaurantPage";
 import { LicenseGate } from "./components/LicenseGate";
 
 const queryClient = new QueryClient();
@@ -28,10 +30,19 @@ const App = () => (
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
-          {/* Admin License Generator - Hidden/Public */}
-          <Route path="/license-manager" element={<LicenseGenerator />} />
+            <Route path="/license-manager" element={<LicenseGenerator />} />
+            <Route path="/super-admin" element={
+              <ProtectedRoute adminOnly>
+                <SuperAdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/onboarding" element={
+              <ProtectedRoute>
+                <CreateRestaurantPage />
+              </ProtectedRoute>
+            } />
 
-          {/* Secured Application Routes */}
+            {/* Secured Application Routes */}
           <Route element={<LicenseGate />}>
             <Route path="/" element={
               <ProtectedRoute>

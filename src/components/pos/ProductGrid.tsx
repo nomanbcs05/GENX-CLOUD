@@ -394,7 +394,7 @@ const ProductGrid = () => {
             )}
             onClick={() => {
               setOrderType('delivery');
-              setShowRiderModal(true);
+              setShowCustomerModal(true);
             }}
           >
             <Truck className="h-5 w-5" />
@@ -495,6 +495,11 @@ const ProductGrid = () => {
       <CustomerSelectionModal
         isOpen={showCustomerModal}
         onClose={() => setShowCustomerModal(false)}
+        onSaved={() => {
+          if (orderType === 'delivery') {
+            setShowRiderModal(true);
+          }
+        }}
       />
 
       <RiderSelectionModal

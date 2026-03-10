@@ -11,12 +11,14 @@ import { Loader2, Search, User, Phone } from 'lucide-react';
 interface CustomerSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSaved?: () => void;
 }
 
-const CustomerSelectionModal = ({ isOpen, onClose }: CustomerSelectionModalProps) => {
-  const { setCustomer } = useCartStore();
+const CustomerSelectionModal = ({ isOpen, onClose, onSaved }: CustomerSelectionModalProps) => {
+  const { setCustomer, setCustomerAddress, orderType, customerAddress } = useCartStore();
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -25,8 +27,9 @@ const CustomerSelectionModal = ({ isOpen, onClose }: CustomerSelectionModalProps
     if (isOpen) {
       setPhone('');
       setName('');
+      setAddress(customerAddress || '');
     }
-  }, [isOpen]);
+  }, [isOpen, customerAddress]);
 
   const handlePhoneSearch = async () => {
     if (!phone.trim()) return;
@@ -58,6 +61,11 @@ const CustomerSelectionModal = ({ isOpen, onClose }: CustomerSelectionModalProps
     
     if (!name.trim() || !phone.trim()) {
       toast.error("Please enter both Name and Phone Number");
+      return;
+    }
+
+    if (orderType === 'delivery' && !address.trim()) {
+      toast.error("Please enter delivery address");
       return;
     }
 
@@ -119,7 +127,13 @@ const CustomerSelectionModal = ({ isOpen, onClose }: CustomerSelectionModalProps
       };
 
       setCustomer(storeCustomer);
+      if (orderType === 'delivery') {
+        setCustomerAddress(address);
+      }
       toast.success(`Customer ${name} attached to order`);
+      if (onSaved) {
+        onSaved();
+      }
       onClose();
       
     } catch (error: any) {
@@ -192,6 +206,18 @@ const CustomerSelectionModal = ({ isOpen, onClose }: CustomerSelectionModalProps
                 />
               </div>
             </div>
+
+            {orderType === 'delivery' && (
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black font-heading uppercase tracking-widest text-slate-500">Delivery Address</Label>
+                <textarea
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Enter complete customer address..."
+                  className="w-full min-h-[80px] p-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all font-medium text-sm resize-none"
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex gap-3">

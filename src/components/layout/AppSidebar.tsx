@@ -7,14 +7,16 @@ import {
   Package,
   Settings2,
   Users,
-  BarChart3,
+   BarChart3,
   Settings,
   LogOut,
   Coffee,
   PlusCircle,
   ChevronLeft,
   ChevronRight,
-  Menu
+  Menu,
+  ShieldCheck,
+  Building2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,68 +24,30 @@ import { toast } from "sonner";
 import { useQueryClient } from '@tanstack/react-query';
 import StartDayModal from '@/components/pos/StartDayModal';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutGrid },
-  { name: 'Running Orders', href: '/ongoing-orders', icon: Clock },
-  { name: 'Orders', href: '/orders', icon: ClipboardList },
-  { name: 'Manage Products', href: '/manage-products', icon: Settings2 },
-  { name: 'Products', href: '/products', icon: Package },
-  { name: 'Customers', href: '/customers', icon: Users },
-  { name: 'Reports', href: '/reports', icon: BarChart3 },
-  { name: 'Settings', href: '/settings', icon: Settings },
-];
-
-interface AppSidebarProps {
-  isCollapsed: boolean;
-  onToggle: () => void;
-}
+import { useMultiTenant } from '@/hooks/useMultiTenant';
 
 const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [userName, setUserName] = useState("Loading...");
-  const [userRole, setUserRole] = useState("Staff");
+  const { profile, restaurant, isSuperAdmin } = useMultiTenant();
   const [showStartSessionModal, setShowStartSessionModal] = useState(false);
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      // Check local dev mode first
-      const localUser = localStorage.getItem('pos_local_user');
-      if (localUser) {
-        try {
-          const parsed = JSON.parse(localUser);
-          setUserName(parsed.name || parsed.email || "User");
-          setUserRole(parsed.role || 'Cashier');
-        } catch (e) {
-          console.error("Error parsing local user:", e);
-          setUserName("User");
-        }
-        return;
-      }
+  const navigation = [
+    { name: 'Dashboard', href: '/', icon: LayoutGrid },
+    { name: 'Running Orders', href: '/ongoing-orders', icon: Clock },
+    { name: 'Orders', href: '/orders', icon: ClipboardList },
+    { name: 'Manage Products', href: '/manage-products', icon: Settings2 },
+    { name: 'Products', href: '/products', icon: Package },
+    { name: 'Customers', href: '/customers', icon: Users },
+    { name: 'Reports', href: '/reports', icon: BarChart3 },
+    { name: 'Settings', href: '/settings', icon: Settings },
+  ];
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Fallback mapping for specific emails if metadata is missing
-        let role = user.user_metadata?.role;
-        if (!role) {
-          if (user.email === 'noman21cs@gmail.com') role = 'admin';
-          else if (user.email === 'syedabuzarzaidi07@gmail.com') role = 'cashier';
-          else role = 'Cashier';
-        }
-
-        // Specific name mapping for Anas
-        if (user.email?.toLowerCase() === 'atifzaidi1978@gmail.com' || role === 'cashier' || role === 'Cashier') {
-          setUserName("Anas");
-        } else {
-          setUserName(user.user_metadata?.name || user.email?.split('@')[0] || "User");
-        }
-        setUserRole(role);
-      }
-    };
-    fetchUser();
-  }, []);
+  // Add Super Admin dashboard if applicable
+  if (isSuperAdmin) {
+    navigation.push({ name: 'Super Admin', href: '/super-admin', icon: ShieldCheck });
+  }
 
   const handleLogout = async () => {
     try {
@@ -121,20 +85,17 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
           isCollapsed ? "items-center" : ""
         )}>
           <div className="flex items-center gap-3 min-w-max">
-            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-lg shadow-sidebar-primary/20 shrink-0 overflow-hidden border border-sidebar-border">
-              <img
-                src="/gx.png"
-                alt="GX"
-                className="w-7 h-7 object-contain"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).style.display = 'none';
-                }}
-              />
+            <div className="w-10 h-10 rounded-2xl bg-sidebar-primary flex items-center justify-center shadow-lg shadow-sidebar-primary/20 shrink-0">
+              <Building2 className="h-6 w-6 text-sidebar-primary-foreground" />
             </div>
             {!isCollapsed && (
-              <div className="animate-in fade-in slide-in-from-left-2 duration-300">
-                <h1 className="font-black font-heading text-sm tracking-tight uppercase leading-none">Gen XCloud</h1>
-                <p className="text-[10px] font-bold text-sidebar-foreground/50 uppercase tracking-widest mt-1">POS System</p>
+              <div className="flex-1 min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
+                <h1 className="font-black font-heading text-sm tracking-tight uppercase leading-none truncate">
+                  {restaurant?.name || "Gen XCloud"}
+                </h1>
+                <p className="text-[10px] font-bold text-sidebar-foreground/50 uppercase tracking-widest mt-1">
+                  {isSuperAdmin ? "Super Admin" : "POS System"}
+                </p>
               </div>
             )}
           </div>
@@ -198,13 +159,17 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
           )}>
             <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center shadow-md shrink-0">
               <span className="text-[10px] font-black font-heading text-sidebar-primary-foreground">
-                {(userName || "US").substring(0, 2).toUpperCase()}
+                {(profile?.full_name || "US").substring(0, 2).toUpperCase()}
               </span>
             </div>
             {!isCollapsed && (
               <div className="flex-1 min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
-                <p className="text-xs font-black font-heading truncate leading-tight tracking-tight uppercase">{userName}</p>
-                <p className="text-[10px] font-black text-sidebar-foreground/40 uppercase tracking-widest mt-0.5">{userRole}</p>
+                <p className="text-xs font-black font-heading truncate leading-tight tracking-tight uppercase">
+                  {profile?.full_name || "User"}
+                </p>
+                <p className="text-[10px] font-black text-sidebar-foreground/40 uppercase tracking-widest mt-0.5">
+                  {profile?.role || "Staff"}
+                </p>
               </div>
             )}
           </div>
