@@ -92,7 +92,7 @@ ON CONFLICT (slug) DO NOTHING;
 
 UPDATE public.profiles 
 SET role = 'super-admin' 
-WHERE id IN (SELECT id FROM auth.users WHERE email = 'noman21cs@gmail.com');
+WHERE id IN (SELECT id FROM auth.users WHERE email = 'noman53000@gmail.com');
 
 UPDATE public.profiles
 SET restaurant_id = (SELECT id FROM public.restaurants WHERE slug = 'default-restaurant')

@@ -5,7 +5,7 @@
 UPDATE public.profiles 
 SET role = 'super-admin' 
 WHERE id IN (
-  SELECT id FROM auth.users WHERE email = 'noman21cs@gmail.com'
+  SELECT id FROM auth.users WHERE email = 'noman53000@gmail.com'
 );
 
 -- Also ensure the default restaurant exists for everyone else
