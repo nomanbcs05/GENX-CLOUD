@@ -44,11 +44,6 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
-  // Add Super Admin dashboard if applicable
-  if (isSuperAdmin) {
-    navigation.push({ name: 'Super Admin', href: '/super-admin', icon: ShieldCheck });
-  }
-
   const handleLogout = async () => {
     try {
       localStorage.removeItem("pos_local_user"); // Clear local dev session

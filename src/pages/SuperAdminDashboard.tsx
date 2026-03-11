@@ -2,7 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { supabaseSignup } from '@/integrations/supabase/supabaseAdmin';
-import MainLayout from '@/components/layout/MainLayout';
+import SuperAdminLayout from '@/components/layout/SuperAdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,12 +10,14 @@ import { Badge } from '@/components/ui/badge';
 import {
   Loader2, Users, Building2, Calendar, ShieldCheck, Mail, Lock, UserPlus,
   Search, Power, PowerOff, Clock, TrendingUp, Store, ChevronDown, ChevronUp,
-  AlertTriangle, CheckCircle, XCircle, RotateCcw, Eye, CalendarPlus, DollarSign
+  AlertTriangle, CheckCircle, XCircle, RotateCcw, Eye, CalendarPlus, DollarSign,
+  Trash2, Send
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { useMultiTenant } from '@/hooks/useMultiTenant';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 interface Restaurant {
@@ -32,6 +34,7 @@ interface Restaurant {
 const SuperAdminDashboard = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { session } = useMultiTenant();
 
   // Form state
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -44,6 +47,9 @@ const SuperAdminDashboard = () => {
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  
+  // Track individual button loading states
+  const [loadingStates, setLoadingStates] = useState<{ [key: string]: boolean }>({});
 
   // ─── Queries ────────────────────────────────────────────────────────────
   const { data: restaurants = [], isLoading } = useQuery({
@@ -87,6 +93,17 @@ const SuperAdminDashboard = () => {
     mutationFn: async ({ name, slug, email, password, fullName }: {
       name: string; slug: string; email: string; password: string; fullName: string;
     }) => {
+      // Validate inputs
+      if (!name?.trim() || !slug?.trim() || !email?.trim() || !password?.trim() || !fullName?.trim()) {
+        throw new Error('All fields are required');
+      }
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters');
+      }
+      if (!email.includes('@')) {
+        throw new Error('Invalid email address');
+      }
+
       const { data: authData, error: authError } = await supabaseSignup.auth.signUp({
         email, password,
         options: { data: { full_name: fullName } },
@@ -121,35 +138,97 @@ const SuperAdminDashboard = () => {
       setNewRestaurantName(''); setNewRestaurantSlug('');
       setOwnerEmail(''); setOwnerPassword(''); setOwnerFullName('');
       setShowCreateForm(false);
-      toast.success(`"${data.name}" created with owner account!`);
+      toast.success(`Restaurant "${data.name}" created successfully! Owner can now log in.`);
     },
-    onError: (error: any) => toast.error(error.message || 'Failed to create account'),
+    onError: (error: any) => {
+      const message = error.message || 'Failed to create restaurant account';
+      toast.error(message);
+      console.error('Create account error:', error);
+    },
   });
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status, expiry }: { id: string; status: string; expiry?: string }) => {
+      if (!id) throw new Error('Restaurant ID is required');
+      if (!status) throw new Error('Status is required');
+      
       const update: any = { subscription_status: status };
       if (expiry) update.license_expiry = expiry;
+      
       const { error } = await supabase.from('restaurants').update(update).eq('id', id);
       if (error) throw error;
+      return { id, status };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['super-admin-restaurants'] });
-      toast.success('Subscription updated successfully');
+      toast.success(`Restaurant status updated to ${data.status}`);
+      setLoadingStates(prev => ({ ...prev, [data.id]: false }));
     },
-    onError: (error: any) => toast.error(error.message),
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to update subscription');
+      console.error('Update status error:', error);
+      setLoadingStates({});
+    },
   });
 
   const viewDataMutation = useMutation({
     mutationFn: async (restaurantId: string) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user?.id) throw new Error("No session");
-      const { error } = await supabase.from('profiles').update({ restaurant_id: restaurantId }).eq('id', session.user.id);
+      if (!restaurantId) throw new Error('Restaurant ID is required');
+      if (!session?.user?.id) throw new Error('No active session');
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ restaurant_id: restaurantId })
+        .eq('id', session.user.id);
+      
       if (error) throw error;
+      return restaurantId;
     },
-    onSuccess: () => { toast.success('Switched context'); window.location.href = '/'; },
-    onError: (error: any) => toast.error(error.message),
+    onSuccess: () => {
+      toast.success('Switched to restaurant context');
+      // Wait a moment for the profile update to propagate
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to switch restaurant context');
+      console.error('View data error:', error);
+    },
   });
+
+  // ─── Button Handlers ───────────────────────────────────────────────────
+  const handleActivate = useCallback((restaurantId: string) => {
+    setLoadingStates(prev => ({ ...prev, [`activate-${restaurantId}`]: true }));
+    updateStatusMutation.mutate({
+      id: restaurantId,
+      status: 'active',
+      expiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year
+    });
+  }, [updateStatusMutation]);
+
+  const handleSuspend = useCallback((restaurantId: string) => {
+    setLoadingStates(prev => ({ ...prev, [`suspend-${restaurantId}`]: true }));
+    updateStatusMutation.mutate({ id: restaurantId, status: 'suspended' });
+  }, [updateStatusMutation]);
+
+  const handleExtendDays = useCallback((restaurantId: string, currentExpiry: string | null, days: number = 30) => {
+    setLoadingStates(prev => ({ ...prev, [`extend-${restaurantId}`]: true }));
+    const base = currentExpiry && new Date(currentExpiry) > new Date() 
+      ? new Date(currentExpiry) 
+      : new Date();
+    const newExpiry = addDays(base, days);
+    updateStatusMutation.mutate({
+      id: restaurantId,
+      status: 'active',
+      expiry: newExpiry.toISOString(),
+    });
+  }, [updateStatusMutation]);
+
+  const handleView = useCallback((restaurantId: string) => {
+    setLoadingStates(prev => ({ ...prev, [`view-${restaurantId}`]: true }));
+    viewDataMutation.mutate(restaurantId);
+  }, [viewDataMutation]);
 
   const isFormValid = newRestaurantName && newRestaurantSlug && ownerEmail && ownerPassword.length >= 6 && ownerFullName;
 
@@ -176,38 +255,31 @@ const SuperAdminDashboard = () => {
   // ─── Loading ────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <MainLayout>
-        <div className="h-full flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <SuperAdminLayout>
+        <div className="h-96 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
         </div>
-      </MainLayout>
+      </SuperAdminLayout>
     );
   }
 
   // ─── Render ─────────────────────────────────────────────────────────────
   return (
-    <MainLayout>
-      <div className="p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
+    <SuperAdminLayout 
+      title="Admin Panel"
+      subtitle="Central control for all restaurants, subscriptions & services"
+    >
+      <div className="space-y-6 max-w-[1600px] mx-auto">
 
-        {/* ── Header ───────────────────────────────────────────────────── */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-black font-heading uppercase tracking-tight text-slate-900">Admin Panel</h1>
-            <p className="text-slate-500 font-medium text-sm">Central control for all restaurants, subscriptions & services</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full font-bold text-xs">
-              <ShieldCheck className="h-4 w-4" />
-              Super Admin
-            </div>
-            <Button
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              className="rounded-xl bg-blue-600 hover:bg-blue-700 font-black font-heading uppercase tracking-widest text-xs h-10 px-5 shadow-lg shadow-blue-500/20"
-            >
-              <UserPlus className="h-4 w-4 mr-2" />
-              New Restaurant
-            </Button>
-          </div>
+        {/* ── New Restaurant Button ─────────────────────────────────── */}
+        <div className="flex justify-end">
+          <Button
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="rounded-xl bg-blue-600 hover:bg-blue-700 font-black font-heading uppercase tracking-widest text-xs h-10 px-5 shadow-lg shadow-blue-500/20"
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            {showCreateForm ? 'Hide Form' : 'New Restaurant'}
+          </Button>
         </div>
 
         {/* ── Stats Overview ───────────────────────────────────────────── */}
@@ -221,13 +293,13 @@ const SuperAdminDashboard = () => {
 
         {/* ── Create Account Form (Collapsible) ────────────────────────── */}
         {showCreateForm && (
-          <Card className="border-none shadow-xl shadow-blue-100/50 rounded-3xl overflow-hidden animate-in slide-in-from-top-2 duration-300">
-            <CardHeader className="bg-gradient-to-r from-slate-900 to-slate-800 text-white">
+          <Card className="border-none bg-slate-800/40 backdrop-blur shadow-xl shadow-blue-950/50 rounded-3xl overflow-hidden animate-in slide-in-from-top-2 duration-300">
+            <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
               <CardTitle className="text-sm font-black font-heading uppercase tracking-widest flex items-center gap-2">
-                <UserPlus className="h-4 w-4 text-blue-400" />
+                <UserPlus className="h-4 w-4 text-blue-100" />
                 Register New Restaurant Account
               </CardTitle>
-              <p className="text-slate-400 text-xs font-medium mt-1">Create a restaurant with an owner login — they can sign in immediately</p>
+              <p className="text-blue-100 text-xs font-medium mt-1">Create a restaurant with an owner login — they can sign in immediately</p>
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -258,10 +330,10 @@ const SuperAdminDashboard = () => {
               placeholder="Search by restaurant name or slug..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-xl border-slate-200 h-11 bg-white"
+              className="pl-10 rounded-xl bg-slate-800/50 border-slate-700 h-11 text-white placeholder:text-slate-500"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {['all', 'active', 'trial', 'expired', 'suspended'].map(status => (
               <Button
                 key={status}
@@ -269,8 +341,8 @@ const SuperAdminDashboard = () => {
                 size="sm"
                 className={`rounded-xl text-[10px] font-black font-heading uppercase tracking-widest h-11 px-4 ${
                   statusFilter === status 
-                    ? 'bg-slate-900 hover:bg-slate-800 text-white' 
-                    : 'border-slate-200 hover:bg-slate-50'
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                    : 'border-slate-700 bg-slate-800/30 text-slate-300 hover:bg-slate-700'
                 }`}
                 onClick={() => setStatusFilter(status)}
               >
@@ -281,19 +353,19 @@ const SuperAdminDashboard = () => {
         </div>
 
         {/* ── Restaurants Table ─────────────────────────────────────────── */}
-        <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden">
+        <Card className="border-none bg-slate-800/40 backdrop-blur shadow-xl shadow-slate-950/50 rounded-3xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="text-left text-[10px] font-black font-heading uppercase tracking-widest text-slate-500 px-6 py-4">Restaurant</th>
-                  <th className="text-left text-[10px] font-black font-heading uppercase tracking-widest text-slate-500 px-4 py-4">Status</th>
-                  <th className="text-left text-[10px] font-black font-heading uppercase tracking-widest text-slate-500 px-4 py-4">License Expiry</th>
-                  <th className="text-left text-[10px] font-black font-heading uppercase tracking-widest text-slate-500 px-4 py-4">Created</th>
-                  <th className="text-right text-[10px] font-black font-heading uppercase tracking-widest text-slate-500 px-6 py-4">Actions</th>
+                <tr className="bg-slate-800/60 border-b border-slate-700">
+                  <th className="text-left text-[10px] font-black font-heading uppercase tracking-widest text-slate-300 px-6 py-4">Restaurant</th>
+                  <th className="text-left text-[10px] font-black font-heading uppercase tracking-widest text-slate-300 px-4 py-4">Status</th>
+                  <th className="text-left text-[10px] font-black font-heading uppercase tracking-widest text-slate-300 px-4 py-4">License Expiry</th>
+                  <th className="text-left text-[10px] font-black font-heading uppercase tracking-widest text-slate-300 px-4 py-4">Created</th>
+                  <th className="text-right text-[10px] font-black font-heading uppercase tracking-widest text-slate-300 px-6 py-4">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-700/50">
                 {filteredRestaurants.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="text-center py-12 text-slate-400 font-medium">
@@ -304,14 +376,14 @@ const SuperAdminDashboard = () => {
                   filteredRestaurants.map((restaurant) => {
                     const expiry = getExpiryInfo(restaurant.license_expiry);
                     return (
-                      <tr key={restaurant.id} className="hover:bg-slate-50/50 transition-colors group">
+                      <tr key={restaurant.id} className="hover:bg-slate-700/20 transition-colors group">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-slate-100 rounded-xl group-hover:bg-blue-50 transition-colors">
-                              <Building2 className="h-5 w-5 text-slate-600 group-hover:text-blue-600" />
+                            <div className="p-2.5 bg-slate-700/50 rounded-xl group-hover:bg-blue-900/30 transition-colors">
+                              <Building2 className="h-5 w-5 text-slate-400 group-hover:text-blue-400" />
                             </div>
                             <div>
-                              <p className="font-black text-slate-900 text-sm">{restaurant.name}</p>
+                              <p className="font-black text-white text-sm">{restaurant.name}</p>
                               <p className="text-slate-400 text-xs font-bold">@{restaurant.slug}</p>
                             </div>
                           </div>
@@ -333,21 +405,22 @@ const SuperAdminDashboard = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-2 flex-wrap">
                             {/* Activate */}
                             {restaurant.subscription_status !== 'active' && (
                               <Button
                                 variant="outline"
                                 size="sm"
                                 className="rounded-lg text-[10px] font-bold uppercase tracking-wider h-8 px-3 border-emerald-200 text-emerald-600 hover:bg-emerald-50"
-                                onClick={() => updateStatusMutation.mutate({
-                                  id: restaurant.id,
-                                  status: 'active',
-                                  expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                                })}
-                                disabled={updateStatusMutation.isPending}
+                                onClick={() => handleActivate(restaurant.id)}
+                                disabled={loadingStates[`activate-${restaurant.id}`] || updateStatusMutation.isPending}
                               >
-                                <Power className="h-3 w-3 mr-1" /> Activate
+                                {loadingStates[`activate-${restaurant.id}`] ? (
+                                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                ) : (
+                                  <Power className="h-3 w-3 mr-1" />
+                                )}
+                                Activate
                               </Button>
                             )}
 
@@ -357,10 +430,15 @@ const SuperAdminDashboard = () => {
                                 variant="outline"
                                 size="sm"
                                 className="rounded-lg text-[10px] font-bold uppercase tracking-wider h-8 px-3 border-amber-200 text-amber-600 hover:bg-amber-50"
-                                onClick={() => updateStatusMutation.mutate({ id: restaurant.id, status: 'suspended' })}
-                                disabled={updateStatusMutation.isPending}
+                                onClick={() => handleSuspend(restaurant.id)}
+                                disabled={loadingStates[`suspend-${restaurant.id}`] || updateStatusMutation.isPending}
                               >
-                                <PowerOff className="h-3 w-3 mr-1" /> Suspend
+                                {loadingStates[`suspend-${restaurant.id}`] ? (
+                                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                ) : (
+                                  <PowerOff className="h-3 w-3 mr-1" />
+                                )}
+                                Suspend
                               </Button>
                             )}
 
@@ -369,18 +447,15 @@ const SuperAdminDashboard = () => {
                               variant="outline"
                               size="sm"
                               className="rounded-lg text-[10px] font-bold uppercase tracking-wider h-8 px-3 border-blue-200 text-blue-600 hover:bg-blue-50"
-                              onClick={() => {
-                                const base = restaurant.license_expiry ? new Date(restaurant.license_expiry) : new Date();
-                                const newExpiry = addDays(base < new Date() ? new Date() : base, 30);
-                                updateStatusMutation.mutate({
-                                  id: restaurant.id,
-                                  status: 'active',
-                                  expiry: newExpiry.toISOString(),
-                                });
-                              }}
-                              disabled={updateStatusMutation.isPending}
+                              onClick={() => handleExtendDays(restaurant.id, restaurant.license_expiry)}
+                              disabled={loadingStates[`extend-${restaurant.id}`] || updateStatusMutation.isPending}
                             >
-                              <CalendarPlus className="h-3 w-3 mr-1" /> +30 Days
+                              {loadingStates[`extend-${restaurant.id}`] ? (
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              ) : (
+                                <CalendarPlus className="h-3 w-3 mr-1" />
+                              )}
+                              +30 Days
                             </Button>
 
                             {/* View Data */}
@@ -388,10 +463,15 @@ const SuperAdminDashboard = () => {
                               variant="outline"
                               size="sm"
                               className="rounded-lg text-[10px] font-bold uppercase tracking-wider h-8 px-3 border-slate-200 hover:bg-slate-50"
-                              onClick={() => viewDataMutation.mutate(restaurant.id)}
-                              disabled={viewDataMutation.isPending}
+                              onClick={() => handleView(restaurant.id)}
+                              disabled={loadingStates[`view-${restaurant.id}`] || viewDataMutation.isPending}
                             >
-                              <Eye className="h-3 w-3 mr-1" /> View
+                              {loadingStates[`view-${restaurant.id}`] ? (
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              ) : (
+                                <Eye className="h-3 w-3 mr-1" />
+                              )}
+                              View
                             </Button>
                           </div>
                         </td>
@@ -403,13 +483,8 @@ const SuperAdminDashboard = () => {
             </table>
           </div>
         </Card>
-
-        {/* ── Footer ───────────────────────────────────────────────────── */}
-        <div className="text-center text-[10px] font-black font-heading uppercase tracking-widest text-slate-300 py-4">
-          GenAI Technology • Admin Panel v2.0
-        </div>
       </div>
-    </MainLayout>
+    </SuperAdminLayout>
   );
 };
 
@@ -433,15 +508,15 @@ const FormField = ({ icon, label, placeholder, value, onChange, type = 'text' }:
   icon: React.ReactNode; label: string; placeholder: string; value: string; onChange: (v: string) => void; type?: string;
 }) => (
   <div className="space-y-2">
-    <label className="text-xs font-black font-heading uppercase tracking-widest text-slate-500">{label}</label>
+    <label className="text-xs font-black font-heading uppercase tracking-widest text-slate-300">{label}</label>
     <div className="relative">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{icon}</span>
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">{icon}</span>
       <Input
         type={type}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-10 rounded-xl border-slate-200 h-11"
+        className="pl-10 rounded-xl bg-slate-700/50 border-slate-600 h-11 text-white placeholder:text-slate-500"
       />
     </div>
   </div>
