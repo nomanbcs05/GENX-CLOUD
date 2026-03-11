@@ -1,7 +1,7 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 export interface Profile {
   id: string;
@@ -20,14 +20,27 @@ export interface Restaurant {
 
 export const useMultiTenant = () => {
   const [session, setSession] = useState<any>(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error("Error fetching session:", error);
+        toast.error("Session error. Please log in again.");
+      }
       setSession(session);
+      setSessionLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session);
+      if (event === "SIGNED_OUT" || !session) {
+        setSession(null);
+        setSessionLoading(false);
+        return;
+      }
       setSession(session);
+      setSessionLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -42,9 +55,14 @@ export const useMultiTenant = () => {
         .select('*')
         .eq('id', session.user.id)
         .single();
-      
+
       if (error) {
         console.error('Error fetching profile:', error);
+        if (error.code === '406') {
+          toast.error('Profile not found or request not acceptable. Please contact support.');
+        } else {
+          toast.error('An error occurred while fetching the profile.');
+        }
         return null;
       }
       return data as Profile;
@@ -61,7 +79,7 @@ export const useMultiTenant = () => {
         .select('*')
         .eq('id', profile.restaurant_id)
         .single();
-      
+
       if (error) {
         console.error('Error fetching restaurant:', error);
         return null;
@@ -75,7 +93,7 @@ export const useMultiTenant = () => {
     session,
     profile,
     restaurant,
-    isLoading: profileLoading || restaurantLoading,
+    isLoading: sessionLoading || profileLoading || restaurantLoading,
     isSuperAdmin: profile?.role === 'super-admin',
     isAdmin: profile?.role === 'admin' || profile?.role === 'super-admin',
   };
