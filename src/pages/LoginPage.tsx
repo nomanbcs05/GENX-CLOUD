@@ -84,7 +84,7 @@ const LoginPage = () => {
       if (role === "cashier") {
         setShowStartSessionModal(true);
       } else {
-        navigate("/dashboard");
+        navigate("/");
       }
     } catch (error) {
       console.error("Login error:", error);
