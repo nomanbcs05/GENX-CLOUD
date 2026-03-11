@@ -36,6 +36,11 @@ const SuperAdminDashboard = () => {
   const navigate = useNavigate();
   const { session } = useMultiTenant();
 
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [accessPassword, setAccessPassword] = useState('');
+
+  const ACCESS_PASSWORD = import.meta.env.VITE_SUPER_ADMIN_ACCESS_PASSWORD || 'genxcloud-pos-admin';
+
   // Form state
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newRestaurantName, setNewRestaurantName] = useState('');
@@ -251,6 +256,58 @@ const SuperAdminDashboard = () => {
     if (days <= 30) return { text: `${days}d remaining`, color: 'text-blue-500', urgent: false };
     return { text: `${days}d remaining`, color: 'text-emerald-500', urgent: false };
   };
+
+  // ─── Local Access Gate ─────────────────────────────────────────────────
+  if (!isUnlocked) {
+    return (
+      <SuperAdminLayout
+        title="Super Admin Login"
+        subtitle="Enter the secure access password to manage all restaurants"
+      >
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="w-full max-w-md border-none bg-slate-900/70 backdrop-blur-xl shadow-2xl shadow-blue-950/40 rounded-3xl">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-black font-heading uppercase tracking-widest text-center text-white flex items-center justify-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-blue-400" />
+                Super Admin Access
+              </CardTitle>
+              <p className="text-xs text-slate-400 text-center mt-1 font-medium">
+                Protected area. Only the owner should know this password.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-black font-heading uppercase tracking-widest text-slate-300">
+                  Access Password
+                </label>
+                <Input
+                  type="password"
+                  placeholder="Enter super admin password"
+                  value={accessPassword}
+                  onChange={(e) => setAccessPassword(e.target.value)}
+                  className="rounded-xl bg-slate-800/60 border-slate-700 text-white placeholder:text-slate-500 h-11"
+                />
+              </div>
+              <Button
+                className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 font-black font-heading uppercase tracking-widest h-11 shadow-lg shadow-blue-500/30 text-xs"
+                onClick={() => {
+                  if (accessPassword === ACCESS_PASSWORD) {
+                    setIsUnlocked(true);
+                    setAccessPassword('');
+                    toast.success('Super admin area unlocked');
+                  } else {
+                    toast.error('Invalid super admin password');
+                  }
+                }}
+              >
+                Unlock Panel
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </SuperAdminLayout>
+    );
+  }
 
   // ─── Loading ────────────────────────────────────────────────────────────
   if (isLoading) {

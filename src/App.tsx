@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import OngoingOrdersPage from "./pages/OngoingOrdersPage";
@@ -17,10 +17,20 @@ import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 import LicenseGenerator from "./pages/LicenseGenerator";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
-import CreateRestaurantPage from "./pages/CreateRestaurantPage";
 import { LicenseGate } from "./components/LicenseGate";
+import { useMultiTenant } from "./hooks/useMultiTenant";
 
 const queryClient = new QueryClient();
+
+const HomeRoute = () => {
+  const { isSuperAdmin } = useMultiTenant();
+
+  if (isSuperAdmin) {
+    return <Navigate to="/super-admin" replace />;
+  }
+
+  return <Index />;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -35,17 +45,12 @@ const App = () => (
                 <SuperAdminDashboard />
               </ProtectedRoute>
             } />
-            <Route path="/onboarding" element={
-              <ProtectedRoute>
-                <CreateRestaurantPage />
-              </ProtectedRoute>
-            } />
 
             {/* Secured Application Routes */}
           <Route element={<LicenseGate />}>
             <Route path="/" element={
               <ProtectedRoute>
-                <Index />
+                <HomeRoute />
               </ProtectedRoute>
             } />
             <Route path="/ongoing-orders" element={

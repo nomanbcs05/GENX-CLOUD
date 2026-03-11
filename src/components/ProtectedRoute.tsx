@@ -35,11 +35,6 @@ const ProtectedRoute = ({ children, adminOnly = false }: { children: React.React
     return <Navigate to="/" replace />;
   }
 
-  // If user is logged in but has no restaurant (only for new users)
-  if (profile && !profile.restaurant_id && profile.role !== 'super-admin' && location.pathname !== '/onboarding') {
-    return <Navigate to="/onboarding" replace />;
-  }
-
   return <>{children}</>;
 };
 

@@ -33,7 +33,7 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
   const [showStartSessionModal, setShowStartSessionModal] = useState(false);
   const queryClient = useQueryClient();
 
-  const navigation = [
+  const baseNavigation = [
     { name: 'Dashboard', href: '/', icon: LayoutGrid },
     { name: 'Running Orders', href: '/ongoing-orders', icon: Clock },
     { name: 'Orders', href: '/orders', icon: ClipboardList },
@@ -43,6 +43,13 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
     { name: 'Reports', href: '/reports', icon: BarChart3 },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
+
+  const navigation = isSuperAdmin
+    ? [
+        { name: 'Super Admin', href: '/super-admin', icon: ShieldCheck },
+        ...baseNavigation,
+      ]
+    : baseNavigation;
 
   const handleLogout = async () => {
     try {
