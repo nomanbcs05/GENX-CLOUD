@@ -38,8 +38,8 @@ const CreateRestaurantPage = () => {
       // 1. Create the restaurant
       const { data: restaurant, error: restError } = await supabase
         .from('restaurants')
-        .insert([{ 
-          name, 
+        .insert([{
+          name,
           slug: slug.toLowerCase().replace(/\s+/g, '-'),
           owner_id: session?.user?.id,
           subscription_status: 'trial',
@@ -86,8 +86,8 @@ const CreateRestaurantPage = () => {
               <Label className="text-xs font-black font-heading uppercase tracking-widest text-slate-500">Restaurant Name</Label>
               <div className="relative">
                 <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input 
-                  placeholder="e.g., Sultan Libas POS" 
+                <Input
+                  placeholder="e.g., Sultan Libas POS"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="pl-10 h-12 rounded-xl border-slate-200 focus:border-blue-500 transition-all font-bold"
@@ -99,8 +99,8 @@ const CreateRestaurantPage = () => {
               <Label className="text-xs font-black font-heading uppercase tracking-widest text-slate-500">Store ID (URL Slug)</Label>
               <div className="relative">
                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">@</div>
-                <Input 
-                  placeholder="sultan-libas" 
+                <Input
+                  placeholder="sultan-libas"
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                   className="pl-10 h-12 rounded-xl border-slate-200 focus:border-blue-500 transition-all font-bold"
@@ -109,7 +109,7 @@ const CreateRestaurantPage = () => {
               <p className="text-[10px] text-slate-400 font-medium">This will be your unique store identifier.</p>
             </div>
 
-            <Button 
+            <Button
               type="submit"
               disabled={loading}
               className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black font-heading uppercase tracking-widest shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"

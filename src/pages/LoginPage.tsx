@@ -27,8 +27,18 @@ const LoginPage = () => {
     // Save current role to localStorage for other components to use
     localStorage.setItem('active_role', role);
 
-    if (location.state?.email) {
-      setEmail(location.state.email);
+    if (role === 'cashier') {
+      setEmail("atifzaidi1978@Gmail.com");
+      return;
+    }
+
+    if (role === 'admin') {
+      setEmail("noman21cs@gmail.com");
+      return;
+    }
+
+    if (role === 'cashier2') {
+      setEmail("na727175@gmail.com");
       return;
     }
 
@@ -41,15 +51,16 @@ const LoginPage = () => {
       } catch (e) {
         console.error("Failed to parse saved users", e);
       }
+    } else {
+      setEmail("");
     }
-  }, [role, location.state]);
+  }, [role]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // 1. Try Supabase Login
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -65,13 +76,11 @@ const LoginPage = () => {
         throw error;
       }
 
-      // Success
       const newSavedUsers = { ...savedUsers, [role]: email };
       localStorage.setItem("pos_saved_users", JSON.stringify(newSavedUsers));
 
       toast.success(`Welcome back!`);
 
-      // Show Start New Session modal for cashiers
       if (role === "cashier") {
         setShowStartSessionModal(true);
       } else {
@@ -86,7 +95,7 @@ const LoginPage = () => {
 
   const handleStartSessionSuccess = () => {
     setShowStartSessionModal(false);
-    navigate("/"); // Redirect to the root path after starting a new session
+    navigate("/");
   };
 
   const getRoleIcon = () => {
@@ -130,8 +139,8 @@ const LoginPage = () => {
                 <RoleIcon className="w-6 h-6" />
               </div>
               <div>
-                <CardTitle className="text-2xl font-black font-heading uppercase tracking-tight">Login Credentials</CardTitle>
-                <CardDescription className="font-medium">Sign in to your {role} account</CardDescription>
+                <CardTitle className="text-2xl font-black font-heading uppercase tracking-tight">Login as {role === 'cashier' ? 'Anas' : (role === 'cashier2' ? 'Cashier 2' : role.charAt(0).toUpperCase() + role.slice(1))}</CardTitle>
+                <CardDescription className="font-medium">Enter your credentials</CardDescription>
               </div>
             </div>
           </CardHeader>

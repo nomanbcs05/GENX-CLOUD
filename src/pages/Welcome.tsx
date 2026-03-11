@@ -1,42 +1,15 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { User, Shield, Users, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useMultiTenant } from "@/hooks/useMultiTenant";
+import { User, Shield, Users } from "lucide-react";
+
+type Role = "admin" | "cashier" | "cashier2";
 
 const Welcome = () => {
   const navigate = useNavigate();
-  const { restaurant, isLoading: loadingTenant } = useMultiTenant();
 
-  const { data: staff = [], isLoading: loadingStaff } = useQuery({
-    queryKey: ['welcome-staff', restaurant?.id],
-    queryFn: async () => {
-      if (!restaurant?.id) return [];
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('restaurant_id', restaurant.id)
-        .neq('role', 'super-admin')
-        .order('role', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!restaurant?.id,
-  });
-
-  const handleRoleSelect = (email: string) => {
-    navigate("/login", { state: { email } });
+  const handleRoleSelect = (role: Role) => {
+    navigate("/login", { state: { role } });
   };
-
-  if (loadingTenant || (restaurant?.id && loadingStaff)) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-slate-900">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
-      </div>
-    );
-  }
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center p-4 font-sans overflow-hidden">
@@ -62,33 +35,34 @@ const Welcome = () => {
             }}
           />
         </div>
-        <h1 className="text-5xl font-black tracking-tighter font-heading uppercase drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
-          {restaurant?.name || 'Gen XCloud POS'}
-        </h1>
-        <p className="text-white/80 text-lg font-medium">Select your account to continue</p>
+        <h1 className="text-5xl font-black tracking-tighter font-heading uppercase drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">Gen XCloud POS</h1>
+        <p className="text-white/80 text-lg font-medium">Select your role to continue</p>
       </motion.div>
 
-      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
-        {staff.length > 0 ? (
-          staff.map((member) => (
-            <RoleCard
-              key={member.id}
-              title={member.full_name || 'Staff Member'}
-              icon={member.role === 'admin' ? Shield : User}
-              description={member.role === 'admin' ? "Full management access" : "Process orders and payments"}
-              onSelect={() => handleRoleSelect(member.email || '')}
-            />
-          ))
-        ) : (
-          <div className="col-span-full flex justify-center">
-            <RoleCard
-              title="Standard Login"
-              icon={Users}
-              description="Sign in with your email and password"
-              onSelect={() => navigate("/login")}
-            />
-          </div>
-        )}
+      <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
+        {/* Admin Card */}
+        <RoleCard
+          title="Administrator"
+          icon={Shield}
+          description="Full access to all settings and reports"
+          onSelect={() => handleRoleSelect("admin")}
+        />
+
+        {/* Cashier Card */}
+        <RoleCard
+          title="Anas"
+          icon={User}
+          description="Process orders and manage payments"
+          onSelect={() => handleRoleSelect("cashier")}
+        />
+
+        {/* Cashier 2 Card */}
+        <RoleCard
+          title="Cashier 2"
+          icon={Users}
+          description="Secondary station for peak hours"
+          onSelect={() => handleRoleSelect("cashier2")}
+        />
       </div>
 
       <div className="absolute bottom-6 right-6 z-10 text-white/80 text-sm">
