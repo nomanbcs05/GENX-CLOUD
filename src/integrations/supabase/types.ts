@@ -20,6 +20,7 @@ export interface Database {
           category: string
           image: string | null
           created_at: string
+          restaurant_id: string | null
         }
         Insert: {
           id?: string
@@ -31,6 +32,7 @@ export interface Database {
           category: string
           image?: string | null
           created_at?: string
+          restaurant_id?: string | null
         }
         Update: {
           id?: string
@@ -42,6 +44,7 @@ export interface Database {
           category?: string
           image?: string | null
           created_at?: string
+          restaurant_id?: string | null
         }
         Relationships: []
       }
@@ -55,6 +58,7 @@ export interface Database {
           total_spent: number
           visit_count: number
           created_at: string
+          restaurant_id: string | null
         }
         Insert: {
           id?: string
@@ -65,6 +69,7 @@ export interface Database {
           total_spent?: number
           visit_count?: number
           created_at?: string
+          restaurant_id?: string | null
         }
         Update: {
           id?: string
@@ -75,6 +80,7 @@ export interface Database {
           total_spent?: number
           visit_count?: number
           created_at?: string
+          restaurant_id?: string | null
         }
         Relationships: []
       }
@@ -87,6 +93,7 @@ export interface Database {
           payment_method: string
           order_type: string
           created_at: string
+          restaurant_id: string | null
         }
         Insert: {
           id?: string
@@ -96,6 +103,7 @@ export interface Database {
           payment_method: string
           order_type?: string
           created_at?: string
+          restaurant_id?: string | null
         }
         Update: {
           id?: string
@@ -105,6 +113,7 @@ export interface Database {
           payment_method?: string
           order_type?: string
           created_at?: string
+          restaurant_id?: string | null
         }
         Relationships: [
           {
@@ -124,6 +133,7 @@ export interface Database {
           quantity: number
           price: number
           created_at: string
+          restaurant_id: string | null
         }
         Insert: {
           id?: string
@@ -132,6 +142,7 @@ export interface Database {
           quantity: number
           price: number
           created_at?: string
+          restaurant_id?: string | null
         }
         Update: {
           id?: string
@@ -140,6 +151,7 @@ export interface Database {
           quantity: number
           price: number
           created_at?: string
+          restaurant_id?: string | null
         }
         Relationships: [
           {

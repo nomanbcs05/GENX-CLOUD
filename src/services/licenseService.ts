@@ -8,6 +8,7 @@ const SECRET_SALT = "CLOVER_POS_SECURE_SALT_2025_PAKISTAN"; // Change this in pr
 
 export interface LicenseData {
   storeName: string;
+  restaurant_id: string; // Ties license to a specific SaaS tenant
   expiryDate: string; // ISO Date string
   type: 'monthly' | 'yearly' | 'lifetime';
 }
