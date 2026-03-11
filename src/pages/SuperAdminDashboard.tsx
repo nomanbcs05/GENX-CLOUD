@@ -10,9 +10,11 @@ import { Loader2, Plus, Users, Building2, Calendar, ShieldCheck } from 'lucide-r
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 const SuperAdminDashboard = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [newRestaurantName, setNewRestaurantName] = useState('');
   const [newRestaurantSlug, setNewRestaurantSlug] = useState('');
 
@@ -46,6 +48,28 @@ const SuperAdminDashboard = () => {
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to create restaurant');
+    }
+  });
+
+  const viewDataMutation = useMutation({
+    mutationFn: async (restaurantId: string) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) throw new Error("No session found");
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ restaurant_id: restaurantId })
+        .eq('id', session.user.id);
+        
+      if (error) throw error;
+      return true;
+    },
+    onSuccess: () => {
+      toast.success('Successfully switched to restaurant context');
+      window.location.href = '/'; // Hard refresh to load new data context
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to switch context');
     }
   });
 
@@ -146,11 +170,22 @@ const SuperAdminDashboard = () => {
                   Tenant ID: <span className="text-[10px] font-mono bg-slate-100 px-2 py-0.5 rounded">{restaurant.id.substring(0, 8)}...</span>
                 </div>
                 <div className="pt-2 border-t flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1 rounded-xl text-[10px] font-black font-heading uppercase tracking-widest">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 rounded-xl text-[10px] font-black font-heading uppercase tracking-widest"
+                    onClick={() => navigate('/license-manager', { state: { storeName: restaurant.name } })}
+                  >
                     Manage Sub
                   </Button>
-                  <Button variant="outline" size="sm" className="flex-1 rounded-xl text-[10px] font-black font-heading uppercase tracking-widest">
-                    View Data
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 rounded-xl text-[10px] font-black font-heading uppercase tracking-widest"
+                    onClick={() => viewDataMutation.mutate(restaurant.id)}
+                    disabled={viewDataMutation.isPending}
+                  >
+                    {viewDataMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'View Data'}
                   </Button>
                 </div>
               </CardContent>

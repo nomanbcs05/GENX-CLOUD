@@ -170,6 +170,60 @@ export interface Database {
           }
         ]
       }
+      restaurants: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          owner_id: string | null
+          subscription_status: string
+          license_expiry: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          owner_id?: string | null
+          subscription_status?: string
+          license_expiry?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          owner_id?: string | null
+          subscription_status?: string
+          license_expiry?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          id: string
+          restaurant_id: string | null
+          full_name: string | null
+          role: string
+          created_at: string
+        }
+        Insert: {
+          id: string
+          restaurant_id?: string | null
+          full_name?: string | null
+          role?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          restaurant_id?: string | null
+          full_name?: string | null
+          role?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

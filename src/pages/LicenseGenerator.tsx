@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { licenseService, LicenseData } from "@/services/licenseService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,8 @@ import { toast } from "sonner";
 import { Copy } from "lucide-react";
 
 const LicenseGenerator = () => {
-  const [storeName, setStoreName] = useState("");
+  const location = useLocation();
+  const [storeName, setStoreName] = useState(location.state?.storeName || "");
   const [months, setMonths] = useState("1");
   const [generatedKey, setGeneratedKey] = useState("");
 
