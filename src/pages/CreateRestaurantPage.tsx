@@ -12,13 +12,16 @@ import { useMultiTenant } from "@/hooks/useMultiTenant";
 
 const CreateRestaurantPage = () => {
   const navigate = useNavigate();
-  const { session, profile } = useMultiTenant();
+  const { session, profile, isLoading } = useMultiTenant();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [loading, setLoading] = useState(false);
 
+  console.log("CreateRestaurantPage Rendering", { isLoading, profileId: profile?.id, hasRestId: !!profile?.restaurant_id });
+
   // If user already has a restaurant, redirect them
   if (profile?.restaurant_id) {
+    console.log("CreateRestaurantPage: User has restaurant, redirecting");
     navigate("/");
     return null;
   }

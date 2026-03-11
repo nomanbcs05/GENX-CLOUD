@@ -170,6 +170,90 @@ export interface Database {
           }
         ]
       }
+      categories: {
+        Row: {
+          id: string
+          name: string
+          icon: string
+          created_at: string
+          restaurant_id: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          icon: string
+          created_at?: string
+          restaurant_id?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          icon?: string
+          created_at?: string
+          restaurant_id?: string | null
+        }
+        Relationships: []
+      }
+      daily_registers: {
+        Row: {
+          id: string
+          opened_at: string
+          closed_at: string | null
+          starting_amount: number
+          ending_amount: number | null
+          status: string
+          notes: string | null
+          restaurant_id: string | null
+        }
+        Insert: {
+          id?: string
+          opened_at?: string
+          closed_at?: string | null
+          starting_amount: number
+          ending_amount?: number | null
+          status?: string
+          notes?: string | null
+          restaurant_id?: string | null
+        }
+        Update: {
+          id?: string
+          opened_at?: string
+          closed_at?: string | null
+          starting_amount?: number
+          ending_amount?: number | null
+          status?: string
+          notes?: string | null
+          restaurant_id?: string | null
+        }
+        Relationships: []
+      }
+      restaurant_tables: {
+        Row: {
+          id: string
+          table_number: string
+          capacity: number
+          status: string
+          created_at: string
+          restaurant_id: string | null
+        }
+        Insert: {
+          id?: string
+          table_number: string
+          capacity?: number
+          status?: string
+          created_at?: string
+          restaurant_id?: string | null
+        }
+        Update: {
+          id?: string
+          table_number?: string
+          capacity?: number
+          status?: string
+          created_at?: string
+          restaurant_id?: string | null
+        }
+        Relationships: []
+      }
       restaurants: {
         Row: {
           id: string
@@ -205,6 +289,7 @@ export interface Database {
           id: string
           restaurant_id: string | null
           full_name: string | null
+          email: string | null
           role: string
           created_at: string
         }
@@ -212,6 +297,7 @@ export interface Database {
           id: string
           restaurant_id?: string | null
           full_name?: string | null
+          email?: string | null
           role?: string
           created_at?: string
         }
@@ -219,6 +305,7 @@ export interface Database {
           id?: string
           restaurant_id?: string | null
           full_name?: string | null
+          email?: string | null
           role?: string
           created_at?: string
         }

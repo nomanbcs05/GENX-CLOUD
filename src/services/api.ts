@@ -18,6 +18,9 @@ type OrderItemInsert = Database['public']['Tables']['order_items']['Insert'] & {
   product_category?: string;
 };
 
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
+
 // Helper to validate UUID - simplified to be more robust
 const isValidUUID = (uuid: string) => {
   if (!uuid || typeof uuid !== 'string') return false;
@@ -117,16 +120,16 @@ export const api = {
     },
     create: async (category: Omit<Category, 'id'>) => {
       const { data, error } = await supabase
-        .from('categories' as any)
+        .from('categories')
         .insert(category as any)
         .select()
         .single();
       if (error) throw error;
-      return data as Category;
+      return data as unknown as Category;
     },
     delete: async (id: string) => {
       const { error } = await supabase
-        .from('categories' as any)
+        .from('categories')
         .delete()
         .eq('id', id);
       if (error) throw error;
@@ -193,7 +196,7 @@ export const api = {
         const newItems = items.filter(item => !existingProdNames.has(item.name));
 
         if (newItems.length > 0) {
-          const { error: prodError } = await supabase.from('products').insert(newItems);
+          const { error: prodError } = await supabase.from('products').insert(newItems as any);
           if (prodError) throw prodError;
         }
 
@@ -209,7 +212,7 @@ export const api = {
         .select('*')
         .order('name');
       if (error) throw error;
-      return data;
+      return data as any[];
     },
     create: async (product: ProductInsert) => {
       const { data, error } = await supabase
@@ -710,6 +713,47 @@ export const api = {
         orders: orders || [],
         customers: customers || []
       };
+    }
+  },
+  profiles: {
+    getAll: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('full_name');
+      if (error) throw error;
+      return data as Profile[];
+    },
+    getByRestaurant: async (restaurantId: string) => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('restaurant_id', restaurantId)
+        .order('full_name');
+      if (error) throw error;
+      return data as Profile[];
+    },
+    update: async (id: string, profile: ProfileUpdate) => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(profile)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Profile;
+    },
+    delete: async (id: string) => {
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    changePassword: async (newPassword: string) => {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      return true;
     }
   }
 };

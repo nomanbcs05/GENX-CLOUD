@@ -33,7 +33,7 @@ export const useMultiTenant = () => {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, session);
+      console.log("Auth state change in hook:", event, session?.user?.email);
       if (event === "SIGNED_OUT" || !session) {
         setSession(null);
         setSessionLoading(false);
@@ -57,7 +57,7 @@ export const useMultiTenant = () => {
         .single();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error fetching profile detail:', error);
         if (error.code === '406') {
           toast.error('Profile not found or request not acceptable. Please contact support.');
         } else {
@@ -65,6 +65,7 @@ export const useMultiTenant = () => {
         }
         return null;
       }
+      console.log("Profile loaded successfully:", data.id);
       return data as Profile;
     },
     enabled: !!session?.user?.id,

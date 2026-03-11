@@ -1,12 +1,13 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { supabaseSignup } from '@/integrations/supabase/supabaseAdmin';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Users, Building2, Calendar, ShieldCheck } from 'lucide-react';
+import { Loader2, Plus, Users, Building2, Calendar, ShieldCheck, Mail, Lock, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { format } from 'date-fns';
@@ -17,6 +18,9 @@ const SuperAdminDashboard = () => {
   const navigate = useNavigate();
   const [newRestaurantName, setNewRestaurantName] = useState('');
   const [newRestaurantSlug, setNewRestaurantSlug] = useState('');
+  const [ownerEmail, setOwnerEmail] = useState('');
+  const [ownerPassword, setOwnerPassword] = useState('');
+  const [ownerFullName, setOwnerFullName] = useState('');
 
   const { data: restaurants = [], isLoading } = useQuery({
     queryKey: ['super-admin-restaurants'],
@@ -30,24 +34,65 @@ const SuperAdminDashboard = () => {
     },
   });
 
-  const createRestaurantMutation = useMutation({
-    mutationFn: async ({ name, slug }: { name: string, slug: string }) => {
-      const { data, error } = await supabase
+  const createAccountMutation = useMutation({
+    mutationFn: async ({ name, slug, email, password, fullName }: { 
+      name: string; slug: string; email: string; password: string; fullName: string;
+    }) => {
+      // Step 1: Create the Auth user using the isolated client (won't log out Super Admin)
+      const { data: authData, error: authError } = await supabaseSignup.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: fullName },
+        },
+      });
+
+      if (authError) throw new Error(`Auth Error: ${authError.message}`);
+      if (!authData.user) throw new Error('User creation returned no data. Email may already be registered.');
+
+      const userId = authData.user.id;
+
+      // Step 2: Create the restaurant record (using main admin client)
+      const { data: restaurant, error: restError } = await supabase
         .from('restaurants')
-        .insert([{ name, slug, subscription_status: 'active' }])
+        .insert([{
+          name,
+          slug: slug.toLowerCase().replace(/\s+/g, '-'),
+          owner_id: userId,
+          subscription_status: 'trial',
+          license_expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30-day trial
+        }])
         .select()
         .single();
-      if (error) throw error;
-      return data;
+
+      if (restError) throw new Error(`Restaurant Error: ${restError.message}`);
+
+      // Step 3: Create/update the profile to link user → restaurant as admin
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: userId,
+          restaurant_id: restaurant.id,
+          full_name: fullName,
+          email: email,
+          role: 'admin',
+        });
+
+      if (profileError) throw new Error(`Profile Error: ${profileError.message}`);
+
+      return restaurant;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['super-admin-restaurants'] });
       setNewRestaurantName('');
       setNewRestaurantSlug('');
-      toast.success('Restaurant created successfully');
+      setOwnerEmail('');
+      setOwnerPassword('');
+      setOwnerFullName('');
+      toast.success(`Restaurant "${data.name}" created with owner account!`);
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to create restaurant');
+      toast.error(error.message || 'Failed to create restaurant account');
     }
   });
 
@@ -66,12 +111,14 @@ const SuperAdminDashboard = () => {
     },
     onSuccess: () => {
       toast.success('Successfully switched to restaurant context');
-      window.location.href = '/'; // Hard refresh to load new data context
+      window.location.href = '/';
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to switch context');
     }
   });
+
+  const isFormValid = newRestaurantName && newRestaurantSlug && ownerEmail && ownerPassword.length >= 6 && ownerFullName;
 
   if (isLoading) {
     return (
@@ -97,41 +144,95 @@ const SuperAdminDashboard = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
+        {/* Register New Restaurant + Owner Account */}
         <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden">
           <CardHeader className="bg-slate-900 text-white">
             <CardTitle className="text-lg font-black font-heading uppercase tracking-tight flex items-center gap-2">
-              <Plus className="h-5 w-5 text-blue-400" />
-              Register New Restaurant
+              <UserPlus className="h-5 w-5 text-blue-400" />
+              Register New Restaurant Account
             </CardTitle>
+            <p className="text-slate-400 text-xs font-medium mt-1">Create a restaurant with an owner login — they can sign in immediately</p>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Owner Details */}
+              <div className="space-y-2">
+                <label className="text-xs font-black font-heading uppercase tracking-widest text-slate-500">Owner Full Name</label>
+                <div className="relative">
+                  <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input 
+                    placeholder="e.g., Ahmed Khan" 
+                    value={ownerFullName}
+                    onChange={(e) => setOwnerFullName(e.target.value)}
+                    className="pl-10 rounded-xl border-slate-200 h-11"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black font-heading uppercase tracking-widest text-slate-500">Owner Email (Login)</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input 
+                    type="email"
+                    placeholder="owner@restaurant.com" 
+                    value={ownerEmail}
+                    onChange={(e) => setOwnerEmail(e.target.value)}
+                    className="pl-10 rounded-xl border-slate-200 h-11"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black font-heading uppercase tracking-widest text-slate-500">Password (min 6 chars)</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input 
+                    type="password"
+                    placeholder="••••••••" 
+                    value={ownerPassword}
+                    onChange={(e) => setOwnerPassword(e.target.value)}
+                    className="pl-10 rounded-xl border-slate-200 h-11"
+                  />
+                </div>
+              </div>
+
+              {/* Restaurant Details */}
               <div className="space-y-2">
                 <label className="text-xs font-black font-heading uppercase tracking-widest text-slate-500">Restaurant Name</label>
-                <Input 
-                  placeholder="e.g., Downtown Bistro" 
-                  value={newRestaurantName}
-                  onChange={(e) => setNewRestaurantName(e.target.value)}
-                  className="rounded-xl border-slate-200"
-                />
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input 
+                    placeholder="e.g., Downtown Bistro" 
+                    value={newRestaurantName}
+                    onChange={(e) => setNewRestaurantName(e.target.value)}
+                    className="pl-10 rounded-xl border-slate-200 h-11"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black font-heading uppercase tracking-widest text-slate-500">Unique Slug (URL)</label>
-                <Input 
-                  placeholder="e.g., downtown-bistro" 
-                  value={newRestaurantSlug}
-                  onChange={(e) => setNewRestaurantSlug(e.target.value)}
-                  className="rounded-xl border-slate-200"
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">@</span>
+                  <Input 
+                    placeholder="downtown-bistro" 
+                    value={newRestaurantSlug}
+                    onChange={(e) => setNewRestaurantSlug(e.target.value)}
+                    className="pl-10 rounded-xl border-slate-200 h-11"
+                  />
+                </div>
               </div>
               <div className="flex items-end">
                 <Button 
-                  className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 font-black font-heading uppercase tracking-widest h-10 shadow-lg shadow-blue-500/20"
-                  onClick={() => createRestaurantMutation.mutate({ name: newRestaurantName, slug: newRestaurantSlug })}
-                  disabled={!newRestaurantName || !newRestaurantSlug || createRestaurantMutation.isPending}
+                  className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 font-black font-heading uppercase tracking-widest h-11 shadow-lg shadow-blue-500/20"
+                  onClick={() => createAccountMutation.mutate({ 
+                    name: newRestaurantName, 
+                    slug: newRestaurantSlug, 
+                    email: ownerEmail, 
+                    password: ownerPassword, 
+                    fullName: ownerFullName 
+                  })}
+                  disabled={!isFormValid || createAccountMutation.isPending}
                 >
-                  {createRestaurantMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Restaurant'}
+                  {createAccountMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Account'}
                 </Button>
               </div>
             </div>

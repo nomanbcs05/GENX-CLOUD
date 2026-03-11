@@ -27,18 +27,8 @@ const LoginPage = () => {
     // Save current role to localStorage for other components to use
     localStorage.setItem('active_role', role);
 
-    if (role === 'cashier') {
-      setEmail("atifzaidi1978@Gmail.com");
-      return;
-    }
-
-    if (role === 'admin') {
-      setEmail("noman21cs@gmail.com");
-      return;
-    }
-
-    if (role === 'cashier2') {
-      setEmail("na727175@gmail.com");
+    if (location.state?.email) {
+      setEmail(location.state.email);
       return;
     }
 
@@ -51,10 +41,8 @@ const LoginPage = () => {
       } catch (e) {
         console.error("Failed to parse saved users", e);
       }
-    } else {
-      setEmail(""); // Clear if no saved user for other roles
     }
-  }, [role]);
+  }, [role, location.state]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +56,12 @@ const LoginPage = () => {
       });
 
       if (error) {
+        console.error("Login error:", error);
+        if (error.message.includes("Invalid login credentials")) {
+          toast.error("Invalid email or password. Please try again.");
+        } else {
+          toast.error("An unexpected error occurred. Please try again later.");
+        }
         throw error;
       }
 
@@ -78,14 +72,13 @@ const LoginPage = () => {
       toast.success(`Welcome back!`);
 
       // Show Start New Session modal for cashiers
-      if (role === 'cashier') {
+      if (role === "cashier") {
         setShowStartSessionModal(true);
       } else {
-        navigate("/");
+        navigate("/dashboard");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Login error:", error);
-      toast.error(error.message || "Failed to login");
     } finally {
       setLoading(false);
     }
@@ -137,8 +130,8 @@ const LoginPage = () => {
                 <RoleIcon className="w-6 h-6" />
               </div>
               <div>
-                <CardTitle className="text-2xl font-black font-heading uppercase tracking-tight">Login as {role === 'cashier' ? 'Anas' : (role === 'cashier2' ? 'Cashier 2' : role.charAt(0).toUpperCase() + role.slice(1))}</CardTitle>
-                <CardDescription className="font-medium">Enter your credentials</CardDescription>
+                <CardTitle className="text-2xl font-black font-heading uppercase tracking-tight">Login Credentials</CardTitle>
+                <CardDescription className="font-medium">Sign in to your {role} account</CardDescription>
               </div>
             </div>
           </CardHeader>

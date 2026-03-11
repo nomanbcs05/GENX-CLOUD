@@ -9,7 +9,16 @@ const ProtectedRoute = ({ children, adminOnly = false }: { children: React.React
   const { session, profile, isLoading } = useMultiTenant();
   const location = useLocation();
 
+  console.log("ProtectedRoute State:", { 
+    path: location.pathname, 
+    isLoading, 
+    hasSession: !!session, 
+    hasProfile: !!profile, 
+    restaurantId: profile?.restaurant_id 
+  });
+
   if (isLoading) {
+    console.log("ProtectedRoute: Loading session/profile...");
     return (
       <div className="h-screen w-full flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -18,6 +27,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: { children: React.React
   }
 
   if (!session) {
+    console.log("ProtectedRoute: No session found, redirecting to /auth");
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
@@ -26,7 +36,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: { children: React.React
   }
 
   // If user is logged in but has no restaurant (only for new users)
-  if (profile && !profile.restaurant_id && profile.role !== 'super-admin') {
+  if (profile && !profile.restaurant_id && profile.role !== 'super-admin' && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
 
