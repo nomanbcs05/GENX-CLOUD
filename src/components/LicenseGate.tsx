@@ -52,9 +52,8 @@ export const LicenseGate = ({ children }: { children?: React.ReactNode }) => {
 
       setIsValid(isSubscriptionActive);
     } else {
-      // If logged in but no restaurant, they need to go to onboarding
-      // We allow them through the gate so ProtectedRoute can redirect them
-      setIsValid(true);
+      // If logged in but no restaurant, we should block access to POS pages
+      setIsValid(false);
     }
     
     setChecking(false);
@@ -70,6 +69,11 @@ export const LicenseGate = ({ children }: { children?: React.ReactNode }) => {
   }
 
   if (isValid) {
+    return <>{children || <Outlet />}</>;
+  }
+
+  // If the user has no restaurant ID at all, let the ProtectedRoute redirect them to Onboarding
+  if (!restaurant && profile && !profile.restaurant_id) {
     return <>{children || <Outlet />}</>;
   }
 
