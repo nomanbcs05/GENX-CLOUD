@@ -131,7 +131,7 @@ const SuperAdminDashboard = () => {
         .single();
       if (restError) throw new Error(`Restaurant: ${restError.message}`);
 
-      const { error: profileError } = await supabase
+      const { error: profileError } = await supabaseSignup
         .from('profiles')
         .upsert({ id: userId, restaurant_id: restaurant.id, full_name: fullName, email, role: 'admin' });
       if (profileError) throw new Error(`Profile: ${profileError.message}`);
