@@ -26,30 +26,20 @@ const LoginPage = () => {
   useEffect(() => {
     // Save current role to localStorage for other components to use
     localStorage.setItem('active_role', role);
-
-    if (role === 'cashier') {
-      setEmail("atifzaidi1978@Gmail.com");
-      return;
-    }
-
-    if (role === 'admin') {
-      setEmail("noman21cs@gmail.com");
-      return;
-    }
-
-    if (role === 'cashier2') {
-      setEmail("na727175@gmail.com");
-      return;
-    }
-
+    
     const saved = localStorage.getItem("pos_saved_users");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         setSavedUsers(parsed);
-        if (parsed[role]) setEmail(parsed[role]);
+        if (parsed[role]) {
+          setEmail(parsed[role]);
+        } else {
+          setEmail("");
+        }
       } catch (e) {
         console.error("Failed to parse saved users", e);
+        setEmail("");
       }
     } else {
       setEmail("");
