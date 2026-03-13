@@ -202,6 +202,66 @@ const SuperAdminDashboard = () => {
     },
   });
 
+  const deleteRestaurantMutation = useMutation({
+    mutationFn: async (restaurantId: string) => {
+      if (!restaurantId) throw new Error('Restaurant ID is required');
+
+      // Delete tenant data first to avoid foreign key issues
+      const tables = [
+        'order_items',
+        'orders',
+        'customers',
+        'products',
+        'categories',
+        'daily_registers',
+        'restaurant_tables',
+      ];
+
+      for (const table of tables) {
+        const { error } = await supabase
+          .from(table as any)
+          .delete()
+          .eq('restaurant_id', restaurantId as any);
+        if (error) {
+          console.error(`Failed deleting from ${table}`, error);
+          throw new Error(`Failed to delete ${table} for restaurant`);
+        }
+      }
+
+      const { error: restaurantError } = await supabase
+        .from('restaurants')
+        .delete()
+        .eq('id', restaurantId);
+
+      if (restaurantError) {
+        console.error('Failed deleting restaurant', restaurantError);
+        throw new Error('Failed to delete restaurant');
+      }
+
+      return restaurantId;
+    },
+    onSuccess: (id) => {
+      queryClient.invalidateQueries({ queryKey: ['super-admin-restaurants'] });
+      setLoadingStates(prev => {
+        const copy = { ...prev };
+        delete copy[`delete-${id}`];
+        return copy;
+      });
+      toast.success('Restaurant and all related data deleted');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to delete restaurant');
+      setLoadingStates(prev => {
+        // Clear all delete loading states
+        const copy = { ...prev };
+        Object.keys(copy).forEach(key => {
+          if (key.startsWith('delete-')) delete copy[key];
+        });
+        return copy;
+      });
+    },
+  });
+
   // ─── Button Handlers ───────────────────────────────────────────────────
   const handleActivate = useCallback((restaurantId: string) => {
     setLoadingStates(prev => ({ ...prev, [`activate-${restaurantId}`]: true }));
@@ -234,6 +294,19 @@ const SuperAdminDashboard = () => {
     setLoadingStates(prev => ({ ...prev, [`view-${restaurantId}`]: true }));
     viewDataMutation.mutate(restaurantId);
   }, [viewDataMutation]);
+
+  const handleDelete = useCallback((restaurant: Restaurant) => {
+    if (restaurant.slug === 'default-restaurant') {
+      toast.error('Default restaurant cannot be deleted');
+      return;
+    }
+    const confirmed = window.confirm(
+      `Delete restaurant "${restaurant.name}" and all its data (orders, products, customers)? This cannot be undone.`
+    );
+    if (!confirmed) return;
+    setLoadingStates(prev => ({ ...prev, [`delete-${restaurant.id}`]: true }));
+    deleteRestaurantMutation.mutate(restaurant.id);
+  }, [deleteRestaurantMutation]);
 
   const isFormValid = newRestaurantName && newRestaurantSlug && ownerEmail && ownerPassword.length >= 6 && ownerFullName;
 
@@ -529,6 +602,26 @@ const SuperAdminDashboard = () => {
                                 <Eye className="h-3 w-3 mr-1" />
                               )}
                               View
+                            </Button>
+
+                            {/* Delete Restaurant */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-lg text-[10px] font-bold uppercase tracking-wider h-8 px-3 border-red-200 text-red-600 hover:bg-red-50"
+                              onClick={() => handleDelete(restaurant)}
+                              disabled={
+                                restaurant.slug === 'default-restaurant' ||
+                                loadingStates[`delete-${restaurant.id}`] ||
+                                deleteRestaurantMutation.isPending
+                              }
+                            >
+                              {loadingStates[`delete-${restaurant.id}`] ? (
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-3 w-3 mr-1" />
+                              )}
+                              Delete
                             </Button>
                           </div>
                         </td>

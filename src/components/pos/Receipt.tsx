@@ -2,6 +2,7 @@ import { forwardRef, useState } from 'react';
 import { format } from 'date-fns';
 import { businessInfo } from '@/data/mockData';
 import { CartItem, Customer } from '@/stores/cartStore';
+import { useMultiTenant } from '@/hooks/useMultiTenant';
 
 interface Order {
   orderNumber: string;
@@ -28,6 +29,17 @@ interface ReceiptProps {
 
 const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
   const [logoError, setLogoError] = useState(false);
+  const { restaurant } = useMultiTenant();
+
+  const logoSrc = restaurant?.logo_url || `/logo.jpeg?v=${Date.now()}`;
+  const name = restaurant?.name || businessInfo.name;
+  const address = restaurant?.address || businessInfo.address;
+  const city = restaurant?.city || businessInfo.city;
+  const phone = restaurant?.phone || businessInfo.phone;
+  const taxId = restaurant?.tax_id || businessInfo.taxId;
+  const website = restaurant?.website || businessInfo.website;
+  const receiptFooter =
+    restaurant?.receipt_footer || 'Thank you for your visit! Come back soon!';
   const paymentMethodLabel = {
     cash: 'Cash',
     card: 'Card',
@@ -44,7 +56,7 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
       <div className="text-center mb-4">
         {!logoError ? (
           <img
-            src={`/logo.jpeg?v=${Date.now()}`}
+            src={logoSrc}
             alt="Logo"
             className="max-w-[120px] mx-auto mb-1 object-contain"
             onError={() => setLogoError(true)}
@@ -52,11 +64,11 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
         ) : (
           <div className="text-2xl mb-2">☕</div>
         )}
-        <h1 className="text-lg font-bold">{businessInfo.name}</h1>
-        <p>{businessInfo.address}</p>
-        <p>{businessInfo.city}</p>
-        <p>Tel: {businessInfo.phone}</p>
-        <p>Tax ID: {businessInfo.taxId}</p>
+        <h1 className="text-lg font-bold">{name}</h1>
+        <p>{address}</p>
+        <p>{city}</p>
+        {phone && <p>Tel: {phone}</p>}
+        {taxId && <p>Tax ID: {taxId}</p>}
       </div>
 
       {/* Divider */}
@@ -151,9 +163,8 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
       <div className="border-t-2 border-dashed border-black my-3" />
 
       <div className="text-center mt-4">
-        <p className="font-bold">Thank you for your visit!</p>
-        <p>Come back soon!</p>
-        <p className="mt-2">{businessInfo.website}</p>
+        <p className="font-bold">{receiptFooter}</p>
+        {website && <p className="mt-2">{website}</p>}
 
         {/* QR Code placeholder */}
         <div className="mt-4 mx-auto w-20 h-20 border-2 border-black flex items-center justify-center">

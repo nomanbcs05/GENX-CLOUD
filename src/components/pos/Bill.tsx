@@ -2,6 +2,7 @@ import { forwardRef, useState } from 'react';
 import { format } from 'date-fns';
 import { businessInfo } from '@/data/mockData';
 import { CartItem, Customer } from '@/stores/cartStore';
+import { useMultiTenant } from '@/hooks/useMultiTenant';
 
 interface Order {
   orderNumber: string;
@@ -28,6 +29,18 @@ interface BillProps {
 
 const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
   const [logoError, setLogoError] = useState(false);
+  const { restaurant } = useMultiTenant();
+
+  const logoSrc = restaurant?.logo_url || `/logo.jpeg?v=${Date.now()}`;
+  const name = restaurant?.name || businessInfo.name;
+  const address = restaurant?.address || businessInfo.address;
+  const city = restaurant?.city || businessInfo.city;
+  const phone = restaurant?.phone || businessInfo.phone;
+  const billFooter =
+    restaurant?.bill_footer ||
+    '!!!!FOR THE LOVE OF FOOD !!!!';
+  const poweredByFooter =
+    restaurant?.receipt_footer || 'Powered By: GENAI TECHNOLOGY.';
 
   return (
     <div
@@ -39,7 +52,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
       <div className="text-center mb-1">
         {!logoError ? (
           <img
-            src={`/logo.jpeg?v=${Date.now()}`}
+            src={logoSrc}
             alt="Logo"
             className="mx-auto mb-1 object-contain h-16 max-w-[120px] w-auto"
             onError={() => setLogoError(true)}
@@ -53,10 +66,16 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
 
       {/* Address Box */}
       <div className="border border-black p-1 text-center mb-1 text-[10px]">
-        <p>{businessInfo.address}</p>
-        <p>{businessInfo.city}</p>
-        <p className="font-bold">{businessInfo.phone.split(',')[0]}</p>
-        <p className="font-bold">{businessInfo.phone.split(',')[1]}</p>
+        <p>{address}</p>
+        <p>{city}</p>
+        {phone && (
+          <>
+            <p className="font-bold">{phone.split(',')[0]}</p>
+            {phone.split(',')[1] && (
+              <p className="font-bold">{phone.split(',')[1]}</p>
+            )}
+          </>
+        )}
         <p className="text-[9px] mt-1 border-t border-dotted border-black pt-1">
           Designed & Developed By Genai Tech
         </p>
@@ -76,7 +95,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
         </div>
         <div className="flex justify-between mt-1">
           <span>Restaurant:</span>
-          <span className="font-bold uppercase">{businessInfo.name}</span>
+          <span className="font-bold uppercase">{name}</span>
         </div>
         <div className="flex justify-between mt-1">
           <span>{order.cashierName}</span>
@@ -187,9 +206,8 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
 
       {/* Footer */}
       <div className="border border-black mt-1 p-2 text-center text-[10px]">
-        <p>!!!!FOR THE LOVE OF FOOD !!!!</p>
-        <p className="font-bold mt-1">Powered By: GENAI TECHNOLOGY.</p>
-        <p>+92334-2826675</p>
+        <p>{billFooter}</p>
+        <p className="font-bold mt-1">{poweredByFooter}</p>
       </div>
     </div>
   );

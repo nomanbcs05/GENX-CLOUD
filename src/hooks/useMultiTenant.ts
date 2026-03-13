@@ -16,6 +16,16 @@ export interface Restaurant {
   slug: string;
   subscription_status: 'trial' | 'active' | 'expired' | 'cancelled';
   license_expiry: string | null;
+  // Optional branding & business fields (may be null if not set)
+  address?: string | null;
+  city?: string | null;
+  phone?: string | null;
+  tax_id?: string | null;
+  website?: string | null;
+  email?: string | null;
+  logo_url?: string | null;
+  receipt_footer?: string | null;
+  bill_footer?: string | null;
 }
 
 export const useMultiTenant = () => {
