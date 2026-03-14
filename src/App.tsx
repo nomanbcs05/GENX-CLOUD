@@ -40,6 +40,9 @@ const App = () => (
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
             <Route path="/license-manager" element={<LicenseGenerator />} />
+            <Route path="/auth" element={<Welcome />} />
+            <Route path="/login" element={<LoginPage />} />
+
             <Route path="/super-admin" element={
               <ProtectedRoute adminOnly>
                 <SuperAdminDashboard />
@@ -88,8 +91,6 @@ const App = () => (
                 <SettingsPage />
               </ProtectedRoute>
             } />
-            <Route path="/auth" element={<Welcome />} />
-            <Route path="/login" element={<LoginPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>
