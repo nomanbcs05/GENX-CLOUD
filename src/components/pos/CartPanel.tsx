@@ -72,6 +72,14 @@ const CartPanel = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
+      // First try to get from localStorage (set during login)
+      const savedName = localStorage.getItem('active_staff_name');
+      if (savedName) {
+        setCashierName(savedName);
+        return;
+      }
+
+      // Fallback to Supabase user info
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.email) {
         if (user.email?.toLowerCase() === 'atifzaidi1978@gmail.com') {

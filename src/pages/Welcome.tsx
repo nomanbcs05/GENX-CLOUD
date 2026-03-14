@@ -6,6 +6,22 @@ type Role = "admin" | "cashier" | "cashier2";
 
 const Welcome = () => {
   const navigate = useNavigate();
+  const [staffNames, setStaffNames] = useState({
+    cashier: 'Anas',
+    cashier2: 'Cashier 2'
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem('pos_staff_names');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const names: any = {};
+      parsed.forEach((s: any) => {
+        names[s.id] = s.name;
+      });
+      setStaffNames(names);
+    }
+  }, []);
 
   const handleRoleSelect = (role: Role) => {
     navigate("/login", { state: { role } });
@@ -50,7 +66,7 @@ const Welcome = () => {
 
         {/* Cashier Card */}
         <RoleCard
-          title="Anas"
+          title={staffNames.cashier}
           icon={User}
           description="Process orders and manage payments"
           onSelect={() => handleRoleSelect("cashier")}
@@ -58,7 +74,7 @@ const Welcome = () => {
 
         {/* Cashier 2 Card */}
         <RoleCard
-          title="Cashier 2"
+          title={staffNames.cashier2}
           icon={Users}
           description="Secondary station for peak hours"
           onSelect={() => handleRoleSelect("cashier2")}

@@ -22,8 +22,23 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [savedUsers, setSavedUsers] = useState<Record<string, string>>({});
   const [showStartSessionModal, setShowStartSessionModal] = useState(false);
+  const [staffDisplayName, setStaffDisplayName] = useState("");
 
   useEffect(() => {
+    // Get display name from localStorage
+    const savedStaff = localStorage.getItem('pos_staff_names');
+    if (savedStaff) {
+      const parsed = JSON.parse(savedStaff);
+      const staff = parsed.find((s: any) => s.id === role);
+      if (staff) {
+        setStaffDisplayName(staff.name);
+      } else {
+        setStaffDisplayName(role === 'admin' ? 'Admin' : (role === 'cashier' ? 'Anas' : 'Cashier 2'));
+      }
+    } else {
+      setStaffDisplayName(role === 'admin' ? 'Admin' : (role === 'cashier' ? 'Anas' : 'Cashier 2'));
+    }
+
     // Save current role to localStorage for other components to use
     localStorage.setItem('active_role', role);
     
@@ -68,8 +83,9 @@ const LoginPage = () => {
 
       const newSavedUsers = { ...savedUsers, [role]: email };
       localStorage.setItem("pos_saved_users", JSON.stringify(newSavedUsers));
+      localStorage.setItem("active_staff_name", staffDisplayName);
 
-      toast.success(`Welcome back!`);
+      toast.success(`Welcome back, ${staffDisplayName}!`);
 
       if (role === "cashier") {
         setShowStartSessionModal(true);
@@ -129,7 +145,7 @@ const LoginPage = () => {
                 <RoleIcon className="w-6 h-6" />
               </div>
               <div>
-                <CardTitle className="text-2xl font-black font-heading uppercase tracking-tight">Login as {role === 'cashier' ? 'Anas' : (role === 'cashier2' ? 'Cashier 2' : role.charAt(0).toUpperCase() + role.slice(1))}</CardTitle>
+                <CardTitle className="text-2xl font-black font-heading uppercase tracking-tight">Login as {staffDisplayName}</CardTitle>
                 <CardDescription className="font-medium">Enter your credentials</CardDescription>
               </div>
             </div>

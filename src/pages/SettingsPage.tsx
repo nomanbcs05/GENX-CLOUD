@@ -142,6 +142,25 @@ const SettingsPage = () => {
     }
   };
 
+  const [staffList, setStaffList] = useState([
+    { id: 'cashier', name: 'ANAS', role: 'Cashier' },
+    { id: 'cashier2', name: 'CASHIER 2', role: 'Secondary Cashier' }
+  ]);
+
+  useEffect(() => {
+    const savedStaff = localStorage.getItem('pos_staff_names');
+    if (savedStaff) {
+      setStaffList(JSON.parse(savedStaff));
+    }
+  }, []);
+
+  const handleUpdateStaffName = (id: string, newName: string) => {
+    const updated = staffList.map(s => s.id === id ? { ...s, name: newName } : s);
+    setStaffList(updated);
+    localStorage.setItem('pos_staff_names', JSON.stringify(updated));
+    toast.success('Staff name updated successfully');
+  };
+
   return (
     <MainLayout>
       <ScrollArea className="h-full">
@@ -508,39 +527,36 @@ const SettingsPage = () => {
                     Staff Management
                   </CardTitle>
                   <CardDescription>
-                    Manage employees and their access roles for {restaurant?.name}
+                    Change the display names for your staff roles
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    <div className="divide-y border rounded-xl overflow-hidden">
-                      {staffMembers.map((member) => (
-                        <div key={member.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                          <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold uppercase">
-                              {member.full_name?.charAt(0) || 'U'}
-                            </div>
-                            <div>
-                              <p className="font-bold text-slate-900">{member.full_name || 'Unnamed User'}</p>
-                              <p className="text-xs text-slate-500 font-medium">{member.role} • Active</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600">
-                              <Edit className="h-4 w-4" />
+                    {staffList.map((staff) => (
+                      <div key={staff.id} className="flex items-center gap-4 p-4 border rounded-xl bg-slate-50/50">
+                        <div className="flex-1 space-y-2">
+                          <Label htmlFor={`staff-${staff.id}`}>{staff.role} Name</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id={`staff-${staff.id}`}
+                              value={staff.name}
+                              onChange={(e) => {
+                                const updated = staffList.map(s => s.id === staff.id ? { ...s, name: e.target.value } : s);
+                                setStaffList(updated);
+                              }}
+                              className="bg-white"
+                            />
+                            <Button 
+                              onClick={() => handleUpdateStaffName(staff.id, staff.name)}
+                              size="sm"
+                              className="bg-slate-900 text-white"
+                            >
+                              Save
                             </Button>
-                            {profile?.id !== member.id && (
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-red-600">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                    <Button className="w-full bg-slate-900 text-white hover:bg-slate-800">
-                      Invite New Staff Member
-                    </Button>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
