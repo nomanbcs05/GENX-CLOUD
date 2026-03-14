@@ -48,6 +48,8 @@ const ManageProductsPage = () => {
     { id: 'broast', name: 'Broast', key: 'pos_menu_broast', icon: ChefHat },
     { id: 'sauce', name: 'Sauces', key: 'pos_menu_sauce', icon: Utensils },
     { id: 'deals', name: 'Deals', key: 'pos_menu_deals', icon: Tag },
+    { id: 'fries', name: 'Fries', key: 'pos_menu_fries', icon: Package },
+    { id: 'beverages', name: 'Beverages', key: 'pos_menu_beverages', icon: Package },
   ];
 
   const openVirtualMenuEditor = (category: any) => {

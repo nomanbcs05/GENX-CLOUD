@@ -23,6 +23,8 @@ import BurgerSelectionModal from './BurgerSelectionModal';
 import BarBQSelectionModal from './BarBQSelectionModal';
 import SauceToppingSelectionModal from './SauceToppingSelectionModal';
 import DealsSelectionModal from './DealsSelectionModal';
+import FriesSelectionModal from './FriesSelectionModal';
+import BeveragesSelectionModal from './BeveragesSelectionModal';
 
 const ProductGrid = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,6 +40,8 @@ const ProductGrid = () => {
   const [showBarBQModal, setShowBarBQModal] = useState(false);
   const [showSauceToppingModal, setShowSauceToppingModal] = useState(false);
   const [showDealsModal, setShowDealsModal] = useState(false);
+  const [showFriesModal, setShowFriesModal] = useState(false);
+  const [showBeveragesModal, setShowBeveragesModal] = useState(false);
   
   const { data: openRegister } = useQuery({
     queryKey: ['open-register'],
@@ -325,6 +329,49 @@ const ProductGrid = () => {
        products = products.filter(p => p.category !== 'Deals' && !(p as any).isVirtual);
      }
 
+     // Special logic for Fries:
+     const isFriesVisible = selectedCategory === 'all' || selectedCategory === 'ALA CART';
+     
+     if (isFriesVisible) {
+       const isFriesItem = (p: any) => p.name?.toLowerCase?.().includes('fries') && p.category === 'ALA CART';
+       products = products.filter(p => !isFriesItem(p));
+       
+       const virtualFries = {
+         id: 'virtual-fries-menu',
+         name: 'Fries Menu',
+         price: 0,
+         category: 'ALA CART',
+         image: '🍟',
+         isVirtual: true,
+         modalType: 'fries'
+       };
+       
+       if (!searchQuery.trim() || virtualFries.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+         products = [virtualFries as any, ...products];
+       }
+     }
+
+     // Special logic for Beverages:
+     const isBeveragesVisible = selectedCategory === 'all' || selectedCategory === 'Beverages';
+     
+     if (isBeveragesVisible) {
+       products = products.filter(p => p.category !== 'Beverages');
+       
+       const virtualBeverages = {
+         id: 'virtual-beverages-menu',
+         name: 'Beverages Menu',
+         price: 0,
+         category: 'Beverages',
+         image: '🥤',
+         isVirtual: true,
+         modalType: 'beverages'
+       };
+       
+       if (!searchQuery.trim() || virtualBeverages.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+         products = [virtualBeverages as any, ...products];
+       }
+     }
+
      // Then filter by search
     if (searchQuery.trim()) {
       const searchResults = fuse.search(searchQuery);
@@ -353,6 +400,10 @@ const ProductGrid = () => {
         setShowSauceToppingModal(true);
       } else if ((product as any).modalType === 'deals') {
         setShowDealsModal(true);
+      } else if ((product as any).modalType === 'fries') {
+        setShowFriesModal(true);
+      } else if ((product as any).modalType === 'beverages') {
+        setShowBeveragesModal(true);
       }
       return;
     }
@@ -584,6 +635,18 @@ const ProductGrid = () => {
         <DealsSelectionModal
           isOpen={showDealsModal}
           onClose={() => setShowDealsModal(false)}
+          onAdd={handleAddToCart}
+        />
+
+        <FriesSelectionModal
+          isOpen={showFriesModal}
+          onClose={() => setShowFriesModal(false)}
+          onAdd={handleAddToCart}
+        />
+
+        <BeveragesSelectionModal
+          isOpen={showBeveragesModal}
+          onClose={() => setShowBeveragesModal(false)}
           onAdd={handleAddToCart}
         />
       </div>
