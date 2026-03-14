@@ -166,7 +166,7 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
       {/* Footer */}
       <div className="text-center space-y-1">
         <p className="font-bold">{receiptFooter}</p>
-        <p className="text-[10px] opacity-50">Powered By: GENX CLOUD</p>
+        <p className="text-[10px] opacity-50">Powered By: GENX CLOUD +92 334 2826675</p>
       </div>
     </div>
   );

@@ -40,7 +40,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
     restaurant?.bill_footer ||
     '!!!!FOR THE LOVE OF FOOD !!!!';
   const poweredByFooter =
-    restaurant?.receipt_footer || 'Powered By: GENX CLOUD';
+    restaurant?.receipt_footer || 'Powered By: GENX CLOUD +92 334 2826675';
 
   return (
     <div
