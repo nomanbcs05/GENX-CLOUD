@@ -57,10 +57,10 @@ const ProductGrid = () => {
     queryFn: api.products.getAll,
   });
 
-  // Automatically seed Arabic Broast items if none exist
+  // Automatically seed menu items if none exist
   const queryClient = useQueryClient();
   const { mutate: seedMenu } = useMutation({
-    mutationFn: api.products.seedArabicBroast,
+    mutationFn: api.products.seedPizzaBurgerHouse,
     onMutate: () => {
       toast.loading('Seeding menu items...', { id: 'seed-toast' });
     },
@@ -77,10 +77,10 @@ const ProductGrid = () => {
 
   useEffect(() => {
     if (!productsLoading) {
-      const hasDeals = allProducts.some(p => p.category === 'Deals');
-      const hasBurgers = allProducts.some(p => p.category === 'Burgers');
+      const hasPizza = allProducts.some(p => p.category === 'Pizzas');
+      const hasRolls = allProducts.some(p => p.category === 'Rolls');
       
-      if (!hasDeals || !hasBurgers) {
+      if (!hasPizza || !hasRolls) {
         seedMenu();
       }
     }
@@ -92,10 +92,15 @@ const ProductGrid = () => {
     queryFn: api.categories.getAll,
   });
 
-  // Combine default "All" category with fetched categories
+  // New Menu Categories to show
+  const NEW_MENU_CATEGORIES = ['Deals', 'Burgers', 'Rolls', 'Pizzas', 'Fries', 'ALA CART', 'Beverages'];
+
+  // Combine default "All" category with fetched categories, but filter for new menu only
   const allCategories = useMemo(() => [
     { id: 'all', name: 'All Category', icon: 'Grid3x3' },
-    ...categories.map(c => ({ id: c.name, name: c.name, icon: c.icon }))
+    ...categories
+      .filter(c => NEW_MENU_CATEGORIES.includes(c.name))
+      .map(c => ({ id: c.name, name: c.name, icon: c.icon }))
   ], [categories]);
 
   const fuse = useMemo(() => new Fuse(allProducts, {
@@ -104,203 +109,19 @@ const ProductGrid = () => {
   }), [allProducts]);
 
   const filteredProducts = useMemo(() => {
-    let products = allProducts;
+    // Only show products from the new menu categories
+    let products = allProducts.filter(p => NEW_MENU_CATEGORIES.includes(p.category));
 
-    // Filter by category first
+    // Filter by selected category
     if (selectedCategory !== 'all') {
       products = products.filter(p => p.category === selectedCategory);
     }
 
-    // Special logic for Arabic Broast: 
-    // If NOT in the "Arabic Broast" category, hide individual items and only show the main "Injected Broast" card
-    if (selectedCategory !== 'Arabic Broast' && selectedCategory !== 'Deals' && selectedCategory !== 'Fried Chicken' && selectedCategory !== 'Burgers' && selectedCategory !== 'Snacks' && selectedCategory !== 'Beverages') {
-      const isBroastItem = (p: any) => p.category === 'Arabic Broast';
-      const broastProducts = allProducts.filter(isBroastItem);
-      
-      if (broastProducts.length > 0) {
-        // Remove individual broast items from the current filtered list
-        products = products.filter(p => !isBroastItem(p));
-        
-        // Add a single virtual product for "Injected Broast"
-        const virtualBroast = {
-          id: 'virtual-arabic-broast',
-          name: 'Arabic Injected Broast',
-          price: 0,
-          category: 'Arabic Broast',
-          image: '🍗',
-          isVirtual: true,
-          modalType: 'broast'
-        };
-        
-        // Only show it if it matches search or search is empty
-        if (!searchQuery.trim() || virtualBroast.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-          products = [...products, virtualBroast as any];
-        }
-      }
-    } else {
-      // If we ARE in the "Arabic Broast" category, don't show the virtual card
-      products = products.filter(p => !(p as any).isVirtual);
-    }
-
-    // Special logic for Pizzas:
-    // We want the Pizza Menu card to ALWAYS show up in 'all' category or 'Pizzas' category
-    const isPizzasVisible = selectedCategory === 'all' || selectedCategory === 'Pizzas';
-    
-    if (isPizzasVisible) {
-      const isPizzaItem = (p: any) => p.category === 'Pizzas';
-      
-      // Remove any individual pizza items that might be in the database
-      products = products.filter(p => !isPizzaItem(p));
-      
-      const virtualPizza = {
-        id: 'virtual-pizza-menu',
-        name: 'Pizzas Menu',
-        price: 0,
-        category: 'Pizzas',
-        image: '/Pizzas.png',
-        imageFallbacks: ['/Pizzas.jpg', '/Pizza.png', '/pizza.png', '/pizza.jpg', '/Pizzas.jpeg'],
-        isVirtual: true,
-        modalType: 'pizza'
-      };
-      
-      // Add the virtual pizza card at the beginning if it matches search
-      if (!searchQuery.trim() || virtualPizza.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-        products = [virtualPizza as any, ...products];
-      }
-    } else {
-       // If we are in another category, hide any pizza items
-       products = products.filter(p => p.category !== 'Pizzas' && !(p as any).isVirtual);
-     }
-
-     // Special logic for Rolls:
-     const isRollsVisible = selectedCategory === 'all' || selectedCategory === 'Rolls';
-     
-     if (isRollsVisible) {
-       const isRollItem = (p: any) => p.category === 'Rolls';
-       products = products.filter(p => !isRollItem(p));
-       
-       const virtualRoll = {
-         id: 'virtual-roll-menu',
-         name: 'Rolls Menu',
-         price: 0,
-         category: 'Rolls',
-          image: '/Rolls.png',
-          imageFallbacks: ['/Rolls.jpg', '/Roll.png', '/roll.png', '/roll.jpg', '/Rolls.jpeg'],
-         isVirtual: true,
-         modalType: 'roll'
-       };
-       
-       if (!searchQuery.trim() || virtualRoll.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-         products = [virtualRoll as any, ...products];
-       }
-     } else {
-       products = products.filter(p => p.category !== 'Rolls' && !(p as any).isVirtual);
-     }
-
-     // Special logic for Simple Broast:
-     const isSimpleBroastVisible = selectedCategory === 'all' || selectedCategory === 'Broast';
-     
-     if (isSimpleBroastVisible) {
-       const isSimpleBroastItem = (p: any) => p.category === 'Broast';
-       products = products.filter(p => !isSimpleBroastItem(p));
-       
-       const virtualBroast = {
-         id: 'virtual-broast-menu',
-         name: 'Broast Menu',
-         price: 0,
-         category: 'Broast',
-         image: '/Broast.png',
-         imageFallbacks: ['/Broast.jpg', '/broast.png', '/broast.jpg', '/Broast.jpeg'],
-         isVirtual: true,
-         modalType: 'simple-broast'
-       };
-       
-       if (!searchQuery.trim() || virtualBroast.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-         products = [virtualBroast as any, ...products];
-       }
-     } else {
-       products = products.filter(p => p.category !== 'Broast' && !(p as any).isVirtual);
-     }
-
-     // Special logic for Burgers:
-     const isBurgersVisible = selectedCategory === 'all' || selectedCategory === 'Burgers';
-     
-     if (isBurgersVisible) {
-       const isBurgerItem = (p: any) => p.category === 'Burgers';
-       products = products.filter(p => !isBurgerItem(p));
-       
-      const virtualBurger = {
-         id: 'virtual-burger-menu',
-         name: 'Burgers Menu',
-         price: 0,
-         category: 'Burgers',
-        image: '/Burgers.png',
-        imageFallbacks: ['/Burgers.jpg', '/Burger.png', '/burger.png', '/burger.jpg', '/Burgers.jpeg'],
-         isVirtual: true,
-         modalType: 'burger'
-       };
-       
-       if (!searchQuery.trim() || virtualBurger.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-         products = [virtualBurger as any, ...products];
-       }
-     } else {
-       products = products.filter(p => p.category !== 'Burgers' && !(p as any).isVirtual);
-     }
-
-     // Special logic for BAR BQ:
-     const isBarBQVisible = selectedCategory === 'all' || selectedCategory === 'BAR BQ';
-     
-     if (isBarBQVisible) {
-       const isBarBQItem = (p: any) => p.category === 'BAR BQ';
-       products = products.filter(p => !isBarBQItem(p));
-       
-      const virtualBarBQ = {
-         id: 'virtual-barbq-menu',
-         name: 'BAR BQ Menu',
-         price: 0,
-         category: 'BAR BQ',
-        image: '/Barbq.png',
-        imageFallbacks: ['/Barbq.jpg', '/Barbq.jpeg', '/barbq.png', '/barbq.jpg'],
-         isVirtual: true,
-         modalType: 'barbq'
-       };
-       
-       if (!searchQuery.trim() || virtualBarBQ.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-         products = [virtualBarBQ as any, ...products];
-       }
-     } else {
-       products = products.filter(p => p.category !== 'BAR BQ' && !(p as any).isVirtual);
-     }
-
-     // Special logic for Sauces & Toppings:
-     const isSauceToppingVisible = selectedCategory === 'all' || selectedCategory === 'Sauces' || selectedCategory === 'Toppings' || selectedCategory === 'ALA CART';
-     
-     if (isSauceToppingVisible) {
-       const isSauceToppingItem = (p: any) => p.category === 'Sauces' || p.category === 'Toppings';
-       products = products.filter(p => !isSauceToppingItem(p));
-       
-      const virtualSauceTopping = {
-         id: 'virtual-sauce-topping-menu',
-         name: 'Sauces & Toppings',
-         price: 0,
-         category: 'ALA CART',
-        image: '/sauces.png',
-         isVirtual: true,
-         modalType: 'sauce-topping'
-       };
-       
-       if (!searchQuery.trim() || virtualSauceTopping.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-         products = [virtualSauceTopping as any, ...products];
-       }
-     } else {
-       products = products.filter(p => p.category !== 'Sauces' && p.category !== 'Toppings' && !(p as any).isVirtual);
-     }
-
-     // Then filter by search
+    // Then filter by search
     if (searchQuery.trim()) {
       const searchResults = fuse.search(searchQuery);
       const searchIds = new Set(searchResults.map(r => r.item.id));
-      products = products.filter(p => searchIds.has(p.id) || (p as any).isVirtual);
+      products = products.filter(p => searchIds.has(p.id));
     }
 
     return products;
@@ -559,21 +380,13 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onAdd }: ProductCardProps) => {
-  const isNoImageCategory = product.category === 'Arabic Broast' || product.category === 'ALA CART' || product.category === 'Snacks' || product.category === 'Beverages' || product.category === 'Pizzas' || product.category === 'Rolls' || product.category === 'Broast' || product.category === 'Burgers' || product.category === 'BAR BQ' || product.category === 'Sauces' || product.category === 'Toppings' || product.category === 'Deals' || product.category === 'Fried Chicken';
-  const isVirtualSauce = (product as any).id === 'virtual-sauce-topping-menu';
-  const isVirtualBarbq = (product as any).id === 'virtual-barbq-menu';
-  const isVirtualBurger = (product as any).id === 'virtual-burger-menu';
-  const isVirtualPizza = (product as any).id === 'virtual-pizza-menu';
-  const isVirtualRoll = (product as any).id === 'virtual-roll-menu';
-  const isVirtualSimpleBroast = (product as any).id === 'virtual-broast-menu';
-  const isLoadedFries = (product as any).name?.toLowerCase?.().includes('loaded fries');
-  const forceShowImage = isVirtualSauce || isVirtualBarbq || isVirtualBurger || isVirtualPizza || isVirtualRoll || isVirtualSimpleBroast || isLoadedFries;
+  const isNoImageCategory = ['Burgers', 'Rolls', 'Pizzas', 'Fries', 'ALA CART', 'Beverages', 'Deals'].includes(product.category);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [currentSrc, setCurrentSrc] = useState<string | undefined>((product.image as any) || (isLoadedFries ? '/LoadedFries.png' : undefined));
+  const [currentSrc, setCurrentSrc] = useState<string | undefined>((product.image as any));
   const [fallbackIndex, setFallbackIndex] = useState(0);
-  const fallbacks: string[] = (product as any).imageFallbacks || (isLoadedFries ? ['/LoadedFries.jpg', '/loadedfries.png', '/loadedfries.jpg'] : []);
-  const imageHeightClass = forceShowImage ? "h-24 md:h-28" : "h-14";
+  const fallbacks: string[] = (product as any).imageFallbacks || [];
+  const imageHeightClass = "h-20 md:h-24";
 
   return (
     <motion.button
@@ -581,15 +394,21 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
       whileTap={{ scale: 0.98 }}
       onClick={() => onAdd(product)}
       className={cn(
-        "relative w-full aspect-square p-3 bg-white rounded-xl border border-slate-100 shadow-sm transition-all",
-        "hover:shadow-md hover:border-blue-200 hover:bg-blue-50/30",
+        "relative w-full aspect-square p-3 bg-white rounded-2xl border border-slate-100 shadow-sm transition-all",
+        "hover:shadow-lg hover:border-blue-200 hover:bg-blue-50/30",
         "focus:outline-none focus:ring-2 focus:ring-blue-500/20",
-        "flex flex-col items-center justify-center text-center gap-1.5 group"
+        "flex flex-col items-center justify-center text-center gap-2 group overflow-hidden"
       )}
     >
-      {(product.image && (!isNoImageCategory || forceShowImage)) && (
+      <div className="absolute top-2 right-2">
+        <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-none text-[9px] font-bold">
+          Rs {product.price}
+        </Badge>
+      </div>
+
+      {product.image && (
         <div className={cn(
-          "relative mb-2 w-full flex items-center justify-center overflow-hidden rounded-lg bg-slate-50/50",
+          "relative mb-1 w-full flex items-center justify-center overflow-hidden rounded-xl bg-slate-50/50 p-2",
           imageHeightClass
         )}>
           {currentSrc && (currentSrc.startsWith('http') || currentSrc.startsWith('/')) ? (
@@ -600,7 +419,7 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
                 </div>
               )}
               {imageError ? (
-                <span className="text-xl opacity-50">📦</span>
+                <span className="text-3xl opacity-50">📦</span>
               ) : (
                 <img 
                   src={currentSrc} 
@@ -615,27 +434,28 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
                     }
                   }}
                   className={cn(
-                    "h-full w-full p-0.5 transition-all duration-500",
-                    (isVirtualBarbq || isVirtualBurger || isVirtualPizza || isVirtualRoll || isVirtualSimpleBroast) ? "object-cover" : "object-contain",
+                    "h-full w-full object-contain transition-all duration-500",
                     imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
                   )}
                 />
               )}
             </>
           ) : (
-            <span className="text-2xl group-hover:scale-110 transition-transform duration-300">
+            <span className="text-4xl group-hover:scale-110 transition-transform duration-300">
               {product.image}
             </span>
           )}
         </div>
       )}
       
-      <h3 className={cn(
-        "font-black font-heading text-slate-900 leading-tight line-clamp-2 px-1 text-[10px] md:text-[11px] tracking-tight uppercase",
-        isNoImageCategory && "text-[11px] md:text-xs"
-      )}>
-        {product.name}
-      </h3>
+      <div className="space-y-0.5">
+        <h3 className="font-black font-heading text-slate-900 leading-tight line-clamp-2 px-1 text-[11px] md:text-xs tracking-tight uppercase">
+          {product.name}
+        </h3>
+        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+          {product.category}
+        </p>
+      </div>
     </motion.button>
   );
 };

@@ -60,11 +60,11 @@ const ManageProductsPage = () => {
   const queryClient = useQueryClient();
 
   const seedMutation = useMutation({
-    mutationFn: api.products.seedArabicBroast,
+    mutationFn: api.products.seedPizzaBurgerHouse,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products-with-details'] });
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast({ title: "Success", description: "Arabic Broast items added successfully" });
+      toast({ title: "Success", description: "Pizza Burger House items added successfully" });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -292,7 +292,7 @@ const ManageProductsPage = () => {
                 className="flex items-center gap-2 font-bold rounded-xl px-6 border-slate-200"
               >
                 <Database className="h-4 w-4" />
-                {seedMutation.isPending ? "Adding..." : "Add Arabic Broast Menu"}
+                {seedMutation.isPending ? "Adding..." : "Add Pizza Burger House Menu"}
               </Button>
               <Button 
                 onClick={() => { resetForm(); setIsProductModalOpen(true); }}
