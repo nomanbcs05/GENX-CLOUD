@@ -634,7 +634,7 @@ const OngoingOrdersPage = () => {
 
         {/* Right Side: Order Detail */}
         {showDetailPanel && (
-          <div className="w-[320px] flex flex-col bg-white border-l shadow-2xl z-10 relative">
+          <div className="w-[300px] flex flex-col bg-white border-l shadow-2xl z-10 relative">
             <button
               onClick={() => setShowDetailPanel(false)}
               className="absolute -left-3 top-24 bg-white text-slate-600 w-7 h-7 rounded-full flex items-center justify-center shadow-lg border border-slate-200 hover:bg-slate-50"
@@ -644,22 +644,22 @@ const OngoingOrdersPage = () => {
             </button>
             {selectedOrder ? (
               <>
-                <div className="p-4 border-b space-y-3 bg-slate-50/30">
+                <div className="p-3 border-b space-y-2.5 bg-slate-50/30">
                   <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <h2 className="text-lg font-black text-slate-900">
+                    <div className="space-y-0.5">
+                      <h2 className="text-base font-black text-slate-900 leading-tight">
                         {selectedOrder.order_type === 'dine_in'
                           ? ((selectedOrder as any).restaurant_tables?.table_number
                             ? `Table ${(selectedOrder as any).restaurant_tables.table_number}`
                             : 'Table N/A')
                           : selectedOrder.order_type === 'take_away' ? 'Take Away' : 'Delivery'}
                       </h2>
-                      <p className="text-xs text-slate-500 font-medium">
+                      <p className="text-[10px] text-slate-500 font-medium leading-tight">
                         {selectedOrder.customers?.name || 'Walk-in Customer'}
                       </p>
                       {(selectedOrder as any).server_name && (
-                        <div className="flex items-center gap-1 mt-1">
-                          <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none text-[9px] font-black uppercase tracking-tighter py-0 px-1 h-4">
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none text-[8px] font-black uppercase tracking-tighter py-0 px-1 h-3.5">
                             Server: {((selectedOrder as any).server_name || '').replace(/^\[.*?\]\s*/, '')}
                           </Badge>
                         </div>
@@ -667,37 +667,37 @@ const OngoingOrdersPage = () => {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
-                          <MoreVertical className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg">
+                          <MoreVertical className="h-3.5 w-3.5" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40 rounded-lg">
-                        <DropdownMenuItem className="py-2" onClick={handleEditOrder}>
-                          <Edit2 className="h-3.5 w-3.5 mr-2" />
+                      <DropdownMenuContent align="end" className="w-36 rounded-lg">
+                        <DropdownMenuItem className="py-1.5 text-xs" onClick={handleEditOrder}>
+                          <Edit2 className="h-3 w-3 mr-2" />
                           Edit Order
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="py-2">Transfer Table</DropdownMenuItem>
-                        <DropdownMenuItem className="py-2 text-red-600">Cancel Order</DropdownMenuItem>
+                        <DropdownMenuItem className="py-1.5 text-xs">Transfer Table</DropdownMenuItem>
+                        <DropdownMenuItem className="py-1.5 text-xs text-red-600">Cancel Order</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-blue-100 px-2 py-0.5 text-[10px] font-bold">
+                  <div className="flex items-center gap-1">
+                    <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-blue-100 px-1.5 py-0 text-[9px] font-bold h-4">
                       {getOrderTypeIcon(selectedOrder.order_type)}
-                      <span className="ml-1.5 capitalize">{selectedOrder.order_type.replace('_', ' ')}</span>
+                      <span className="ml-1 capitalize">{selectedOrder.order_type.replace('_', ' ')}</span>
                     </Badge>
                     {selectedOrder.status !== 'ready' && (
                       <Button
                         size="sm"
                         variant="outline"
-                        className="ml-auto h-7 px-2 text-[10px] bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100 font-bold rounded-md"
+                        className="ml-auto h-6 px-1.5 text-[9px] bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100 font-bold rounded"
                         onClick={() => updateStatusMutation.mutate({
                           id: selectedOrder.id,
                           status: selectedOrder.status === 'pending' ? 'preparing' : 'ready'
                         })}
                       >
-                        {selectedOrder.status === 'pending' ? 'Start Preparing' : 'Mark Ready'}
+                        {selectedOrder.status === 'pending' ? 'Start' : 'Ready'}
                       </Button>
                     )}
                   </div>
