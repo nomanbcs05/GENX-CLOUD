@@ -31,7 +31,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
   const [logoError, setLogoError] = useState(false);
   const { restaurant } = useMultiTenant();
 
-  const logoSrc = restaurant?.logo_url || `/pbh-logo.jpeg?v=${Date.now()}`;
+  const logoSrc = restaurant?.logo_url || `/pbh-logo.png?v=${Date.now()}`;
   const name = restaurant?.name || businessInfo.name;
   const address = restaurant?.address || businessInfo.address;
   const city = restaurant?.city || businessInfo.city;
