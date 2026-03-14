@@ -51,7 +51,15 @@ export const useMultiTenant = () => {
     isSuperAdmin: false, // SaaS disabled
     restaurant: { 
       name: "THE pizza&burger HOUSE",
-      logo_url: "/pbh-logo.png" 
-    } // Static name for single tenant
+      logo_url: "/pbh-logo.png",
+      address: "Near Lasani Chicken Broast, Gol Wala Complex",
+      city: "Nawabshah",
+      phone: "+92 332 2822654",
+      tax_id: null,
+      website: null,
+      email: null,
+      receipt_footer: "Powered By: GENX CLOUD +92 334 2826675",
+      bill_footer: "!!!!FOR THE LOVE OF FOOD !!!!"
+    } // Static config for single tenant
   };
 };
