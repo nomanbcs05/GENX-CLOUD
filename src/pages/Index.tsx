@@ -12,7 +12,7 @@ const Index = () => {
         </div>
         
         {/* Cart Panel - Right Side */}
-        <div className="w-[340px] flex-shrink-0">
+        <div className="w-[300px] flex-shrink-0">
           <CartPanel />
         </div>
       </div>
