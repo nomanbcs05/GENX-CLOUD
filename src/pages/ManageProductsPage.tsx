@@ -50,6 +50,7 @@ const ManageProductsPage = () => {
     { id: 'deals', name: 'Deals', key: 'pos_menu_deals', icon: Tag },
     { id: 'fries', name: 'Fries', key: 'pos_menu_fries', icon: Package },
     { id: 'beverages', name: 'Beverages', key: 'pos_menu_beverages', icon: Package },
+    { id: 'alacart', name: 'ALA CART', key: 'pos_menu_alacart', icon: Package },
   ];
 
   const openVirtualMenuEditor = (category: any) => {

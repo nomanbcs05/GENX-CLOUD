@@ -25,6 +25,7 @@ import SauceToppingSelectionModal from './SauceToppingSelectionModal';
 import DealsSelectionModal from './DealsSelectionModal';
 import FriesSelectionModal from './FriesSelectionModal';
 import BeveragesSelectionModal from './BeveragesSelectionModal';
+import AlaCartSelectionModal from './AlaCartSelectionModal';
 
 const ProductGrid = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,6 +43,7 @@ const ProductGrid = () => {
   const [showDealsModal, setShowDealsModal] = useState(false);
   const [showFriesModal, setShowFriesModal] = useState(false);
   const [showBeveragesModal, setShowBeveragesModal] = useState(false);
+  const [showAlaCartModal, setShowAlaCartModal] = useState(false);
   
   const { data: openRegister } = useQuery({
     queryKey: ['open-register'],
@@ -372,6 +374,29 @@ const ProductGrid = () => {
        }
      }
 
+     // Special logic for ALA CART:
+     const isAlaCartVisible = selectedCategory === 'all' || selectedCategory === 'ALA CART';
+     
+     if (isAlaCartVisible) {
+       // Filter out items that are part of the virtual ALA CART menu
+       const isAlaCartItem = (p: any) => p.category === 'ALA CART' && !p.isVirtual && !p.name.toLowerCase().includes('fries');
+       products = products.filter(p => !isAlaCartItem(p));
+       
+       const virtualAlaCart = {
+         id: 'virtual-alacart-menu',
+         name: 'ALA CART Menu',
+         price: 0,
+         category: 'ALA CART',
+         image: '🍱',
+         isVirtual: true,
+         modalType: 'alacart'
+       };
+       
+       if (!searchQuery.trim() || virtualAlaCart.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+         products = [virtualAlaCart as any, ...products];
+       }
+     }
+
      // Then filter by search
     if (searchQuery.trim()) {
       const searchResults = fuse.search(searchQuery);
@@ -404,6 +429,8 @@ const ProductGrid = () => {
         setShowFriesModal(true);
       } else if ((product as any).modalType === 'beverages') {
         setShowBeveragesModal(true);
+      } else if ((product as any).modalType === 'alacart') {
+        setShowAlaCartModal(true);
       }
       return;
     }
@@ -645,12 +672,18 @@ const ProductGrid = () => {
         />
 
         <BeveragesSelectionModal
-          isOpen={showBeveragesModal}
-          onClose={() => setShowBeveragesModal(false)}
-          onAdd={handleAddToCart}
-        />
-      </div>
-  );
+           isOpen={showBeveragesModal}
+           onClose={() => setShowBeveragesModal(false)}
+           onAdd={handleAddToCart}
+         />
+ 
+         <AlaCartSelectionModal
+           isOpen={showAlaCartModal}
+           onClose={() => setShowAlaCartModal(false)}
+           onAdd={handleAddToCart}
+         />
+        </div>
+    );
 };
 
 interface ProductCardProps {
