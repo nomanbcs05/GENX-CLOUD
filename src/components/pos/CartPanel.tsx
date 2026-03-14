@@ -542,59 +542,53 @@ const CartPanel = () => {
               {items.map((item) => (
                 <div
                   key={item.product.id}
-                  className="flex items-center gap-3 p-3 bg-background rounded-lg border"
+                  className="p-2.5 bg-background rounded-lg border"
                 >
-                  <div className="h-10 w-10 rounded overflow-hidden bg-secondary flex items-center justify-center shrink-0">
-                    {item.product.image?.startsWith('http') ? (
-                      <img src={item.product.image} alt={item.product.name} className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="text-xl">{item.product.image}</span>
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold font-heading text-sm truncate tracking-tight">{item.product.name}</p>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                      Rs {item.product.price.toLocaleString()} each
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-1">
+                  {/* Top row: image + name + delete */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-8 w-8 rounded overflow-hidden bg-secondary flex items-center justify-center shrink-0">
+                      {item.product.image?.startsWith('http') ? (
+                        <img src={item.product.image} alt={item.product.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="text-lg">{item.product.image}</span>
+                      )}
+                    </div>
+                    <p className="flex-1 font-bold font-heading text-[13px] leading-tight tracking-tight truncate">{item.product.name}</p>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="icon"
-                      className="h-7 w-7"
-                      onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                      className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
+                      onClick={() => removeItem(item.product.id)}
                     >
-                      <Minus className="h-3 w-3" />
+                      <Trash2 className="h-3 w-3" />
                     </Button>
-
-                    <span className="w-8 text-center font-medium text-sm">
-                      {item.quantity}
+                  </div>
+                  {/* Bottom row: unit price + qty controls + line total */}
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+                      Rs {item.product.price.toLocaleString()}/ea
                     </span>
-
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                      >
+                        <Minus className="h-2.5 w-2.5" />
+                      </Button>
+                      <span className="w-7 text-center font-bold text-sm">{item.quantity}</span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                      >
+                        <Plus className="h-2.5 w-2.5" />
+                      </Button>
+                    </div>
+                    <span className="font-black text-sm whitespace-nowrap">Rs {item.lineTotal.toLocaleString()}</span>
                   </div>
-
-                  <div className="text-right min-w-[80px]">
-                    <p className="font-bold text-sm">Rs {item.lineTotal.toLocaleString()}</p>
-                  </div>
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                    onClick={() => removeItem(item.product.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
                 </div>
               ))}
             </div>
