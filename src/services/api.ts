@@ -137,82 +137,71 @@ export const api = {
   },
   products: {
     seedPizzaBurgerHouse: async () => {
+      // Disabled for now
+      return true;
+    },
+    seedArabicBroast: async () => {
       const items = [
-        // ─── BURGERS ──────────────────────────────────────────────────
-        { name: "Zinger Burger", price: 350, cost: 0, sku: "PBH-BURG-1", category: "Burgers", image: "🍔", stock: 100 },
-        { name: "Crunch Burger", price: 200, cost: 0, sku: "PBH-BURG-2", category: "Burgers", image: "🍔", stock: 100 },
-        { name: "Chicken Patty Burger", price: 200, cost: 0, sku: "PBH-BURG-3", category: "Burgers", image: "🍔", stock: 100 },
-        
-        // ─── ROLLS ────────────────────────────────────────────────────
-        { name: "Zinger Roll", price: 250, cost: 0, sku: "PBH-ROLL-1", category: "Rolls", image: "🌯", stock: 100 },
-        { name: "Chicken Roll", price: 250, cost: 0, sku: "PBH-ROLL-2", category: "Rolls", image: "🌯", stock: 100 },
-        { name: "Garlic Mayo Roll", price: 250, cost: 0, sku: "PBH-ROLL-3", category: "Rolls", image: "🌯", stock: 100 },
-        { name: "Mix Roll", price: 300, cost: 0, sku: "PBH-ROLL-4", category: "Rolls", image: "🌯", stock: 100 },
-        
-        // ─── PIZZAS ───────────────────────────────────────────────────
-        { name: "Small Pizza", price: 400, cost: 0, sku: "PBH-PIZ-1", category: "Pizzas", image: "🍕", stock: 100 },
-        { name: "Medium Pizza", price: 700, cost: 0, sku: "PBH-PIZ-2", category: "Pizzas", image: "🍕", stock: 100 },
-        { name: "Large Pizza", price: 1000, cost: 0, sku: "PBH-PIZ-3", category: "Pizzas", image: "🍕", stock: 100 },
-        { name: "Jumbo Pizza", price: 1200, cost: 0, sku: "PBH-PIZ-4", category: "Pizzas", image: "🍕", stock: 100 },
-        
-        // ─── FRIES ────────────────────────────────────────────────────
-        { name: "Plain Fries", price: 100, cost: 0, sku: "PBH-FRIE-1", category: "Fries", image: "🍟", stock: 100 },
-        { name: "Garlic Mayo Fries", price: 150, cost: 0, sku: "PBH-FRIE-2", category: "Fries", image: "🍟", stock: 100 },
-        { name: "Pizza Fries Small", price: 200, cost: 0, sku: "PBH-FRIE-3", category: "Fries", image: "🍟", stock: 100 },
-        { name: "Pizza Fries Large", price: 300, cost: 0, sku: "PBH-FRIE-4", category: "Fries", image: "🍟", stock: 100 },
-        
-        // ─── ALA-CART ─────────────────────────────────────────────────
-        { name: "Nuggets 05 Pcs", price: 200, cost: 0, sku: "PBH-ALC-1", category: "ALA CART", image: "🍗", stock: 100 },
-        { name: "Hot Shots 05 Pcs", price: 200, cost: 0, sku: "PBH-ALC-2", category: "ALA CART", image: "🍗", stock: 100 },
-        { name: "Hot Shots 10 Pcs", price: 350, cost: 0, sku: "PBH-ALC-3", category: "ALA CART", image: "🍗", stock: 100 },
-        { name: "Wings 05 Pcs", price: 300, cost: 0, sku: "PBH-ALC-4", category: "ALA CART", image: "🍗", stock: 100 },
-        { name: "Wings 10 Pcs", price: 500, cost: 0, sku: "PBH-ALC-5", category: "ALA CART", image: "🍗", stock: 100 },
-        { name: "Crispy Chest Broast", price: 450, cost: 0, sku: "PBH-ALC-6", category: "ALA CART", image: "🍗", stock: 100 },
-        
-        // ─── BEVERAGES ────────────────────────────────────────────────
-        { name: "345 ml Drink", price: 80, cost: 0, sku: "PBH-BEV-1", category: "Beverages", image: "🥤", stock: 100 },
-        { name: "500 ml Drink", price: 120, cost: 0, sku: "PBH-BEV-2", category: "Beverages", image: "🥤", stock: 100 },
-        { name: "01 Ltr Drink", price: 150, cost: 0, sku: "PBH-BEV-3", category: "Beverages", image: "🥤", stock: 100 },
-        { name: "1.5 Ltr Drink", price: 180, cost: 0, sku: "PBH-BEV-4", category: "Beverages", image: "🥤", stock: 100 },
-        
-        // ─── DEALS ────────────────────────────────────────────────────
-        { name: "DEAL #01 (1 Zinger, 1 345ml Drink, Fries)", price: 380, cost: 0, sku: "PBH-DEAL-1", category: "Deals", image: "🍱", stock: 100 },
-        { name: "DEAL #02 (1 Small Pizza, 1 345ml Drink)", price: 430, cost: 0, sku: "PBH-DEAL-2", category: "Deals", image: "🍱", stock: 100 },
-        { name: "DEAL #03 (2 Zinger Roll, 1 500ml Drink)", price: 430, cost: 0, sku: "PBH-DEAL-3", category: "Deals", image: "🍱", stock: 100 },
-        { name: "DEAL #04 (1 Zinger Burger, 1 Zinger Roll, 1 345ml Drink)", price: 699, cost: 0, sku: "PBH-DEAL-4", category: "Deals", image: "🍱", stock: 100 },
-        { name: "DEAL #05 (1 Zinger Burger, 6 Pcs Wings, 5 Pcs Nuggets, 1 500ml Drink)", price: 899, cost: 0, sku: "PBH-DEAL-5", category: "Deals", image: "🍱", stock: 100 },
-        { name: "DEAL #06 (1 Chest Broast, 1 345ml Drink, Fries)", price: 480, cost: 0, sku: "PBH-DEAL-6", category: "Deals", image: "🍱", stock: 100 },
-        { name: "DEAL #07 (3 Zinger Burger, 1 Ltr Drink, Fries)", price: 1099, cost: 0, sku: "PBH-DEAL-7", category: "Deals", image: "🍱", stock: 100 },
-        { name: "DEAL #08 (1 Large Pizza, 2 Zinger Burger, 2 Zinger Roll, 1 1.5 Ltr Drink)", price: 1720, cost: 0, sku: "PBH-DEAL-8", category: "Deals", image: "🍱", stock: 100 }
+        { name: "Skin Spicy Injected Full Kukkar", price: 2000, cost: 0, sku: "SIB-FULL-K", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "Skin Spicy injected Broast Leg/Thai 2Pcs", price: 600, cost: 0, sku: "SIB-LT-2", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "Skin Spicy injected Broast Chest/Wing 2Pcs", price: 600, cost: 0, sku: "SIB-CW-2", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "Skin Spicy injected Half Broast 4Pcs", price: 1100, cost: 0, sku: "SIB-HALF-4", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "Skin Spicy injected Full Broast 8Pcs", price: 2200, cost: 0, sku: "SIB-FULL-8", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "COMBO 1 (1 Qtr Broast, 1 Zinger, Drink, Bun, Fries)", price: 999, cost: 0, sku: "COMBO-1", category: "Arabic Broast", image: "🍱", stock: 100 },
+        { name: "COMBO 2 (Half Broast, Fries, 2 Bun, 2 Sauce, Drink)", price: 1300, cost: 0, sku: "COMBO-2", category: "Arabic Broast", image: "🍱", stock: 100 },
+        { name: "COMBO 3 (Full Broast, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 2450, cost: 0, sku: "COMBO-3", category: "Arabic Broast", image: "🍱", stock: 100 },
+        { name: "COMBO 4 (Jumbo Pizza, 1 Kukkar, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 3500, cost: 0, sku: "COMBO-4", category: "Arabic Broast", image: "🍱", stock: 100 },
+        // Beverages
+        { name: "Next Cola / Fizz Up 345 ml", price: 80, cost: 0, sku: "DRINK-345", category: "Beverages", image: "", stock: 100 },
+        { name: "Next Cola / Fizz Up 500 ml", price: 120, cost: 0, sku: "DRINK-500", category: "Beverages", image: "", stock: 100 },
+        { name: "Next Cola / Fizz Up 1 liter", price: 150, cost: 0, sku: "DRINK-1L", category: "Beverages", image: "", stock: 100 },
+        { name: "Next Cola / KababJees 1.5 liter", price: 200, cost: 0, sku: "DRINK-1.5L", category: "Beverages", image: "", stock: 100 },
+        { name: "Next Cola / Fizz Up Jumbo", price: 250, cost: 0, sku: "DRINK-JUMBO", category: "Beverages", image: "", stock: 100 },
+        { name: "Sting 500 ml", price: 130, cost: 0, sku: "DRINK-STING", category: "Beverages", image: "", stock: 100 },
+        { name: "Mineral Water Small", price: 50, cost: 0, sku: "WATER-S", category: "Beverages", image: "", stock: 100 },
+        { name: "Mineral Water Large", price: 100, cost: 0, sku: "WATER-L", category: "Beverages", image: "", stock: 100 },
+        // ALA CART Items
+        { name: "Club Sandwich", price: 400, cost: 0, sku: "ALC-CLUB-S", category: "ALA CART", image: "🥪", stock: 100 },
+        { name: "Malai Boti Sandwich", price: 450, cost: 0, sku: "ALC-MALAI-S", category: "ALA CART", image: "🥪", stock: 100 },
+        { name: "Mexican Sandwich", price: 500, cost: 0, sku: "ALC-MEX-S", category: "ALA CART", image: "🥪", stock: 100 },
+        { name: "Spring Rolls 4 Pcs", price: 400, cost: 0, sku: "ALC-ROLLS-4", category: "ALA CART", image: "🌯", stock: 100 },
+        { name: "Macroni Pasta Large", price: 650, cost: 0, sku: "ALC-MAC-L", category: "ALA CART", image: "🍝", stock: 100 },
+        { name: "Macroni Pasta Small", price: 350, cost: 0, sku: "ALC-MAC-S", category: "ALA CART", image: "🍝", stock: 100 },
+        { name: "Oven Backed Wings 6Pcs", price: 350, cost: 0, sku: "ALC-OBW-6", category: "ALA CART", image: "🍗", stock: 100 },
+        { name: "Oven Backed Wings 12Pcs", price: 650, cost: 0, sku: "ALC-OBW-12", category: "ALA CART", image: "🍗", stock: 100 },
+        { name: "Crispy Wings 6Pcs", price: 350, cost: 0, sku: "ALC-CW-6", category: "ALA CART", image: "🍗", stock: 100 },
+        { name: "Crispy Wings 12Pcs", price: 650, cost: 0, sku: "ALC-CW-12", category: "ALA CART", image: "🍗", stock: 100 },
+        { name: "Hotshot 10Pcs", price: 450, cost: 0, sku: "ALC-HS-10", category: "ALA CART", image: "🍿", stock: 100 },
+        { name: "Hotshot 5Pcs", price: 250, cost: 0, sku: "ALC-HS-5", category: "ALA CART", image: "🍿", stock: 100 },
+        // Snacks (Fries)
+        { name: "Plain Fries", price: 150, cost: 0, sku: "SNK-FRIES-P", category: "Snacks", image: "", stock: 100 },
+        { name: "Masala Fries", price: 170, cost: 0, sku: "SNK-FRIES-M", category: "Snacks", image: "", stock: 100 },
+        { name: "Garlic Mayo Fries", price: 200, cost: 0, sku: "SNK-FRIES-GM", category: "Snacks", image: "", stock: 100 },
+        { name: "Loaded Fries", price: 300, cost: 0, sku: "SNK-FRIES-L", category: "Snacks", image: "", stock: 100 },
+        { name: "Pizza Loaded Fries Small", price: 250, cost: 0, sku: "SNK-FRIES-PLS", category: "Snacks", image: "", stock: 100 },
+        { name: "Pizza Loaded Fries Large", price: 450, cost: 0, sku: "SNK-FRIES-PLL", category: "Snacks", image: "", stock: 100 }
       ];
 
       try {
-        // Clear old items first (Optional, but ensures fresh menu)
-        // await supabase.from('products').delete().neq('id', '0'); 
-        // await supabase.from('categories').delete().neq('id', '0');
-
         // 1. Handle Categories
+        const { data: existingCats } = await supabase.from('categories').select('name');
+        const existingCatNames = new Set(existingCats?.map(c => c.name) || []);
         const categoryNames = [...new Set(items.map(i => i.category))];
-        const categoryIcons: Record<string, string> = {
-          'Burgers': 'Burger',
-          'Rolls': 'Utensils',
-          'Pizzas': 'Pizza',
-          'Fries': 'Utensils',
-          'ALA CART': 'UtensilsCrossed',
-          'Beverages': 'Coffee',
-          'Deals': 'Gift'
-        };
 
         for (const catName of categoryNames) {
-          await supabase.from('categories').upsert({ 
-            name: catName, 
-            icon: categoryIcons[catName] || 'Utensils' 
-          }, { onConflict: 'name' });
+          if (!existingCatNames.has(catName)) {
+            await supabase.from('categories').insert({ name: catName, icon: 'Utensils' });
+          }
         }
 
         // 2. Handle Products
-        for (const item of items) {
-          await supabase.from('products').upsert(item, { onConflict: 'name' });
+        const { data: existingProds } = await supabase.from('products').select('name');
+        const existingProdNames = new Set(existingProds?.map(p => p.name) || []);
+        const newItems = items.filter(item => !existingProdNames.has(item.name));
+
+        if (newItems.length > 0) {
+          const { error: prodError } = await supabase.from('products').insert(newItems as any);
+          if (prodError) throw prodError;
         }
 
         return true;
@@ -220,15 +209,6 @@ export const api = {
         console.error('Error seeding products:', error);
         throw error;
       }
-    },
-    seedArabicBroast: async () => {
-      // Logic saved but not currently triggered by UI
-      const items = [
-        // ─── CHICKEN DEALS (KFC Style) ──────────────────────────────────
-        { name: "Krunch Burger Deal", price: 290, cost: 0, sku: "KFC-DEAL-1", category: "Deals", image: "🍔", stock: 100 },
-        // ... rest of the old menu items
-      ];
-      return true;
     },
     getAll: async () => {
       const { data, error } = await supabase
