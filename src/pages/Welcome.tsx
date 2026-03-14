@@ -52,7 +52,7 @@ const Welcome = () => {
             }}
           />
         </div>
-        <h1 className="text-5xl font-black tracking-tighter font-heading uppercase drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">THE pizza&burger HOUSE</h1>
+        <h1 className="text-5xl font-black tracking-tighter font-heading uppercase drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">GENX CLOUD POS</h1>
         <p className="text-white/80 text-lg font-medium">Select your role to continue</p>
       </motion.div>
 

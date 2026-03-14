@@ -86,10 +86,10 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
             {!isCollapsed && (
               <div className="flex-1 min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
                 <h1 className="font-black font-heading text-sm tracking-tight uppercase leading-none truncate">
-                  {restaurant?.name || "THE pizza&burger HOUSE"}
+                  GENX CLOUD POS
                 </h1>
                 <p className="text-[10px] font-bold text-sidebar-foreground/50 uppercase tracking-widest mt-1">
-                  GENX CLOUD POS
+                  POS SYSTEM
                 </p>
               </div>
             )}
