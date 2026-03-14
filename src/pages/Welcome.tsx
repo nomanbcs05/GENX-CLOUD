@@ -44,7 +44,7 @@ const Welcome = () => {
       >
         <div className="mx-auto inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/85 mb-4 shadow-lg ring-2 ring-white/30 overflow-hidden backdrop-blur">
           <img
-            src="/pbh-logo.png"
+            src="/pbh-logo.jpeg"
             alt="Logo"
             className="object-contain w-16 h-16"
             onError={(e) => {

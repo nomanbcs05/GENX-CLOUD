@@ -51,7 +51,7 @@ export const useMultiTenant = () => {
     isSuperAdmin: false, // SaaS disabled
     restaurant: { 
       name: "THE pizza&burger HOUSE",
-      logo_url: "/pbh-logo.png" 
+      logo_url: "/pbh-logo.jpeg" 
     } // Static name for single tenant
   };
 };
