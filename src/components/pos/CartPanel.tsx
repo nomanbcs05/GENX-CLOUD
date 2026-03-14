@@ -465,17 +465,17 @@ const CartPanel = () => {
   }, [orderType, rider, pendingAfterRider]);
 
   return (
-    <div className="flex flex-col h-full bg-card border-l font-sans">
+    <div className="flex flex-col h-full bg-card border-l font-sans pb-4">
       {/* Header */}
-      <div className="p-4 border-b">
-        <h2 className="text-lg font-black font-heading tracking-tight uppercase">Current Order</h2>
-        <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
+      <div className="p-3 border-b">
+        <h2 className="text-base font-black font-heading tracking-tight uppercase">Current Order</h2>
+        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
           {items.length} {items.length === 1 ? 'item' : 'items'}
         </p>
       </div>
 
       {/* Customer Selection */}
-      <div className="p-4 border-b space-y-4">
+      <div className="p-3 border-b space-y-3">
         <CustomerSelector
           selectedCustomer={customer}
           onSelect={setCustomer}
@@ -484,22 +484,22 @@ const CartPanel = () => {
 
         {orderType === 'dine_in' && (
           <div
-            className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border cursor-pointer hover:bg-muted/70 transition-colors"
+            className="flex items-center justify-between p-2.5 bg-muted/50 rounded-lg border cursor-pointer hover:bg-muted/70 transition-colors"
             onClick={() => setShowTableModal(true)}
           >
             <div className="flex items-center gap-2">
               <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs",
+                "w-7 h-7 rounded-full flex items-center justify-center font-bold text-[10px]",
                 selectedTable ? "bg-emerald-100 text-emerald-700 border border-emerald-200" : "bg-gray-100 text-gray-500 border border-gray-200"
               )}>
                 {selectedTable ? selectedTable.table_number : "?"}
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-medium">
+                <span className="text-xs font-medium">
                   {selectedTable ? `Table ${selectedTable.table_number}` : 'No Table Selected'}
                 </span>
                 {selectedTable && (
-                  <span className="text-xs text-muted-foreground capitalize">
+                  <span className="text-[10px] text-muted-foreground capitalize">
                     {selectedTable.section} • {selectedTable.capacity} Seats
                   </span>
                 )}
@@ -510,7 +510,7 @@ const CartPanel = () => {
       </div>
 
       {/* Cart Items */}
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-3">
         <AnimatePresence mode="popLayout">
           {items.length === 0 ? (
             <motion.div
@@ -590,9 +590,9 @@ const CartPanel = () => {
       </ScrollArea>
 
       {/* Payment Section */}
-      <div className="border-t p-4 space-y-4 bg-muted/30">
+      <div className="border-t p-3 space-y-3 bg-muted/30">
         {/* Totals */}
-        <div className="space-y-2 text-sm">
+        <div className="space-y-1.5 text-sm">
           <div className="flex justify-between">
             <span className="text-slate-500 font-bold font-heading uppercase tracking-wider text-[10px]">Subtotal</span>
             <span className="font-bold">Rs {subtotal.toLocaleString()}</span>
@@ -660,36 +660,36 @@ const CartPanel = () => {
           )}
 
           <Separator className="bg-slate-200" />
-          <div className="flex justify-between text-2xl font-black font-heading tracking-tighter uppercase text-slate-900">
+          <div className="flex justify-between text-xl font-black font-heading tracking-tighter uppercase text-slate-900">
             <span>Total</span>
             <span>Rs {total.toLocaleString()}</span>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col gap-2">
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11 border-2 border-emerald-500/20 hover:bg-emerald-50 hover:text-emerald-600 transition-all" onClick={handleDone} disabled={items.length === 0}>
+        <div className="flex flex-col gap-1.5">
+          <div className="flex gap-1.5">
+            <Button variant="outline" className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-10 border-2 border-emerald-500/20 hover:bg-emerald-50 hover:text-emerald-600 transition-all" onClick={handleDone} disabled={items.length === 0}>
               <CheckCircle2 className="h-4 w-4 mr-2" />
               Done
             </Button>
-            <Button variant="outline" className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11" onClick={handleShowBill} disabled={items.length === 0}>
+            <Button variant="outline" className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-10" onClick={handleShowBill} disabled={items.length === 0}>
               <FileText className="h-4 w-4 mr-2" />
               Bill
             </Button>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5">
             <Button
               variant="outline"
-              className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11 border-red-100 text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors shadow-sm"
+              className="flex-1 font-bold font-heading uppercase tracking-wider text-[10px] h-10 bg-red-50 border-red-200 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all shadow-sm"
               onClick={handleClearCart}
               disabled={items.length === 0}
             >
-              <X className="h-4 w-4 mr-2" />
+              <X className="h-4 w-4 mr-1.5" />
               Clear Screen
             </Button>
             <Button
-              className="flex-[2] btn-success font-black font-heading uppercase tracking-widest text-sm h-11 shadow-lg shadow-emerald-500/20"
+              className="flex-[2] btn-success font-black font-heading uppercase tracking-widest text-xs h-10 shadow-lg shadow-emerald-500/20"
               onClick={handleCompleteSale}
               disabled={items.length === 0}
             >
