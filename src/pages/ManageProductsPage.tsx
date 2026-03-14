@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Search, Plus, Edit, Trash2, Package, Loader2, Settings, 
   X, ChevronRight, Upload, Check, MoreVertical, Database,
-  ChefHat, Utensils, Edit2, Save
+  ChefHat, Utensils, Edit2, Save, Tag
 } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Input } from '@/components/ui/input';
