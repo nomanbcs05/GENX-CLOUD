@@ -44,15 +44,15 @@ const Welcome = () => {
       >
         <div className="mx-auto inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/85 mb-4 shadow-lg ring-2 ring-white/30 overflow-hidden backdrop-blur">
           <img
-            src="/gx.png"
-            alt="GX"
+            src="/pbh-logo.png"
+            alt="Logo"
             className="object-contain w-16 h-16"
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = 'none';
+              (e.currentTarget as HTMLImageElement).src = '/gx.png';
             }}
           />
         </div>
-        <h1 className="text-5xl font-black tracking-tighter font-heading uppercase drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">GENX CLOUD</h1>
+        <h1 className="text-5xl font-black tracking-tighter font-heading uppercase drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">THE pizza&burger HOUSE</h1>
         <p className="text-white/80 text-lg font-medium">Select your role to continue</p>
       </motion.div>
 

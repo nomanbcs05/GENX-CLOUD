@@ -49,6 +49,9 @@ export const useMultiTenant = () => {
     isLoading: sessionLoading || profileLoading,
     isAdmin: profile?.role === 'admin',
     isSuperAdmin: false, // SaaS disabled
-    restaurant: { name: "GENX CLOUD" } // Static name for single tenant
+    restaurant: { 
+      name: "THE pizza&burger HOUSE",
+      logo_url: "/pbh-logo.png" 
+    } // Static name for single tenant
   };
 };
