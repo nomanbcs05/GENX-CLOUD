@@ -59,28 +59,31 @@ const ProductGrid = () => {
 
   // Automatically seed menu items if none exist
   const queryClient = useQueryClient();
-  const { mutate: seedMenu } = useMutation({
-    mutationFn: api.products.seedArabicBroast,
-    onMutate: () => {
+  const [seeding, setSeeding] = useState(false);
+  const seedMenu = useCallback(async () => {
+    try {
+      setSeeding(true);
       toast.loading('Seeding menu items...', { id: 'seed-toast' });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast.success('Menu items seeded successfully!', { id: 'seed-toast' });
-    },
-    onError: (error: any) => {
+      const success = await api.products.seedPizzaBurgerHouse();
+      if (success) {
+        queryClient.invalidateQueries({ queryKey: ['products'] });
+        queryClient.invalidateQueries({ queryKey: ['categories'] });
+        toast.success('Menu items seeded successfully!', { id: 'seed-toast' });
+      }
+    } catch (error: any) {
       console.error('Seed error:', error);
       toast.error(`Failed to seed menu: ${error.message}`, { id: 'seed-toast' });
+    } finally {
+      setSeeding(false);
     }
-  });
+  }, [queryClient]);
 
   useEffect(() => {
     if (!productsLoading) {
-      const hasArabicBroast = allProducts.some(p => p.category === 'Arabic Broast');
-      const hasBeverages = allProducts.some(p => p.category === 'Beverages');
+      const hasPizza = allProducts.some(p => p.category === 'Pizzas');
+      const hasRolls = allProducts.some(p => p.category === 'Rolls');
       
-      if (!hasArabicBroast || !hasBeverages) {
+      if (!hasPizza || !hasRolls) {
         seedMenu();
       }
     }
@@ -92,10 +95,15 @@ const ProductGrid = () => {
     queryFn: api.categories.getAll,
   });
 
-  // Combine default "All" category with fetched categories
+  // New Menu Categories to show
+  const NEW_MENU_CATEGORIES = ['Deals', 'Burgers', 'Rolls', 'Pizzas', 'Fries', 'ALA CART', 'Beverages'];
+
+  // Combine default "All" category with fetched categories, but filter for new menu only
   const allCategories = useMemo(() => [
     { id: 'all', name: 'All Category', icon: 'Grid3x3' },
-    ...categories.map(c => ({ id: c.name, name: c.name, icon: c.icon }))
+    ...categories
+      .filter(c => NEW_MENU_CATEGORIES.includes(c.name))
+      .map(c => ({ id: c.name, name: c.name, icon: c.icon }))
   ], [categories]);
 
   const fuse = useMemo(() => new Fuse(allProducts, {
@@ -104,42 +112,12 @@ const ProductGrid = () => {
   }), [allProducts]);
 
   const filteredProducts = useMemo(() => {
-    let products = allProducts;
+    // Only show products from the new menu categories
+    let products = allProducts.filter(p => NEW_MENU_CATEGORIES.includes(p.category));
 
     // Filter by selected category
     if (selectedCategory !== 'all') {
       products = products.filter(p => p.category === selectedCategory);
-    }
-
-    // Special logic for Arabic Broast: 
-    // If NOT in the "Arabic Broast" category, hide individual items and only show the main "Injected Broast" card
-    if (selectedCategory !== 'Arabic Broast') {
-      const isBroastItem = (p: any) => p.category === 'Arabic Broast';
-      const broastProducts = allProducts.filter(isBroastItem);
-      
-      if (broastProducts.length > 0) {
-        // Remove individual broast items from the current filtered list
-        products = products.filter(p => !isBroastItem(p));
-        
-        // Add a single virtual product for "Injected Broast"
-        const virtualBroast = {
-          id: 'virtual-arabic-broast',
-          name: 'Arabic Injected Broast',
-          price: 0,
-          category: 'Arabic Broast',
-          image: '🍗',
-          isVirtual: true,
-          modalType: 'broast'
-        };
-        
-        // Only show it if it matches search or search is empty
-        if (!searchQuery.trim() || virtualBroast.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-          products = [...products, virtualBroast as any];
-        }
-      }
-    } else {
-      // If we ARE in the "Arabic Broast" category, don't show the virtual card
-      products = products.filter(p => !(p as any).isVirtual);
     }
 
     // Then filter by search
@@ -405,14 +383,13 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onAdd }: ProductCardProps) => {
-  const isNoImageCategory = product.category === 'Arabic Broast' || product.category === 'ALA CART' || product.category === 'Snacks' || product.category === 'Beverages';
-  const isVirtualBroast = (product as any).id === 'virtual-arabic-broast';
+  const isNoImageCategory = ['Burgers', 'Rolls', 'Pizzas', 'Fries', 'ALA CART', 'Beverages', 'Deals'].includes(product.category);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [currentSrc, setCurrentSrc] = useState<string | undefined>((product.image as any));
   const [fallbackIndex, setFallbackIndex] = useState(0);
   const fallbacks: string[] = (product as any).imageFallbacks || [];
-  const imageHeightClass = isVirtualBroast ? "h-24 md:h-28" : "h-14";
+  const imageHeightClass = "h-20 md:h-24";
 
   return (
     <motion.button
@@ -420,15 +397,21 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
       whileTap={{ scale: 0.98 }}
       onClick={() => onAdd(product)}
       className={cn(
-        "relative w-full aspect-square p-3 bg-white rounded-xl border border-slate-100 shadow-sm transition-all",
-        "hover:shadow-md hover:border-blue-200 hover:bg-blue-50/30",
+        "relative w-full aspect-square p-3 bg-white rounded-2xl border border-slate-100 shadow-sm transition-all",
+        "hover:shadow-lg hover:border-blue-200 hover:bg-blue-50/30",
         "focus:outline-none focus:ring-2 focus:ring-blue-500/20",
-        "flex flex-col items-center justify-center text-center gap-1.5 group"
+        "flex flex-col items-center justify-center text-center gap-2 group overflow-hidden"
       )}
     >
-      {(product.image && (!isNoImageCategory || isVirtualBroast)) && (
+      <div className="absolute top-2 right-2">
+        <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-none text-[9px] font-bold">
+          Rs {product.price}
+        </Badge>
+      </div>
+
+      {product.image && (
         <div className={cn(
-          "relative mb-2 w-full flex items-center justify-center overflow-hidden rounded-lg bg-slate-50/50",
+          "relative mb-1 w-full flex items-center justify-center overflow-hidden rounded-xl bg-slate-50/50 p-2",
           imageHeightClass
         )}>
           {currentSrc && (currentSrc.startsWith('http') || currentSrc.startsWith('/')) ? (
@@ -439,7 +422,7 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
                 </div>
               )}
               {imageError ? (
-                <span className="text-xl opacity-50">📦</span>
+                <span className="text-3xl opacity-50">📦</span>
               ) : (
                 <img 
                   src={currentSrc} 
@@ -454,27 +437,28 @@ const ProductCard = ({ product, onAdd }: ProductCardProps) => {
                     }
                   }}
                   className={cn(
-                    "h-full w-full p-0.5 transition-all duration-500",
-                    isVirtualBroast ? "object-cover" : "object-contain",
+                    "h-full w-full object-contain transition-all duration-500",
                     imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
                   )}
                 />
               )}
             </>
           ) : (
-            <span className="text-2xl group-hover:scale-110 transition-transform duration-300">
+            <span className="text-4xl group-hover:scale-110 transition-transform duration-300">
               {product.image}
             </span>
           )}
         </div>
       )}
       
-      <h3 className={cn(
-        "font-black font-heading text-slate-900 leading-tight line-clamp-2 px-1 text-[10px] md:text-[11px] tracking-tight uppercase",
-        isNoImageCategory && "text-[11px] md:text-xs"
-      )}>
-        {product.name}
-      </h3>
+      <div className="space-y-0.5">
+        <h3 className="font-black font-heading text-slate-900 leading-tight line-clamp-2 px-1 text-[11px] md:text-xs tracking-tight uppercase">
+          {product.name}
+        </h3>
+        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+          {product.category}
+        </p>
+      </div>
     </motion.button>
   );
 };
