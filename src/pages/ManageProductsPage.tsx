@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Search, Plus, Edit, Trash2, Package, Loader2, Settings, 
-  X, ChevronRight, Upload, Check, MoreVertical, Database
+  X, ChevronRight, Upload, Check, MoreVertical, Database,
+  ChefHat, Utensils, Edit2, Save
 } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Input } from '@/components/ui/input';
@@ -35,6 +36,41 @@ const ManageProductsPage = () => {
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'addons'>('products');
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [isVirtualMenuModalOpen, setIsVirtualMenuModalOpen] = useState(false);
+  const [selectedVirtualCategory, setSelectedVirtualCategory] = useState<string | null>(null);
+  const [virtualMenuItems, setVirtualMenuItems] = useState<any[]>([]);
+
+  const virtualCategories = [
+    { id: 'barbq', name: 'BAR BQ', key: 'pos_menu_barbq', icon: ChefHat },
+    { id: 'pizza', name: 'Pizzas', key: 'pos_menu_pizza', icon: Utensils },
+    { id: 'roll', name: 'Rolls', key: 'pos_menu_roll', icon: Package },
+    { id: 'burger', name: 'Burgers', key: 'pos_menu_burger', icon: Package },
+    { id: 'broast', name: 'Broast', key: 'pos_menu_broast', icon: ChefHat },
+    { id: 'sauce', name: 'Sauces', key: 'pos_menu_sauce', icon: Utensils },
+  ];
+
+  const openVirtualMenuEditor = (category: any) => {
+    setSelectedVirtualCategory(category.name);
+    const saved = localStorage.getItem(category.key);
+    if (saved) {
+      setVirtualMenuItems(JSON.parse(saved));
+    } else {
+      // Load defaults if needed, but for now we'll just show what's in storage
+      setVirtualMenuItems([]);
+    }
+    setIsVirtualMenuModalOpen(true);
+  };
+
+  const saveVirtualMenu = () => {
+    if (selectedVirtualCategory) {
+      const category = virtualCategories.find(c => c.name === selectedVirtualCategory);
+      if (category) {
+        localStorage.setItem(category.key, JSON.stringify(virtualMenuItems));
+        toast({ title: "Success", description: `${selectedVirtualCategory} menu updated` });
+        setIsVirtualMenuModalOpen(false);
+      }
+    }
+  };
   
   // Form State
   const [productForm, setProductForm] = useState({
@@ -278,110 +314,252 @@ const ManageProductsPage = () => {
               Manage Add-ons
               {activeTab === 'addons' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500 rounded-t-full" />}
             </button>
+            <button 
+              onClick={() => setActiveTab('virtual' as any)}
+              className={cn(
+                "pb-4 text-sm font-bold transition-colors relative",
+                activeTab === ('virtual' as any) ? "text-emerald-500" : "text-slate-400 hover:text-slate-600"
+              )}
+            >
+              Virtual Menus
+              {activeTab === ('virtual' as any) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500 rounded-t-full" />}
+            </button>
           </div>
         </div>
 
         <div className="p-8 space-y-6 flex-1 overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-black text-slate-900">Manage Products</h1>
-            <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => seedArabicBroastMutation.mutate()}
-                disabled={seedArabicBroastMutation.isPending}
-                className="flex items-center gap-2 font-bold rounded-xl px-6 border-slate-200"
-              >
-                <Database className="h-4 w-4" />
-                {seedArabicBroastMutation.isPending ? "Adding..." : "Add Arabic Broast Menu"}
-              </Button>
-              <Button 
-                onClick={() => { resetForm(); setIsProductModalOpen(true); }}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl px-6"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Product
-              </Button>
-            </div>
-          </div>
+          {activeTab === ('virtual' as any) ? (
+            <div className="space-y-6 flex-1 overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-black text-slate-900">Virtual Selection Menus</h1>
+                  <p className="text-sm text-slate-500 font-medium">Manage items for special categories like Bar BQ, Pizza, and Burgers</p>
+                </div>
+              </div>
 
-          {/* Search and Filters */}
-          <div className="flex gap-4 items-center">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="Search for Name, Number, etc."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-11 h-12 bg-white border-slate-200 rounded-xl focus:ring-emerald-500 focus:border-emerald-500"
-              />
-            </div>
-            <div className="flex items-center gap-2 text-sm font-bold text-slate-500">
-              Show Entries:
-              <select className="bg-white border-slate-200 rounded-lg p-1 px-2 outline-none">
-                <option>000</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Table */}
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden flex-1 flex flex-col shadow-sm">
-            <Table>
-              <TableHeader className="bg-emerald-400 hover:bg-emerald-400">
-                <TableRow className="border-none hover:bg-emerald-400">
-                  <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4">Name</TableHead>
-                  <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4">SKU</TableHead>
-                  <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4">Price</TableHead>
-                  <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4">Category</TableHead>
-                  <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4 text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isProductsLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-20">
-                      <Loader2 className="h-8 w-8 animate-spin mx-auto text-emerald-500" />
-                    </TableCell>
-                  </TableRow>
-                ) : filteredProducts.map((product: any) => (
-                  <TableRow key={product.id} className="hover:bg-slate-50/50 border-slate-100">
-                    <TableCell className="font-bold text-slate-700 py-4">{product.name}</TableCell>
-                    <TableCell className="text-slate-500 py-4">{product.sku}</TableCell>
-                    <TableCell className="font-bold text-slate-700 py-4">Rs {product.price.toLocaleString()}</TableCell>
-                    <TableCell className="py-4">
-                      <Badge variant="outline" className="bg-slate-50 border-none text-slate-600 font-medium">
-                        {product.category}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button 
-                          onClick={() => handleEditProduct(product)}
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-slate-400 hover:text-indigo-600"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          onClick={() => {
-                            if (window.confirm('Are you sure you want to delete this product?')) {
-                              deleteProductMutation.mutate(product.id);
-                            }
-                          }}
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-slate-400 hover:text-red-500"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto pr-2 custom-scrollbar">
+                {virtualCategories.map((cat) => (
+                  <div 
+                    key={cat.id} 
+                    className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all group"
+                  >
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                        <cat.icon className="h-6 w-6" />
                       </div>
-                    </TableCell>
-                  </TableRow>
+                      <div>
+                        <h3 className="font-black text-slate-900 uppercase tracking-tight">{cat.name}</h3>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Selection Modal Menu</p>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={() => openVirtualMenuEditor(cat)}
+                      className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl py-6"
+                    >
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Edit {cat.name} Items
+                    </Button>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
-          </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-black text-slate-900">Manage Products</h1>
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => seedArabicBroastMutation.mutate()}
+                    disabled={seedArabicBroastMutation.isPending}
+                    className="flex items-center gap-2 font-bold rounded-xl px-6 border-slate-200"
+                  >
+                    <Database className="h-4 w-4" />
+                    {seedArabicBroastMutation.isPending ? "Adding..." : "Add Arabic Broast Menu"}
+                  </Button>
+                  <Button 
+                    onClick={() => { resetForm(); setIsProductModalOpen(true); }}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl px-6"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add New Product
+                  </Button>
+                </div>
+              </div>
+
+              {/* Search and Filters */}
+              <div className="flex gap-4 items-center">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input
+                    placeholder="Search for Name, Number, etc."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-11 h-12 bg-white border-slate-200 rounded-xl focus:ring-emerald-500 focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden flex-1 flex flex-col shadow-sm">
+                <Table>
+                  <TableHeader className="bg-emerald-400 hover:bg-emerald-400">
+                    <TableRow className="border-none hover:bg-emerald-400">
+                      <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4">Name</TableHead>
+                      <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4">SKU</TableHead>
+                      <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4">Price</TableHead>
+                      <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4">Category</TableHead>
+                      <TableHead className="text-white font-black uppercase text-[11px] tracking-wider py-4 text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isProductsLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-20">
+                          <Loader2 className="h-8 w-8 animate-spin mx-auto text-emerald-500" />
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredProducts.map((product: any) => (
+                      <TableRow key={product.id} className="hover:bg-slate-50/50 border-slate-100">
+                        <TableCell className="font-bold text-slate-700 py-4">{product.name}</TableCell>
+                        <TableCell className="text-slate-500 py-4">{product.sku}</TableCell>
+                        <TableCell className="font-bold text-slate-700 py-4">Rs {product.price.toLocaleString()}</TableCell>
+                        <TableCell className="py-4">
+                          <Badge variant="outline" className="bg-slate-50 border-none text-slate-600 font-medium">
+                            {product.category}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              onClick={() => handleEditProduct(product)}
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-slate-400 hover:text-indigo-600"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              onClick={() => {
+                                if (window.confirm('Are you sure you want to delete this product?')) {
+                                  deleteProductMutation.mutate(product.id);
+                                }
+                              }}
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-slate-400 hover:text-red-500"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
         </div>
+
+        {/* Virtual Menu Editor Modal */}
+        <Dialog open={isVirtualMenuModalOpen} onOpenChange={setIsVirtualMenuModalOpen}>
+          <DialogContent className="max-w-2xl rounded-3xl p-0 overflow-hidden bg-white border-none flex flex-col max-h-[85vh]">
+            <DialogHeader className="p-6 bg-slate-900 text-white shrink-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">
+                    Edit {selectedVirtualCategory} Menu
+                  </DialogTitle>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">
+                    Manage items and prices for this selection modal
+                  </p>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setIsVirtualMenuModalOpen(false)}
+                  className="text-white/50 hover:text-white hover:bg-white/10 rounded-full h-10 w-10"
+                >
+                  <X className="h-6 w-6" />
+                </Button>
+              </div>
+            </DialogHeader>
+
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 custom-scrollbar">
+              <div className="space-y-3">
+                {virtualMenuItems.map((item, index) => (
+                  <div key={index} className="flex gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-sm items-center group">
+                    <div className="flex-1">
+                      <Label className="text-[10px] font-black uppercase text-slate-400 mb-1 ml-1 block">Item Name</Label>
+                      <Input 
+                        value={item.name}
+                        onChange={(e) => {
+                          const updated = [...virtualMenuItems];
+                          updated[index] = { ...item, name: e.target.value };
+                          setVirtualMenuItems(updated);
+                        }}
+                        className="h-10 font-bold border-slate-100 focus:border-indigo-500 rounded-xl"
+                      />
+                    </div>
+                    <div className="w-32">
+                      <Label className="text-[10px] font-black uppercase text-slate-400 mb-1 ml-1 block">Price (Rs)</Label>
+                      <Input 
+                        type="number"
+                        value={item.price}
+                        onChange={(e) => {
+                          const updated = [...virtualMenuItems];
+                          updated[index] = { ...item, price: Number(e.target.value) };
+                          setVirtualMenuItems(updated);
+                        }}
+                        className="h-10 font-black border-slate-100 focus:border-indigo-500 rounded-xl"
+                      />
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => {
+                        const updated = virtualMenuItems.filter((_, i) => i !== index);
+                        setVirtualMenuItems(updated);
+                      }}
+                      className="mt-5 h-10 w-10 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+
+                <Button 
+                  variant="outline" 
+                  onClick={() => setVirtualMenuItems([...virtualMenuItems, { name: 'New Item', price: 0 }])}
+                  className="w-full h-14 border-dashed border-2 rounded-2xl text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 font-bold mt-4"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add New Item to {selectedVirtualCategory}
+                </Button>
+              </div>
+            </div>
+
+            <DialogFooter className="p-6 bg-white border-t shrink-0">
+              <div className="flex gap-3 w-full">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsVirtualMenuModalOpen(false)}
+                  className="flex-1 h-12 font-bold rounded-xl border-slate-200"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={saveVirtualMenu}
+                  className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-200"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Save {selectedVirtualCategory} Menu
+                </Button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Add/Edit Product Modal */}
         <Dialog open={isProductModalOpen} onOpenChange={setIsProductModalOpen}>

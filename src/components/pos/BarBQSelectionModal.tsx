@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Utensils, ChefHat } from 'lucide-react';
+import { Search, Plus, Utensils, ChefHat, Edit2, Save, Trash2 } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { useMultiTenant } from '@/hooks/useMultiTenant';
+import { toast } from 'sonner';
 
 interface BarBQSelectionModalProps {
   isOpen: boolean;
@@ -16,7 +18,7 @@ interface BarBQItem {
   price: number;
 }
 
-const BARBQ_DATA: BarBQItem[] = [
+const DEFAULT_BARBQ_DATA: BarBQItem[] = [
   { name: "All Flavours Leg Tikka", price: 350 },
   { name: "Green Chicken Tikka Chest", price: 450 },
   { name: "Behari Tikka Chest", price: 450 },
@@ -32,12 +34,47 @@ const BARBQ_DATA: BarBQItem[] = [
 export default function BarBQSelectionModal({ isOpen, onClose, onAdd }: BarBQSelectionModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [quantityPrefix, setQuantityPrefix] = useState<string>('');
+  const { isAdmin } = useMultiTenant();
+  const [isEditingMode, setIsEditingMode] = useState(false);
+  const [menuItems, setMenuItems] = useState<BarBQItem[]>([]);
 
-  const filteredBarBQ = BARBQ_DATA.filter(b => 
+  useEffect(() => {
+    const saved = localStorage.getItem('pos_menu_barbq');
+    if (saved) {
+      setMenuItems(JSON.parse(saved));
+    } else {
+      setMenuItems(DEFAULT_BARBQ_DATA);
+    }
+  }, [isOpen]);
+
+  const saveMenu = (updatedItems: BarBQItem[]) => {
+    setMenuItems(updatedItems);
+    localStorage.setItem('pos_menu_barbq', JSON.stringify(updatedItems));
+  };
+
+  const handleUpdateItem = (index: number, field: keyof BarBQItem, value: string | number) => {
+    const updated = [...menuItems];
+    updated[index] = { ...updated[index], [field]: field === 'price' ? Number(value) : value };
+    saveMenu(updated);
+  };
+
+  const handleAddItem = () => {
+    const updated = [...menuItems, { name: "New Item", price: 0 }];
+    saveMenu(updated);
+  };
+
+  const handleRemoveItem = (index: number) => {
+    const updated = menuItems.filter((_, i) => i !== index);
+    saveMenu(updated);
+    toast.success('Item removed');
+  };
+
+  const filteredBarBQ = menuItems.filter(b => 
     b.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAddBarBQ = (item: BarBQItem) => {
+    if (isEditingMode) return;
     const qty = parseInt(quantityPrefix) || 1;
     const bbqProduct = {
       id: `barbq-${item.name.toLowerCase().replace(/\s+/g, '-')}`,
@@ -64,7 +101,12 @@ export default function BarBQSelectionModal({ isOpen, onClose, onAdd }: BarBQSel
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) {
+        setIsEditingMode(false);
+        onClose();
+      }
+    }}>
       <DialogContent className="max-w-2xl p-0 overflow-hidden bg-white border-none rounded-3xl max-h-[90vh] h-[90vh] flex flex-col shadow-2xl [&>button]:hidden" aria-describedby="barbq-selection-description">
         {/* Header */}
         <div className="bg-slate-900 bg-gradient-to-br from-slate-900 to-slate-800 px-6 py-5 text-white shrink-0 relative">
@@ -74,9 +116,24 @@ export default function BarBQSelectionModal({ isOpen, onClose, onAdd }: BarBQSel
                 <ChefHat className="h-7 w-7 text-orange-500" />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">BAR BQ Menu</DialogTitle>
+                <div className="flex items-center gap-2">
+                  <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">BAR BQ Menu</DialogTitle>
+                  {isAdmin && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className={cn(
+                        "h-8 w-8 rounded-full",
+                        isEditingMode ? "bg-orange-500 text-white hover:bg-orange-600" : "bg-white/10 text-white hover:bg-white/20"
+                      )}
+                      onClick={() => setIsEditingMode(!isEditingMode)}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
                 <DialogDescription id="barbq-selection-description" className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-0.5">
-                  Fresh & Smoky Charcoal Grill
+                  {isEditingMode ? "ADMIN MODE: EDITING ITEMS" : "Fresh & Smoky Charcoal Grill"}
                 </DialogDescription>
               </div>
             </div>
@@ -99,69 +156,113 @@ export default function BarBQSelectionModal({ isOpen, onClose, onAdd }: BarBQSel
           </div>
 
           {/* Number Pad */}
-          <div className="mt-4 bg-white/10 p-2 rounded-2xl border border-white/10">
-            <div className="flex items-center justify-between mb-2 px-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Select Quantity</span>
-              {quantityPrefix && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-black bg-white text-slate-900 px-2 py-0.5 rounded-full animate-pulse">
-                    Adding {quantityPrefix} items
-                  </span>
-                  <button 
-                    onClick={() => setQuantityPrefix('')}
-                    className="text-[10px] font-bold text-white/50 hover:text-white underline uppercase tracking-tighter"
+          {!isEditingMode && (
+            <div className="mt-4 bg-white/10 p-2 rounded-2xl border border-white/10">
+              <div className="flex items-center justify-between mb-2 px-1">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Select Quantity</span>
+                {quantityPrefix && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black bg-white text-slate-900 px-2 py-0.5 rounded-full animate-pulse">
+                      Adding {quantityPrefix} items
+                    </span>
+                    <button 
+                      onClick={() => setQuantityPrefix('')}
+                      className="text-[10px] font-bold text-white/50 hover:text-white underline uppercase tracking-tighter"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="grid grid-cols-10 gap-1.5">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
+                  <button
+                    key={num}
+                    onClick={() => handleNumberClick(num)}
+                    className={cn(
+                      "h-9 rounded-lg font-black text-sm transition-all active:scale-90 flex items-center justify-center",
+                      quantityPrefix.includes(num.toString()) 
+                        ? "bg-white text-slate-900 shadow-lg shadow-black/10" 
+                        : "bg-white/10 text-white hover:bg-white/20"
+                    )}
                   >
-                    Clear
+                    {num}
                   </button>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-10 gap-1.5">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
-                <button
-                  key={num}
-                  onClick={() => handleNumberClick(num)}
-                  className={cn(
-                    "h-9 rounded-lg font-black text-sm transition-all active:scale-90 flex items-center justify-center",
-                    quantityPrefix.includes(num.toString()) 
-                      ? "bg-white text-slate-900 shadow-lg shadow-black/10" 
-                      : "bg-white/10 text-white hover:bg-white/20"
-                  )}
-                >
-                  {num}
-                </button>
-              ))}
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto bg-slate-50/30 custom-scrollbar">
           <div className="p-6 grid grid-cols-1 gap-3">
-            {filteredBarBQ.map((item) => (
-              <button
-                key={item.name}
-                onClick={() => handleAddBarBQ(item)}
-                className="group flex items-center justify-between p-4 bg-white hover:bg-slate-50 rounded-2xl border border-slate-100 hover:border-slate-300 shadow-sm hover:shadow-md transition-all text-left"
+            {filteredBarBQ.map((item, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "group flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm transition-all",
+                  !isEditingMode && "hover:bg-slate-50 hover:border-slate-300 hover:shadow-md cursor-pointer"
+                )}
+                onClick={() => !isEditingMode && handleAddBarBQ(item)}
               >
                 <div className="flex-1 pr-4">
-                  <p className="font-bold font-heading text-slate-800 text-[15px] group-hover:text-slate-900 transition-colors tracking-tight">{item.name}</p>
+                  {isEditingMode ? (
+                    <div className="flex gap-2">
+                      <Input 
+                        value={item.name} 
+                        onChange={(e) => handleUpdateItem(index, 'name', e.target.value)}
+                        className="h-9 text-sm font-bold"
+                      />
+                      <Input 
+                        type="number"
+                        value={item.price} 
+                        onChange={(e) => handleUpdateItem(index, 'price', e.target.value)}
+                        className="h-9 w-24 text-sm font-black"
+                      />
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-9 w-9 text-red-500 hover:text-red-600 hover:bg-red-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveItem(index);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="font-bold font-heading text-slate-800 text-[15px] group-hover:text-slate-900 transition-colors tracking-tight">{item.name}</p>
+                  )}
                 </div>
-                <div className="flex items-center gap-5 shrink-0">
-                  <span className="font-black font-heading text-slate-900 text-base tracking-tight">Rs {item.price}</span>
-                  <div className="h-8 w-8 rounded-full bg-slate-100 group-hover:bg-orange-500 flex items-center justify-center transition-colors">
-                    <Plus className="h-4 w-4 text-slate-400 group-hover:text-white" />
+                {!isEditingMode && (
+                  <div className="flex items-center gap-5 shrink-0">
+                    <span className="font-black font-heading text-slate-900 text-base tracking-tight">Rs {item.price}</span>
+                    <div className="h-8 w-8 rounded-full bg-slate-100 group-hover:bg-orange-500 flex items-center justify-center transition-colors">
+                      <Plus className="h-4 w-4 text-slate-400 group-hover:text-white" />
+                    </div>
                   </div>
-                </div>
-              </button>
+                )}
+              </div>
             ))}
+            {isEditingMode && (
+              <Button 
+                variant="outline" 
+                className="mt-4 border-dashed border-2 h-14 rounded-2xl text-slate-500 hover:text-orange-600 hover:border-orange-200 hover:bg-orange-50"
+                onClick={handleAddItem}
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Add New Item
+              </Button>
+            )}
           </div>
         </div>
 
         {/* Footer */}
         <div className="p-4 bg-white border-t border-slate-100 flex items-center justify-between shrink-0">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4">
-            Tap an item to add to cart
+            {isEditingMode ? "Changes are saved automatically" : "Tap an item to add to cart"}
           </p>
           <Button 
             onClick={onClose}
