@@ -428,10 +428,23 @@ const CartPanel = () => {
     await performCompleteSale();
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === 'u' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
+        handleClearCart();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [items.length]);
+
   const handleClearCart = () => {
     if (items.length === 0) return;
     clearCart();
-    toast.info('Cart cleared');
+    toast.error('Screen Cleared', {
+      description: 'All items and customer data removed',
+      duration: 2000,
+    });
   };
 
   useEffect(() => {
@@ -668,12 +681,12 @@ const CartPanel = () => {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11"
+              className="flex-1 font-bold font-heading uppercase tracking-wider text-xs h-11 border-red-100 text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors shadow-sm"
               onClick={handleClearCart}
               disabled={items.length === 0}
             >
               <X className="h-4 w-4 mr-2" />
-              Clear
+              Clear Screen
             </Button>
             <Button
               className="flex-[2] btn-success font-black font-heading uppercase tracking-widest text-sm h-11 shadow-lg shadow-emerald-500/20"
