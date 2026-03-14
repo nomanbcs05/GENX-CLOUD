@@ -59,8 +59,84 @@ const ManageProductsPage = () => {
     if (saved) {
       setVirtualMenuItems(JSON.parse(saved));
     } else {
-      // Load defaults if needed, but for now we'll just show what's in storage
-      setVirtualMenuItems([]);
+      // Load defaults
+      let defaults: any[] = [];
+      if (category.id === 'beverages') {
+        defaults = [
+          { name: "Mineral Water (Small)", price: 60 },
+          { name: "Mineral Water (Large)", price: 110 },
+          { name: "Coke / Sprite / Fanta (250ml)", price: 80 },
+          { name: "Coke / Sprite / Fanta (500ml)", price: 120 },
+          { name: "Coke / Sprite / Fanta (1.5L)", price: 220 },
+          { name: "Fresh Lime", price: 100 },
+          { name: "Tea", price: 80 },
+          { name: "Coffee", price: 150 },
+        ];
+      } else if (category.id === 'fries') {
+        defaults = [
+          { name: "Plain Fries", price: 150 },
+          { name: "Masala Fries", price: 180 },
+          { name: "Garlic Mayo Fries", price: 250 },
+          { name: "Cheese Fries", price: 300 },
+          { name: "Loaded Fries", price: 450 },
+          { name: "Pizza Fries", price: 500 },
+        ];
+      } else if (category.id === 'alacart') {
+        defaults = [
+          { name: "Extra Patty", price: 150 },
+          { name: "Extra Cheese Slice", price: 50 },
+          { name: "Extra Dip Sauce", price: 40 },
+          { name: "Coleslaw", price: 80 },
+          { name: "Bun", price: 60 },
+        ];
+      } else if (category.id === 'barbq') {
+        defaults = [
+          { name: "All Flavours Leg Tikka", price: 350 },
+          { name: "Green Chicken Tikka Chest", price: 450 },
+          { name: "Behari Tikka Chest", price: 450 },
+          { name: "Malai Tikka Chest", price: 450 },
+          { name: "Green Chicken Boti Boneless 5 Pcs", price: 250 },
+          { name: "Behari Boti Boneless 5 Pcs", price: 250 },
+          { name: "Malai Boti Boneless 5 Pcs", price: 250 },
+          { name: "Reshmi Kabab Chicken 1 Plate / 6 Pcs", price: 400 },
+          { name: "Reshmi Kabab Beef 1 Plate / 6 Pcs", price: 400 },
+          { name: "Chicken Gola Kabab 1 Plate / 4 Pcs", price: 250 },
+        ];
+      } else if (category.id === 'pizza') {
+        defaults = [
+          { name: "Fajita Pizza (Small)", price: 450 },
+          { name: "Fajita Pizza (Medium)", price: 850 },
+          { name: "Fajita Pizza (Large)", price: 1250 },
+          { name: "Tikka Pizza (Small)", price: 450 },
+          { name: "Tikka Pizza (Medium)", price: 850 },
+          { name: "Tikka Pizza (Large)", price: 1250 },
+        ];
+      } else if (category.id === 'burger') {
+        defaults = [
+          { name: "Zinger Burger", price: 350 },
+          { name: "Zinger Cheese Burger", price: 400 },
+          { name: "Beef Burger", price: 450 },
+          { name: "Chicken Burger", price: 300 },
+        ];
+      } else if (category.id === 'roll') {
+        defaults = [
+          { name: "Chicken Roll", price: 180 },
+          { name: "Zinger Roll", price: 250 },
+          { name: "Beef Roll", price: 300 },
+        ];
+      } else if (category.id === 'broast') {
+        defaults = [
+          { name: "Quarter Broast", price: 450 },
+          { name: "Half Broast", price: 850 },
+          { name: "Full Broast", price: 1600 },
+        ];
+      } else if (category.id === 'deals') {
+        defaults = [
+          { name: "Student Deal 1", price: 450, description: "Zinger + Fries + Drink" },
+          { name: "Family Deal 1", price: 2500, description: "4 Zinger + 2 Fries + 1.5L Drink" },
+        ];
+      }
+      setVirtualMenuItems(defaults);
     }
     setIsVirtualMenuModalOpen(true);
   };

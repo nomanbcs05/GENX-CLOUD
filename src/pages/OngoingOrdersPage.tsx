@@ -634,7 +634,7 @@ const OngoingOrdersPage = () => {
 
         {/* Right Side: Order Detail */}
         {showDetailPanel && (
-          <div className="w-[300px] flex flex-col bg-white border-l shadow-2xl z-10 relative">
+          <div className="w-[360px] flex flex-col bg-white border-l shadow-2xl z-10 relative">
             <button
               onClick={() => setShowDetailPanel(false)}
               className="absolute -left-3 top-24 bg-white text-slate-600 w-7 h-7 rounded-full flex items-center justify-center shadow-lg border border-slate-200 hover:bg-slate-50"
@@ -732,8 +732,8 @@ const OngoingOrdersPage = () => {
                           // Prioritize snapshot name (item.product_name) over current catalog name (item.products.name)
                           const displayName = item.product_name || item.products?.name || matched?.name || 'Item';
                           return (
-                            <div key={item.id || index} className="group flex items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                              <div className="h-12 w-12 flex-shrink-0 rounded-lg bg-white flex items-center justify-center text-xl shadow-sm overflow-hidden border border-slate-200">
+                            <div key={item.id || index} className="group flex items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                              <div className="h-14 w-14 flex-shrink-0 rounded-lg bg-white flex items-center justify-center text-xl shadow-sm overflow-hidden border border-slate-200">
                                 {typeof displayImage === 'string' && displayImage.startsWith('http') ? (
                                   <img src={displayImage} alt="" className="h-full w-full object-cover" />
                                 ) : (
@@ -741,46 +741,46 @@ const OngoingOrdersPage = () => {
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-slate-900 truncate">{displayName}</p>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Unit: Rs {item.price.toLocaleString()}</p>
+                                <p className="text-base font-bold text-slate-900 truncate">{displayName}</p>
+                                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tight">Unit: Rs {item.price.toLocaleString()}</p>
                               </div>
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-4">
                                 {isEditing ? (
                                   <>
                                     <Button
                                       variant="outline"
                                       size="icon"
-                                      className="h-7 w-7 rounded-lg"
+                                      className="h-8 w-8 rounded-lg"
                                       onClick={() => handleUpdateItemQuantity(index, -1)}
                                     >
-                                      <Minus className="h-3 w-3" />
+                                      <Minus className="h-4 w-4" />
                                     </Button>
-                                    <span className="flex items-center justify-center h-8 w-8 bg-blue-100 text-blue-700 rounded-lg text-xs font-black min-w-[32px]">
+                                    <span className="flex items-center justify-center h-9 w-9 bg-blue-100 text-blue-700 rounded-lg text-sm font-black min-w-[36px]">
                                       {item.quantity}
                                     </span>
                                     <Button
                                       variant="outline"
                                       size="icon"
-                                      className="h-7 w-7 rounded-lg"
+                                      className="h-8 w-8 rounded-lg"
                                       onClick={() => handleUpdateItemQuantity(index, 1)}
                                     >
-                                      <Plus className="h-3 w-3" />
+                                      <Plus className="h-4 w-4" />
                                     </Button>
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      className="h-7 w-7 text-red-500 hover:text-red-600"
+                                      className="h-8 w-8 text-red-500 hover:text-red-600"
                                       onClick={() => handleRemoveItem(index)}
                                     >
-                                      <X className="h-3 w-3" />
+                                      <X className="h-4 w-4" />
                                     </Button>
                                   </>
                                 ) : (
-                                  <span className="flex items-center justify-center h-8 w-8 bg-blue-100 text-blue-700 rounded-lg text-xs font-black">
+                                  <span className="flex items-center justify-center h-9 w-9 bg-blue-100 text-blue-700 rounded-lg text-sm font-black">
                                     x{item.quantity}
                                   </span>
                                 )}
-                                <span className="text-sm font-black text-slate-900 min-w-[70px] text-right">
+                                <span className="text-base font-black text-slate-900 min-w-[90px] text-right">
                                   Rs {(item.price * item.quantity).toLocaleString()}
                                 </span>
                               </div>

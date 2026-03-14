@@ -583,8 +583,8 @@ const CartPanel = () => {
                     </Button>
                   </div>
 
-                  <div className="text-right min-w-[60px]">
-                    <p className="font-semibold text-sm">Rs {item.lineTotal.toLocaleString()}</p>
+                  <div className="text-right min-w-[80px]">
+                    <p className="font-bold text-sm">Rs {item.lineTotal.toLocaleString()}</p>
                   </div>
 
                   <Button
