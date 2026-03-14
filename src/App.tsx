@@ -22,16 +22,6 @@ import { useMultiTenant } from "./hooks/useMultiTenant";
 
 const queryClient = new QueryClient();
 
-const HomeRoute = () => {
-  const { isSuperAdmin } = useMultiTenant();
-
-  if (isSuperAdmin) {
-    return <Navigate to="/super-admin" replace />;
-  }
-
-  return <Index />;
-};
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -43,17 +33,9 @@ const App = () => (
             <Route path="/auth" element={<Welcome />} />
             <Route path="/login" element={<LoginPage />} />
 
-            <Route path="/super-admin" element={
-              <ProtectedRoute adminOnly>
-                <SuperAdminDashboard />
-              </ProtectedRoute>
-            } />
-
-            {/* Secured Application Routes */}
-          <Route element={<LicenseGate />}>
             <Route path="/" element={
               <ProtectedRoute>
-                <HomeRoute />
+                <Index />
               </ProtectedRoute>
             } />
             <Route path="/ongoing-orders" element={
@@ -93,7 +75,6 @@ const App = () => (
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
-          </Route>
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

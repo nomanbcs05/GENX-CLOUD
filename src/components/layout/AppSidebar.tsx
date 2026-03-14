@@ -29,11 +29,11 @@ import { useMultiTenant } from '@/hooks/useMultiTenant';
 const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, restaurant, isSuperAdmin } = useMultiTenant();
+  const { profile, restaurant } = useMultiTenant();
   const [showStartSessionModal, setShowStartSessionModal] = useState(false);
   const queryClient = useQueryClient();
 
-  const baseNavigation = [
+  const navigation = [
     { name: 'Dashboard', href: '/', icon: LayoutGrid },
     { name: 'Running Orders', href: '/ongoing-orders', icon: Clock },
     { name: 'Orders', href: '/orders', icon: ClipboardList },
@@ -43,13 +43,6 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
     { name: 'Reports', href: '/reports', icon: BarChart3 },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
-
-  const navigation = isSuperAdmin
-    ? [
-        { name: 'Super Admin', href: '/super-admin', icon: ShieldCheck },
-        ...baseNavigation,
-      ]
-    : baseNavigation;
 
   const handleLogout = async () => {
     try {
@@ -96,7 +89,7 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
                   {restaurant?.name || "Gen XCloud"}
                 </h1>
                 <p className="text-[10px] font-bold text-sidebar-foreground/50 uppercase tracking-widest mt-1">
-                  {isSuperAdmin ? "Super Admin" : "POS System"}
+                  POS System
                 </p>
               </div>
             )}
