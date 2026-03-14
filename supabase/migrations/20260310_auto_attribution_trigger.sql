@@ -15,7 +15,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 DO $$
 DECLARE
     table_name_var TEXT;
-    tables_to_auto_attribute TEXT[] := ARRAY['products', 'categories', 'orders', 'customers', 'daily_registers', 'restaurant_tables'];
+    tables_to_auto_attribute TEXT[] := ARRAY['products', 'categories', 'orders', 'customers', 'daily_registers', 'restaurant_tables', 'order_items', 'delivery_addresses', 'delivery_zones', 'delivery_drivers'];
 BEGIN
     FOREACH table_name_var IN ARRAY tables_to_auto_attribute
     LOOP
@@ -36,7 +36,7 @@ END $$;
 DO $$
 DECLARE
     table_name_var TEXT;
-    tables_to_fix TEXT[] := ARRAY['products', 'categories', 'orders', 'customers', 'daily_registers', 'restaurant_tables', 'restaurants', 'profiles'];
+    tables_to_fix TEXT[] := ARRAY['products', 'categories', 'orders', 'customers', 'daily_registers', 'restaurant_tables', 'order_items', 'restaurants', 'profiles'];
 BEGIN
     FOREACH table_name_var IN ARRAY tables_to_fix
     LOOP

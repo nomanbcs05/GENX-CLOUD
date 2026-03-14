@@ -215,6 +215,9 @@ const SuperAdminDashboard = () => {
         'categories',
         'daily_registers',
         'restaurant_tables',
+        'delivery_addresses',
+        'delivery_zones',
+        'delivery_drivers',
       ];
 
       for (const table of tables) {

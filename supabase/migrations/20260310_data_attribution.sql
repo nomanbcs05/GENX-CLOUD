@@ -6,6 +6,10 @@ ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS restaurant_id UUID REFERENCES
 ALTER TABLE public.customers ADD COLUMN IF NOT EXISTS restaurant_id UUID REFERENCES public.restaurants(id);
 ALTER TABLE public.daily_registers ADD COLUMN IF NOT EXISTS restaurant_id UUID REFERENCES public.restaurants(id);
 ALTER TABLE public.restaurant_tables ADD COLUMN IF NOT EXISTS restaurant_id UUID REFERENCES public.restaurants(id);
+ALTER TABLE public.order_items ADD COLUMN IF NOT EXISTS restaurant_id UUID REFERENCES public.restaurants(id);
+ALTER TABLE public.delivery_addresses ADD COLUMN IF NOT EXISTS restaurant_id UUID REFERENCES public.restaurants(id);
+ALTER TABLE public.delivery_zones ADD COLUMN IF NOT EXISTS restaurant_id UUID REFERENCES public.restaurants(id);
+ALTER TABLE public.delivery_drivers ADD COLUMN IF NOT EXISTS restaurant_id UUID REFERENCES public.restaurants(id);
 
 -- 2. Link existing data to the Default Restaurant
 DO $$
@@ -21,6 +25,10 @@ BEGIN
         UPDATE public.customers SET restaurant_id = default_restaurant_id WHERE restaurant_id IS NULL;
         UPDATE public.daily_registers SET restaurant_id = default_restaurant_id WHERE restaurant_id IS NULL;
         UPDATE public.restaurant_tables SET restaurant_id = default_restaurant_id WHERE restaurant_id IS NULL;
+        UPDATE public.order_items SET restaurant_id = default_restaurant_id WHERE restaurant_id IS NULL;
+        UPDATE public.delivery_addresses SET restaurant_id = default_restaurant_id WHERE restaurant_id IS NULL;
+        UPDATE public.delivery_zones SET restaurant_id = default_restaurant_id WHERE restaurant_id IS NULL;
+        UPDATE public.delivery_drivers SET restaurant_id = default_restaurant_id WHERE restaurant_id IS NULL;
     END IF;
 END $$;
 

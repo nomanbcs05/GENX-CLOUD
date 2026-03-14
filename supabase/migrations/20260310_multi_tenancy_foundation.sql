@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     restaurant_id UUID REFERENCES public.restaurants(id) ON DELETE CASCADE,
     full_name TEXT,
+    email TEXT,
     role TEXT NOT NULL CHECK (role IN ('admin', 'cashier', 'super-admin')),
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
@@ -47,8 +48,8 @@ CREATE POLICY "Admins can see profiles in their restaurant"
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, role, full_name)
-  VALUES (new.id, 'admin', new.raw_user_meta_data->>'full_name');
+  INSERT INTO public.profiles (id, role, full_name, email)
+  VALUES (new.id, 'admin', new.raw_user_meta_data->>'full_name', new.email);
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
