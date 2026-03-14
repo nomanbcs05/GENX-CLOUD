@@ -61,14 +61,12 @@ export default function DealsSelectionModal({ isOpen, onClose, onAdd }: DealsSel
 
   const handleAddItem = () => {
     const nextId = menuItems.length + 1;
-    const colors = ['bg-black', 'bg-red-600', 'bg-yellow-500'];
-    const color = colors[menuItems.length % colors.size];
     const updated = [...menuItems, { 
       id: `deal-${nextId.toString().padStart(2, '0')}`, 
       name: `DEAL # ${nextId.toString().padStart(2, '0')}`, 
       description: "Deal items list...", 
       price: 0,
-      color: color
+      color: 'bg-black' // Kept for type compatibility but not used in list UI
     }];
     saveMenu(updated);
   };
@@ -157,92 +155,85 @@ export default function DealsSelectionModal({ isOpen, onClose, onAdd }: DealsSel
         </div>
 
         {/* Content Section */}
-        <div className="flex-1 overflow-y-auto bg-slate-50/30 custom-scrollbar p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredDeals.map((deal, index) => (
-              <div 
-                key={deal.id}
-                className={cn(
-                  "relative rounded-3xl overflow-hidden shadow-lg transition-all flex flex-col min-h-[180px]",
-                  deal.color,
-                  !isEditingMode && "hover:scale-[1.02] cursor-pointer active:scale-95 shadow-xl"
-                )}
-                onClick={() => !isEditingMode && handleAddDealToCart(deal)}
-              >
-                {/* Deal Tag */}
-                <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-black px-4 py-0.5 rounded-full font-black text-[11px] tracking-widest uppercase z-10 shadow-sm">
-                  {isEditingMode ? (
-                    <input 
-                      className="bg-transparent border-none text-center focus:outline-none w-20"
-                      value={deal.name}
-                      onChange={(e) => handleUpdateItem(index, 'name', e.target.value)}
-                    />
-                  ) : deal.name}
-                </div>
-
-                <div className="p-6 pt-10 flex-1 flex flex-col">
-                  {isEditingMode ? (
-                    <div className="space-y-3">
-                      <Textarea 
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/50 text-sm font-bold min-h-[80px]"
-                        value={deal.description}
-                        onChange={(e) => handleUpdateItem(index, 'description', e.target.value)}
-                      />
-                      <div className="flex gap-2">
-                        <div className="flex-1 relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 text-xs font-bold">Rs</span>
-                          <Input 
-                            type="number"
-                            className="bg-white/10 border-white/20 text-white pl-8 h-9 font-black"
-                            value={deal.price}
-                            onChange={(e) => handleUpdateItem(index, 'price', e.target.value)}
+        <div className="flex-1 overflow-y-auto bg-slate-50/30 custom-scrollbar">
+          <div className="p-6">
+            <div className="grid grid-cols-1 gap-3">
+              {filteredDeals.map((deal, index) => {
+                const originalIndex = menuItems.findIndex(d => d.id === deal.id);
+                return (
+                  <div
+                    key={deal.id}
+                    className={cn(
+                      "group flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm transition-all",
+                      !isEditingMode && "hover:bg-slate-50 hover:border-slate-300 hover:shadow-md cursor-pointer"
+                    )}
+                    onClick={() => !isEditingMode && handleAddDealToCart(deal)}
+                  >
+                    <div className="flex-1 pr-4">
+                      {isEditingMode ? (
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-9 w-9 text-red-500 hover:text-red-600 hover:bg-red-50 shrink-0"
+                              onClick={(e) => { e.stopPropagation(); handleRemoveItem(originalIndex); }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                            <Input 
+                              value={deal.name} 
+                              onChange={(e) => handleUpdateItem(originalIndex, 'name', e.target.value)}
+                              className="h-9 text-sm font-bold uppercase"
+                            />
+                            <Input 
+                              type="number"
+                              value={deal.price} 
+                              onChange={(e) => handleUpdateItem(originalIndex, 'price', e.target.value)}
+                              className="h-9 w-24 text-sm font-black"
+                            />
+                          </div>
+                          <Textarea 
+                            value={deal.description}
+                            onChange={(e) => handleUpdateItem(originalIndex, 'description', e.target.value)}
+                            className="text-xs font-medium min-h-[60px] bg-slate-50/50"
+                            placeholder="List deal items here..."
                           />
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-9 w-9 text-white/50 hover:text-red-400 hover:bg-white/10"
-                          onClick={(e) => { e.stopPropagation(); handleRemoveItem(index); }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      ) : (
+                        <div className="space-y-1">
+                          <p className="font-black font-heading text-slate-900 text-sm uppercase tracking-tight group-hover:text-blue-600 transition-colors">
+                            {deal.name}
+                          </p>
+                          <p className="text-[11px] text-slate-500 font-medium leading-relaxed whitespace-pre-line">
+                            {deal.description}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <>
-                      <div className="flex-1">
-                        <p className="text-white text-sm font-bold leading-relaxed whitespace-pre-line tracking-tight">
-                          {deal.description}
-                        </p>
+                    {!isEditingMode && (
+                      <div className="flex items-center gap-5 shrink-0">
+                        <span className="font-black font-heading text-slate-900 text-base tracking-tight">Rs {deal.price}</span>
+                        <div className="h-8 w-8 rounded-full bg-slate-100 group-hover:bg-blue-600 flex items-center justify-center transition-colors">
+                          <Plus className="h-4 w-4 text-slate-400 group-hover:text-white" />
+                        </div>
                       </div>
-                      <div className="mt-4 flex items-center justify-center border-t border-white/10 pt-4">
-                        <span className="text-white font-black text-2xl tracking-tighter">
-                          RS.{deal.price}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Status Overlay for Admin */}
-                {isEditingMode && (
-                  <div className="absolute bottom-2 right-2 opacity-50 text-[8px] text-white font-bold uppercase tracking-widest">
-                    Editing Mode
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
+                );
+              })}
 
-            {isEditingMode && (
-              <Button 
-                variant="outline" 
-                className="h-full min-h-[180px] border-dashed border-2 rounded-3xl text-slate-400 hover:text-slate-600 hover:bg-white transition-all flex flex-col gap-2"
-                onClick={handleAddItem}
-              >
-                <Plus className="h-8 w-8" />
-                <span className="font-black uppercase tracking-widest text-xs">Add New Deal</span>
-              </Button>
-            )}
+              {isEditingMode && (
+                <Button 
+                  variant="outline" 
+                  className="mt-4 border-dashed border-2 h-14 rounded-2xl text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 font-bold"
+                  onClick={handleAddItem}
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Add New Deal
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
