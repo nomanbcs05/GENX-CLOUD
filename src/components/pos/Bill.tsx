@@ -101,17 +101,18 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
           <span>{order.cashierName}</span>
           <span className="uppercase">{order.orderType}</span>
         </div>
+        
+        {order.serverName && (
+          <div className="flex justify-between mt-1">
+            <span>Server:</span>
+            <span className="font-bold uppercase">{order.serverName.replace(/^\[.*?\]\s*/, '')}</span>
+          </div>
+        )}
+
         <div className="flex justify-between mt-1">
           <span>{format(order.createdAt, 'd-MMM-yy')}</span>
           <span>{format(order.createdAt, 'h:mm a')}</span>
         </div>
-
-        {order.serverName && (
-          <div className="flex justify-between mt-1 border-t border-dotted border-black pt-1">
-            <span className="font-bold">Server:</span>
-            <span className="font-bold uppercase">{order.serverName.replace(/^\[.*?\]\s*/, '')}</span>
-          </div>
-        )}
 
         {order.tableId && (
           <div className="flex justify-between mt-1">
