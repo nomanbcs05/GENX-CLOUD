@@ -138,44 +138,31 @@ export const api = {
   products: {
     seedArabicBroast: async () => {
       const items = [
-        { name: "Skin Spicy Injected Full Kukkar", price: 2000, cost: 0, sku: "SIB-FULL-K", category: "Arabic Broast", image: "🍗", stock: 100 },
-        { name: "Skin Spicy injected Broast Leg/Thai 2Pcs", price: 600, cost: 0, sku: "SIB-LT-2", category: "Arabic Broast", image: "🍗", stock: 100 },
-        { name: "Skin Spicy injected Broast Chest/Wing 2Pcs", price: 600, cost: 0, sku: "SIB-CW-2", category: "Arabic Broast", image: "🍗", stock: 100 },
-        { name: "Skin Spicy injected Half Broast 4Pcs", price: 1100, cost: 0, sku: "SIB-HALF-4", category: "Arabic Broast", image: "🍗", stock: 100 },
-        { name: "Skin Spicy injected Full Broast 8Pcs", price: 2200, cost: 0, sku: "SIB-FULL-8", category: "Arabic Broast", image: "🍗", stock: 100 },
-        { name: "COMBO 1 (1 Qtr Broast, 1 Zinger, Drink, Bun, Fries)", price: 999, cost: 0, sku: "COMBO-1", category: "Arabic Broast", image: "🍱", stock: 100 },
-        { name: "COMBO 2 (Half Broast, Fries, 2 Bun, 2 Sauce, Drink)", price: 1300, cost: 0, sku: "COMBO-2", category: "Arabic Broast", image: "🍱", stock: 100 },
-        { name: "COMBO 3 (Full Broast, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 2450, cost: 0, sku: "COMBO-3", category: "Arabic Broast", image: "🍱", stock: 100 },
-        { name: "COMBO 4 (Jumbo Pizza, 1 Kukkar, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 3500, cost: 0, sku: "COMBO-4", category: "Arabic Broast", image: "🍱", stock: 100 },
-        // Beverages
-        { name: "Next Cola / Fizz Up 345 ml", price: 80, cost: 0, sku: "DRINK-345", category: "Beverages", image: "", stock: 100 },
-        { name: "Next Cola / Fizz Up 500 ml", price: 120, cost: 0, sku: "DRINK-500", category: "Beverages", image: "", stock: 100 },
-        { name: "Next Cola / Fizz Up 1 liter", price: 150, cost: 0, sku: "DRINK-1L", category: "Beverages", image: "", stock: 100 },
-        { name: "Next Cola / KababJees 1.5 liter", price: 200, cost: 0, sku: "DRINK-1.5L", category: "Beverages", image: "", stock: 100 },
-        { name: "Next Cola / Fizz Up Jumbo", price: 250, cost: 0, sku: "DRINK-JUMBO", category: "Beverages", image: "", stock: 100 },
-        { name: "Sting 500 ml", price: 130, cost: 0, sku: "DRINK-STING", category: "Beverages", image: "", stock: 100 },
-        { name: "Mineral Water Small", price: 50, cost: 0, sku: "WATER-S", category: "Beverages", image: "", stock: 100 },
-        { name: "Mineral Water Large", price: 100, cost: 0, sku: "WATER-L", category: "Beverages", image: "", stock: 100 },
-        // ALA CART Items
-        { name: "Club Sandwich", price: 400, cost: 0, sku: "ALC-CLUB-S", category: "ALA CART", image: "🥪", stock: 100 },
-        { name: "Malai Boti Sandwich", price: 450, cost: 0, sku: "ALC-MALAI-S", category: "ALA CART", image: "🥪", stock: 100 },
-        { name: "Mexican Sandwich", price: 500, cost: 0, sku: "ALC-MEX-S", category: "ALA CART", image: "🥪", stock: 100 },
-        { name: "Spring Rolls 4 Pcs", price: 400, cost: 0, sku: "ALC-ROLLS-4", category: "ALA CART", image: "🌯", stock: 100 },
-        { name: "Macroni Pasta Large", price: 650, cost: 0, sku: "ALC-MAC-L", category: "ALA CART", image: "🍝", stock: 100 },
-        { name: "Macroni Pasta Small", price: 350, cost: 0, sku: "ALC-MAC-S", category: "ALA CART", image: "🍝", stock: 100 },
-        { name: "Oven Backed Wings 6Pcs", price: 350, cost: 0, sku: "ALC-OBW-6", category: "ALA CART", image: "🍗", stock: 100 },
-        { name: "Oven Backed Wings 12Pcs", price: 650, cost: 0, sku: "ALC-OBW-12", category: "ALA CART", image: "🍗", stock: 100 },
-        { name: "Crispy Wings 6Pcs", price: 350, cost: 0, sku: "ALC-CW-6", category: "ALA CART", image: "🍗", stock: 100 },
-        { name: "Crispy Wings 12Pcs", price: 650, cost: 0, sku: "ALC-CW-12", category: "ALA CART", image: "🍗", stock: 100 },
-        { name: "Hotshot 10Pcs", price: 450, cost: 0, sku: "ALC-HS-10", category: "ALA CART", image: "🍿", stock: 100 },
-        { name: "Hotshot 5Pcs", price: 250, cost: 0, sku: "ALC-HS-5", category: "ALA CART", image: "🍿", stock: 100 },
-        // Snacks (Fries)
-        { name: "Plain Fries", price: 150, cost: 0, sku: "SNK-FRIES-P", category: "Snacks", image: "", stock: 100 },
-        { name: "Masala Fries", price: 170, cost: 0, sku: "SNK-FRIES-M", category: "Snacks", image: "", stock: 100 },
-        { name: "Garlic Mayo Fries", price: 200, cost: 0, sku: "SNK-FRIES-GM", category: "Snacks", image: "", stock: 100 },
-        { name: "Loaded Fries", price: 300, cost: 0, sku: "SNK-FRIES-L", category: "Snacks", image: "", stock: 100 },
-        { name: "Pizza Loaded Fries Small", price: 250, cost: 0, sku: "SNK-FRIES-PLS", category: "Snacks", image: "", stock: 100 },
-        { name: "Pizza Loaded Fries Large", price: 450, cost: 0, sku: "SNK-FRIES-PLL", category: "Snacks", image: "", stock: 100 }
+        // ─── CHICKEN DEALS (KFC Style) ──────────────────────────────────
+        { name: "Krunch Burger Deal", price: 290, cost: 0, sku: "KFC-DEAL-1", category: "Deals", image: "🍔", stock: 100 },
+        { name: "Zinger Burger Deal", price: 450, cost: 0, sku: "KFC-DEAL-2", category: "Deals", image: "🍔", stock: 100 },
+        { name: "Mighty Zinger Deal", price: 650, cost: 0, sku: "KFC-DEAL-3", category: "Deals", image: "🍔", stock: 100 },
+        { name: "Family Festival (4 Zinger, 4Pcs Chicken, 1.5L)", price: 2200, cost: 0, sku: "KFC-DEAL-4", category: "Deals", image: "🍱", stock: 100 },
+        
+        // ─── BURGERS ──────────────────────────────────────────────────
+        { name: "Krunch Burger", price: 250, cost: 0, sku: "KFC-BURG-1", category: "Burgers", image: "🍔", stock: 100 },
+        { name: "Zinger Burger", price: 390, cost: 0, sku: "KFC-BURG-2", category: "Burgers", image: "🍔", stock: 100 },
+        { name: "Zinger Stacker", price: 550, cost: 0, sku: "KFC-BURG-3", category: "Burgers", image: "🍔", stock: 100 },
+        { name: "Mighty Zinger", price: 590, cost: 0, sku: "KFC-BURG-4", category: "Burgers", image: "🍔", stock: 100 },
+        
+        // ─── FRIED CHICKEN ─────────────────────────────────────────────
+        { name: "Hot & Spicy Chicken (1 Pc)", price: 220, cost: 0, sku: "KFC-CHIC-1", category: "Fried Chicken", image: "🍗", stock: 100 },
+        { name: "Hot Wings (10 Pcs)", price: 550, cost: 0, sku: "KFC-CHIC-2", category: "Fried Chicken", image: "🍗", stock: 100 },
+        { name: "Chicken Nuggets (6 Pcs)", price: 390, cost: 0, sku: "KFC-CHIC-3", category: "Fried Chicken", image: "🍗", stock: 100 },
+        
+        // ─── SNACKS & SIDES ────────────────────────────────────────────
+        { name: "French Fries (Regular)", price: 190, cost: 0, sku: "KFC-SIDE-1", category: "Snacks", image: "🍟", stock: 100 },
+        { name: "French Fries (Large)", price: 350, cost: 0, sku: "KFC-SIDE-2", category: "Snacks", image: "🍟", stock: 100 },
+        { name: "Coleslaw", price: 120, cost: 0, sku: "KFC-SIDE-3", category: "Snacks", image: "🥗", stock: 100 },
+        
+        // ─── BEVERAGES ────────────────────────────────────────────────
+        { name: "Soft Drink (345ml)", price: 90, cost: 0, sku: "KFC-BEV-1", category: "Beverages", image: "🥤", stock: 100 },
+        { name: "Mineral Water (Small)", price: 60, cost: 0, sku: "KFC-BEV-2", category: "Beverages", image: "💧", stock: 100 }
       ];
 
       try {

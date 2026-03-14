@@ -77,10 +77,10 @@ const ProductGrid = () => {
 
   useEffect(() => {
     if (!productsLoading) {
-      const hasArabicBroast = allProducts.some(p => p.category === 'Arabic Broast');
-      const hasBeverages = allProducts.some(p => p.category === 'Beverages');
+      const hasDeals = allProducts.some(p => p.category === 'Deals');
+      const hasBurgers = allProducts.some(p => p.category === 'Burgers');
       
-      if (!hasArabicBroast || !hasBeverages) {
+      if (!hasDeals || !hasBurgers) {
         seedMenu();
       }
     }
@@ -113,7 +113,7 @@ const ProductGrid = () => {
 
     // Special logic for Arabic Broast: 
     // If NOT in the "Arabic Broast" category, hide individual items and only show the main "Injected Broast" card
-    if (selectedCategory !== 'Arabic Broast') {
+    if (selectedCategory !== 'Arabic Broast' && selectedCategory !== 'Deals' && selectedCategory !== 'Fried Chicken' && selectedCategory !== 'Burgers' && selectedCategory !== 'Snacks' && selectedCategory !== 'Beverages') {
       const isBroastItem = (p: any) => p.category === 'Arabic Broast';
       const broastProducts = allProducts.filter(isBroastItem);
       
@@ -559,7 +559,7 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onAdd }: ProductCardProps) => {
-  const isNoImageCategory = product.category === 'Arabic Broast' || product.category === 'ALA CART' || product.category === 'Snacks' || product.category === 'Beverages' || product.category === 'Pizzas' || product.category === 'Rolls' || product.category === 'Broast' || product.category === 'Burgers' || product.category === 'BAR BQ' || product.category === 'Sauces' || product.category === 'Toppings';
+  const isNoImageCategory = product.category === 'Arabic Broast' || product.category === 'ALA CART' || product.category === 'Snacks' || product.category === 'Beverages' || product.category === 'Pizzas' || product.category === 'Rolls' || product.category === 'Broast' || product.category === 'Burgers' || product.category === 'BAR BQ' || product.category === 'Sauces' || product.category === 'Toppings' || product.category === 'Deals' || product.category === 'Fried Chicken';
   const isVirtualSauce = (product as any).id === 'virtual-sauce-topping-menu';
   const isVirtualBarbq = (product as any).id === 'virtual-barbq-menu';
   const isVirtualBurger = (product as any).id === 'virtual-burger-menu';
