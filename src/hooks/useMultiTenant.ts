@@ -49,6 +49,6 @@ export const useMultiTenant = () => {
     isLoading: sessionLoading || profileLoading,
     isAdmin: profile?.role === 'admin',
     isSuperAdmin: false, // SaaS disabled
-    restaurant: { name: "Gen XCloud POS" } // Static name for single tenant
+    restaurant: { name: "Crust & Crums" } // Static name for single tenant
   };
 };

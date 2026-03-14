@@ -218,8 +218,74 @@ export const api = {
       }
     },
     seedArabicBroast: async () => {
-      // Disabled for now
-      return true;
+      const items = [
+        { name: "Skin Spicy Injected Full Kukkar", price: 2000, cost: 0, sku: "SIB-FULL-K", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "Skin Spicy injected Broast Leg/Thai 2Pcs", price: 600, cost: 0, sku: "SIB-LT-2", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "Skin Spicy injected Broast Chest/Wing 2Pcs", price: 600, cost: 0, sku: "SIB-CW-2", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "Skin Spicy injected Half Broast 4Pcs", price: 1100, cost: 0, sku: "SIB-HALF-4", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "Skin Spicy injected Full Broast 8Pcs", price: 2200, cost: 0, sku: "SIB-FULL-8", category: "Arabic Broast", image: "🍗", stock: 100 },
+        { name: "COMBO 1 (1 Qtr Broast, 1 Zinger, Drink, Bun, Fries)", price: 999, cost: 0, sku: "COMBO-1", category: "Arabic Broast", image: "🍱", stock: 100 },
+        { name: "COMBO 2 (Half Broast, Fries, 2 Bun, 2 Sauce, Drink)", price: 1300, cost: 0, sku: "COMBO-2", category: "Arabic Broast", image: "🍱", stock: 100 },
+        { name: "COMBO 3 (Full Broast, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 2450, cost: 0, sku: "COMBO-3", category: "Arabic Broast", image: "🍱", stock: 100 },
+        { name: "COMBO 4 (Jumbo Pizza, 1 Kukkar, 4 Bun, 4 Sauce, 1.5L Drink, Fries)", price: 3500, cost: 0, sku: "COMBO-4", category: "Arabic Broast", image: "🍱", stock: 100 },
+        // Beverages
+        { name: "Next Cola / Fizz Up 345 ml", price: 80, cost: 0, sku: "DRINK-345", category: "Beverages", image: "", stock: 100 },
+        { name: "Next Cola / Fizz Up 500 ml", price: 120, cost: 0, sku: "DRINK-500", category: "Beverages", image: "", stock: 100 },
+        { name: "Next Cola / Fizz Up 1 liter", price: 150, cost: 0, sku: "DRINK-1L", category: "Beverages", image: "", stock: 100 },
+        { name: "Next Cola / KababJees 1.5 liter", price: 200, cost: 0, sku: "DRINK-1.5L", category: "Beverages", image: "", stock: 100 },
+        { name: "Next Cola / Fizz Up Jumbo", price: 250, cost: 0, sku: "DRINK-JUMBO", category: "Beverages", image: "", stock: 100 },
+        { name: "Sting 500 ml", price: 130, cost: 0, sku: "DRINK-STING", category: "Beverages", image: "", stock: 100 },
+        { name: "Mineral Water Small", price: 50, cost: 0, sku: "WATER-S", category: "Beverages", image: "", stock: 100 },
+        { name: "Mineral Water Large", price: 100, cost: 0, sku: "WATER-L", category: "Beverages", image: "", stock: 100 },
+        // ALA CART Items
+        { name: "Club Sandwich", price: 400, cost: 0, sku: "ALC-CLUB-S", category: "ALA CART", image: "🥪", stock: 100 },
+        { name: "Malai Boti Sandwich", price: 450, cost: 0, sku: "ALC-MALAI-S", category: "ALA CART", image: "🥪", stock: 100 },
+        { name: "Mexican Sandwich", price: 500, cost: 0, sku: "ALC-MEX-S", category: "ALA CART", image: "🥪", stock: 100 },
+        { name: "Spring Rolls 4 Pcs", price: 400, cost: 0, sku: "ALC-ROLLS-4", category: "ALA CART", image: "🌯", stock: 100 },
+        { name: "Macroni Pasta Large", price: 650, cost: 0, sku: "ALC-MAC-L", category: "ALA CART", image: "🍝", stock: 100 },
+        { name: "Macroni Pasta Small", price: 350, cost: 0, sku: "ALC-MAC-S", category: "ALA CART", image: "🍝", stock: 100 },
+        { name: "Oven Backed Wings 6Pcs", price: 350, cost: 0, sku: "ALC-OBW-6", category: "ALA CART", image: "🍗", stock: 100 },
+        { name: "Oven Backed Wings 12Pcs", price: 650, cost: 0, sku: "ALC-OBW-12", category: "ALA CART", image: "🍗", stock: 100 },
+        { name: "Crispy Wings 6Pcs", price: 350, cost: 0, sku: "ALC-CW-6", category: "ALA CART", image: "🍗", stock: 100 },
+        { name: "Crispy Wings 12Pcs", price: 650, cost: 0, sku: "ALC-CW-12", category: "ALA CART", image: "🍗", stock: 100 },
+        { name: "Hotshot 10Pcs", price: 450, cost: 0, sku: "ALC-HS-10", category: "ALA CART", image: "🍿", stock: 100 },
+        { name: "Hotshot 5Pcs", price: 250, cost: 0, sku: "ALC-HS-5", category: "ALA CART", image: "🍿", stock: 100 },
+        // Snacks (Fries)
+        { name: "Plain Fries", price: 150, cost: 0, sku: "SNK-FRIES-P", category: "Snacks", image: "", stock: 100 },
+        { name: "Masala Fries", price: 170, cost: 0, sku: "SNK-FRIES-M", category: "Snacks", image: "", stock: 100 },
+        { name: "Garlic Mayo Fries", price: 200, cost: 0, sku: "SNK-FRIES-GM", category: "Snacks", image: "", stock: 100 },
+        { name: "Loaded Fries", price: 300, cost: 0, sku: "SNK-FRIES-L", category: "Snacks", image: "", stock: 100 },
+        { name: "Pizza Loaded Fries Small", price: 250, cost: 0, sku: "SNK-FRIES-PLS", category: "Snacks", image: "", stock: 100 },
+        { name: "Pizza Loaded Fries Large", price: 450, cost: 0, sku: "SNK-FRIES-PLL", category: "Snacks", image: "", stock: 100 }
+      ];
+
+      try {
+        // 1. Handle Categories
+        const { data: existingCats } = await supabase.from('categories').select('name');
+        const existingCatNames = new Set(existingCats?.map(c => c.name) || []);
+        const categoryNames = [...new Set(items.map(i => i.category))];
+
+        for (const catName of categoryNames) {
+          if (!existingCatNames.has(catName)) {
+            await supabase.from('categories').insert({ name: catName, icon: 'Utensils' });
+          }
+        }
+
+        // 2. Handle Products
+        const { data: existingProds } = await supabase.from('products').select('name');
+        const existingProdNames = new Set(existingProds?.map(p => p.name) || []);
+        const newItems = items.filter(item => !existingProdNames.has(item.name));
+
+        if (newItems.length > 0) {
+          const { error: prodError } = await supabase.from('products').insert(newItems as any);
+          if (prodError) throw prodError;
+        }
+
+        return true;
+      } catch (error) {
+        console.error('Error seeding products:', error);
+        throw error;
+      }
     },
     getAll: async () => {
       const { data, error } = await supabase
