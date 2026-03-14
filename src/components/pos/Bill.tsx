@@ -31,7 +31,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
   const [logoError, setLogoError] = useState(false);
   const { restaurant } = useMultiTenant();
 
-  const logoSrc = restaurant?.logo_url || `/logo.jpeg?v=${Date.now()}`;
+  const logoSrc = restaurant?.logo_url || `/pbh-logo.jpeg?v=${Date.now()}`;
   const name = restaurant?.name || businessInfo.name;
   const address = restaurant?.address || businessInfo.address;
   const city = restaurant?.city || businessInfo.city;
@@ -40,7 +40,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
     restaurant?.bill_footer ||
     '!!!!FOR THE LOVE OF FOOD !!!!';
   const poweredByFooter =
-    restaurant?.receipt_footer || 'Powered By: GENAI TECHNOLOGY.';
+    restaurant?.receipt_footer || 'Powered By: GENX CLOUD';
 
   return (
     <div
@@ -58,8 +58,8 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
             onError={() => setLogoError(true)}
           />
         ) : (
-          <div className="border-2 border-dashed border-gray-400 rounded-[50%] w-24 h-16 mx-auto flex items-center justify-center mb-1 transform rotate-[-5deg]">
-            <h1 className="text-lg font-bold italic font-serif">Genai</h1>
+          <div className="border-2 border-dashed border-gray-400 rounded-xl p-2 mx-auto flex items-center justify-center mb-1">
+            <h1 className="text-sm font-bold uppercase">{name}</h1>
           </div>
         )}
       </div>
@@ -77,7 +77,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
           </>
         )}
         <p className="text-[9px] mt-1 border-t border-dotted border-black pt-1">
-          Designed & Developed By Genai Tech
+          Designed & Developed By GENX CLOUD
         </p>
       </div>
 
@@ -198,17 +198,14 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
         )}
         <div className="flex justify-between font-bold text-base mt-1 bg-gray-100 p-1">
           <span>Net Bill :</span>
-          <span>{order.total}</span>
-        </div>
-        <div className="mt-1">
-          <span>TIP :</span>
+          <span>{order.total.toFixed(0)}</span>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="border border-black mt-1 p-2 text-center text-[10px]">
-        <p>{billFooter}</p>
-        <p className="font-bold mt-1">{poweredByFooter}</p>
+      <div className="text-center mt-2 space-y-1">
+        <p className="font-bold">{billFooter}</p>
+        <p className="text-[10px] uppercase opacity-50">{poweredByFooter}</p>
       </div>
     </div>
   );

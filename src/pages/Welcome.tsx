@@ -48,7 +48,7 @@ const Welcome = () => {
             alt="Logo"
             className="object-contain w-16 h-16"
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = '/gx.png';
+              (e.currentTarget as HTMLImageElement).src = '/logo.jpeg';
             }}
           />
         </div>

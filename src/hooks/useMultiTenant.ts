@@ -49,9 +49,9 @@ export const useMultiTenant = () => {
     isLoading: sessionLoading || profileLoading,
     isAdmin: profile?.role === 'admin',
     isSuperAdmin: false, // SaaS disabled
-    restaurant: { 
+    restaurant: {
       name: "THE pizza&burger HOUSE",
-      logo_url: "/pbh-logo.jpeg" 
+      logo_url: "/pbh-logo.jpeg"
     } // Static name for single tenant
   };
 };

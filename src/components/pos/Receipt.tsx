@@ -31,7 +31,7 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
   const [logoError, setLogoError] = useState(false);
   const { restaurant } = useMultiTenant();
 
-  const logoSrc = restaurant?.logo_url || `/logo.jpeg?v=${Date.now()}`;
+  const logoSrc = restaurant?.logo_url || `/pbh-logo.jpeg?v=${Date.now()}`;
   const name = restaurant?.name || businessInfo.name;
   const address = restaurant?.address || businessInfo.address;
   const city = restaurant?.city || businessInfo.city;
@@ -62,7 +62,9 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
             onError={() => setLogoError(true)}
           />
         ) : (
-          <div className="text-2xl mb-2">☕</div>
+          <div className="border-2 border-dashed border-gray-400 rounded-xl p-3 mx-auto flex items-center justify-center mb-1">
+            <h1 className="text-sm font-bold uppercase">{name}</h1>
+          </div>
         )}
         <h1 className="text-lg font-bold">{name}</h1>
         <p>{address}</p>
@@ -159,24 +161,12 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
         <p><strong>Payment:</strong> {paymentMethodLabel[order.paymentMethod]}</p>
       </div>
 
-      {/* Footer */}
       <div className="border-t-2 border-dashed border-black my-3" />
 
-      <div className="text-center mt-4">
+      {/* Footer */}
+      <div className="text-center space-y-1">
         <p className="font-bold">{receiptFooter}</p>
-        {website && <p className="mt-2">{website}</p>}
-
-        {/* QR Code placeholder */}
-        <div className="mt-4 mx-auto w-20 h-20 border-2 border-black flex items-center justify-center">
-          <span className="text-[8px] text-center">QR Code<br />Digital Receipt</span>
-        </div>
-
-        <p className="mt-4 font-bold">Genai Nawabshah contact 923342826675</p>
-      </div>
-
-      {/* End marker */}
-      <div className="text-center mt-4">
-        <p>================================</p>
+        <p className="text-[10px] opacity-50">Powered By: GENX CLOUD</p>
       </div>
     </div>
   );

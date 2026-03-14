@@ -150,7 +150,7 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
         </div>
 
         <div className="text-center mt-4 border-t border-dotted border-black pt-2 text-[9px]">
-          <p>THE pizza&burger HOUSE - MONITORING REPORT</p>
+          <p>THE PIZZA&BURGER HOUSE - MONITORING REPORT</p>
           <p>{format(new Date(), 'dd-MMM HH:mm:ss')}</p>
         </div>
       </div>

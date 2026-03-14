@@ -97,7 +97,7 @@ const DailySummary = forwardRef<HTMLDivElement, DailySummaryProps>(({ orders, da
       
       <div className="text-center mt-4">
         <p className="font-bold">End of Day Report</p>
-        <p className="mt-2">Genai Nawabshah contact 923342826675</p>
+        <p className="mt-2 text-xs font-bold tracking-widest opacity-50 uppercase">GENX CLOUD POS SYSTEM</p>
       </div>
 
       <div className="text-center mt-4">
