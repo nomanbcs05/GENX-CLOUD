@@ -78,7 +78,7 @@ export const customers: Customer[] = Array.from({ length: 220 }, (_, i) => {
 });
 
 export const businessInfo = {
-  name: 'Gen XCloud POS',
+  name: 'GENX CLOUD',
   address: 'Near Al Habib bank, Shahdadpur road',
   city: 'Iserpura, Nawabshah',
   phone: '0311-4610599, 0334-3610599',

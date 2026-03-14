@@ -467,11 +467,24 @@ const CartPanel = () => {
   return (
     <div className="flex flex-col h-full bg-card border-l font-sans pb-4">
       {/* Header */}
-      <div className="p-3 border-b">
-        <h2 className="text-base font-black font-heading tracking-tight uppercase">Current Order</h2>
-        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-          {items.length} {items.length === 1 ? 'item' : 'items'}
-        </p>
+      <div className="p-3 border-b flex justify-between items-center">
+        <div>
+          <h2 className="text-base font-black font-heading tracking-tight uppercase">Current Order</h2>
+          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+            {items.length} {items.length === 1 ? 'item' : 'items'}
+          </p>
+        </div>
+        {items.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearCart}
+            className="h-8 px-2 text-red-500 hover:text-red-600 hover:bg-red-50 text-[10px] font-bold uppercase tracking-wider"
+          >
+            <Trash2 className="h-3.5 w-3.5 mr-1" />
+            Clear
+          </Button>
+        )}
       </div>
 
       {/* Customer Selection */}
@@ -680,20 +693,11 @@ const CartPanel = () => {
           </div>
           <div className="flex gap-1.5">
             <Button
-              variant="outline"
-              className="flex-1 font-bold font-heading uppercase tracking-wider text-[10px] h-10 bg-red-50 border-red-200 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 transition-all shadow-sm"
-              onClick={handleClearCart}
-              disabled={items.length === 0}
-            >
-              <X className="h-4 w-4 mr-1.5" />
-              Clear Screen
-            </Button>
-            <Button
-              className="flex-[2] btn-success font-black font-heading uppercase tracking-widest text-xs h-10 shadow-lg shadow-emerald-500/20"
+              className="w-full btn-success font-black font-heading uppercase tracking-widest text-xs h-11 shadow-lg shadow-emerald-500/20"
               onClick={handleCompleteSale}
               disabled={items.length === 0}
             >
-              <Printer className="h-4 w-4 mr-2" />
+              <Printer className="h-5 w-5 mr-2" />
               Complete Sale
             </Button>
           </div>
