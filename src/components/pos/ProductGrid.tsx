@@ -22,6 +22,7 @@ import BroastSelectionModal from './BroastSelectionModal';
 import BurgerSelectionModal from './BurgerSelectionModal';
 import BarBQSelectionModal from './BarBQSelectionModal';
 import SauceToppingSelectionModal from './SauceToppingSelectionModal';
+import DealsSelectionModal from './DealsSelectionModal';
 
 const ProductGrid = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,6 +37,7 @@ const ProductGrid = () => {
   const [showBurgerModal, setShowBurgerModal] = useState(false);
   const [showBarBQModal, setShowBarBQModal] = useState(false);
   const [showSauceToppingModal, setShowSauceToppingModal] = useState(false);
+  const [showDealsModal, setShowDealsModal] = useState(false);
   
   const { data: openRegister } = useQuery({
     queryKey: ['open-register'],
@@ -299,6 +301,30 @@ const ProductGrid = () => {
        products = products.filter(p => p.category !== 'Sauces' && p.category !== 'Toppings' && !(p as any).isVirtual);
      }
 
+     // Special logic for Deals:
+     const isDealsVisible = selectedCategory === 'all' || selectedCategory === 'Deals';
+     
+     if (isDealsVisible) {
+       const isDealItem = (p: any) => p.category === 'Deals';
+       products = products.filter(p => !isDealItem(p));
+       
+       const virtualDeals = {
+         id: 'virtual-deals-menu',
+         name: 'Virtual Deals Menu',
+         price: 0,
+         category: 'Deals',
+         image: '/gx.png', // Fallback icon
+         isVirtual: true,
+         modalType: 'deals'
+       };
+       
+       if (!searchQuery.trim() || virtualDeals.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+         products = [virtualDeals as any, ...products];
+       }
+     } else {
+       products = products.filter(p => p.category !== 'Deals' && !(p as any).isVirtual);
+     }
+
      // Then filter by search
     if (searchQuery.trim()) {
       const searchResults = fuse.search(searchQuery);
@@ -325,6 +351,8 @@ const ProductGrid = () => {
         setShowBarBQModal(true);
       } else if ((product as any).modalType === 'sauce-topping') {
         setShowSauceToppingModal(true);
+      } else if ((product as any).modalType === 'deals') {
+        setShowDealsModal(true);
       }
       return;
     }
@@ -550,6 +578,12 @@ const ProductGrid = () => {
         <SauceToppingSelectionModal
           isOpen={showSauceToppingModal}
           onClose={() => setShowSauceToppingModal(false)}
+          onAdd={handleAddToCart}
+        />
+
+        <DealsSelectionModal
+          isOpen={showDealsModal}
+          onClose={() => setShowDealsModal(false)}
           onAdd={handleAddToCart}
         />
       </div>

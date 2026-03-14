@@ -47,6 +47,7 @@ const ManageProductsPage = () => {
     { id: 'burger', name: 'Burgers', key: 'pos_menu_burger', icon: Package },
     { id: 'broast', name: 'Broast', key: 'pos_menu_broast', icon: ChefHat },
     { id: 'sauce', name: 'Sauces', key: 'pos_menu_sauce', icon: Utensils },
+    { id: 'deals', name: 'Deals', key: 'pos_menu_deals', icon: Tag },
   ];
 
   const openVirtualMenuEditor = (category: any) => {
