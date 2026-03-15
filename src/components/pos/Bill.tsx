@@ -205,7 +205,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
       {/* Footer */}
       <div className="text-center mt-2 space-y-1">
         <p className="font-bold">{billFooter}</p>
-        <p className="text-[10px] uppercase opacity-50">{poweredByFooter}</p>
+        <p className="text-[10px] uppercase font-bold border-t border-black/10 pt-1 mt-1">{poweredByFooter}</p>
       </div>
     </div>
   );
