@@ -79,9 +79,9 @@ export const customers: Customer[] = Array.from({ length: 220 }, (_, i) => {
 
 export const businessInfo = {
   name: 'THE pizza&burger HOUSE',
-  address: 'Near Al Habib bank, Shahdadpur road',
-  city: 'Iserpura, Nawabshah',
-  phone: '0311-4610599, 0334-3610599',
+  address: 'Near Lasani Chicken Broast, Gol Wala Complex',
+  city: 'Nawabshah',
+  phone: '+92 332 2822654',
   taxId: '',
   website: '',
   email: '',
