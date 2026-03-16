@@ -91,13 +91,13 @@ const ProductsPage = () => {
       const category = virtualCategories.find(c => c.name === selectedVirtualCategory);
       if (category) {
         localStorage.setItem(category.key, JSON.stringify(virtualMenuItems));
-        toast({ title: "Success", description: `${selectedVirtualCategory} menu updated` });
+        uiToast({ title: "Success", description: `${selectedVirtualCategory} menu updated` });
         setIsVirtualMenuModalOpen(false);
       }
     }
   };
 
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: products = [], isLoading: isProductsLoading, isError, error } = useQuery({

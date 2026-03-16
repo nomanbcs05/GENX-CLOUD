@@ -42,22 +42,29 @@ const LoginPage = () => {
     // Save current role to localStorage for other components to use
     localStorage.setItem('active_role', role);
     
-    const saved = localStorage.getItem("pos_saved_users");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setSavedUsers(parsed);
-        if (parsed[role]) {
-          setEmail(parsed[role]);
-        } else {
+    // Hardcode emails based on role
+    if (role === 'admin') {
+      setEmail('thepizzaandburgerhouse@gmail.com');
+    } else if (role === 'cashier') {
+      setEmail('syedabuzarzaidi07@gmail.com');
+    } else {
+      const saved = localStorage.getItem("pos_saved_users");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setSavedUsers(parsed);
+          if (parsed[role]) {
+            setEmail(parsed[role]);
+          } else {
+            setEmail("");
+          }
+        } catch (e) {
+          console.error("Failed to parse saved users", e);
           setEmail("");
         }
-      } catch (e) {
-        console.error("Failed to parse saved users", e);
+      } else {
         setEmail("");
       }
-    } else {
-      setEmail("");
     }
   }, [role]);
 
