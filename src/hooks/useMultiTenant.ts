@@ -47,7 +47,7 @@ export const useMultiTenant = () => {
     session,
     profile,
     isLoading: sessionLoading || profileLoading,
-    isAdmin: profile?.role === 'admin',
+    isAdmin: profile?.email === 'thepizzaandburgerhouse@gmail.com',
     isSuperAdmin: false, // SaaS disabled
     restaurant: { 
       name: "THE pizza&burger HOUSE",

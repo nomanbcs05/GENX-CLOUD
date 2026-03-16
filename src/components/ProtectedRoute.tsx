@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useMultiTenant } from "@/hooks/useMultiTenant";
 
 const ProtectedRoute = ({ children, adminOnly = false }: { children: React.ReactNode, adminOnly?: boolean }) => {
-  const { session, profile, isLoading } = useMultiTenant();
+  const { session, profile, isLoading, isAdmin } = useMultiTenant();
   const location = useLocation();
 
   console.log("ProtectedRoute State:", { 
@@ -14,6 +14,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: { children: React.React
     isLoading, 
     hasSession: !!session, 
     hasProfile: !!profile, 
+    isAdmin,
     restaurantId: profile?.restaurant_id 
   });
 
@@ -31,7 +32,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: { children: React.React
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  if (adminOnly && profile?.role !== 'admin' && profile?.role !== 'super-admin') {
+  if (adminOnly && !isAdmin) {
     return <Navigate to="/" replace />;
   }
 
