@@ -35,6 +35,12 @@ const SettingsPage = () => {
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // New staff form state
+  const [newStaffEmail, setNewStaffEmail] = useState('');
+  const [newStaffPassword, setNewStaffPassword] = useState('');
+  const [newStaffName, setNewStaffName] = useState('');
+  const [isAddingStaff, setIsAddingStaff] = useState(false);
+
   useEffect(() => {
     if (restaurant) {
       setBusinessName(restaurant.name || '');
@@ -78,6 +84,44 @@ const SettingsPage = () => {
       return;
     }
     changePasswordMutation.mutate(newPassword);
+  };
+
+  const createStaffMutation = useMutation({
+    mutationFn: (data: any) => api.profiles.createStaff(data),
+    onSuccess: () => {
+      toast.success('Staff account created successfully');
+      setNewStaffEmail('');
+      setNewStaffPassword('');
+      setNewStaffName('');
+      setIsAddingStaff(false);
+      queryClient.invalidateQueries({ queryKey: ['staff', restaurant?.id] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to create staff account');
+    }
+  });
+
+  const handleCreateStaff = () => {
+    if (!newStaffEmail || !newStaffPassword || !newStaffName) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    if (newStaffPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    if (!restaurant?.id) {
+      toast.error('Restaurant ID not found');
+      return;
+    }
+
+    createStaffMutation.mutate({
+      email: newStaffEmail,
+      password: newStaffPassword,
+      full_name: newStaffName,
+      role: 'cashier',
+      restaurant_id: restaurant.id
+    });
   };
 
   const updateRestaurantMutation = useMutation({
@@ -532,21 +576,133 @@ const SettingsPage = () => {
 
             <TabsContent value="staff">
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Staff Management
-                  </CardTitle>
-                  <CardDescription>
-                    Change the display names for your staff roles
-                  </CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Staff Management
+                    </CardTitle>
+                    <CardDescription>
+                      Create and manage staff accounts for your restaurant
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    onClick={() => setIsAddingStaff(!isAddingStaff)}
+                    variant={isAddingStaff ? "outline" : "default"}
+                  >
+                    {isAddingStaff ? 'Cancel' : 'Add New Staff'}
+                  </Button>
                 </CardHeader>
                 <CardContent>
+                  {isAddingStaff && (
+                    <div className="mb-8 p-6 border-2 border-primary/20 rounded-2xl bg-primary/5 space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                      <h3 className="font-bold text-lg">Create New Staff Account</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="staffName">Full Name</Label>
+                          <Input 
+                            id="staffName" 
+                            placeholder="e.g. John Doe" 
+                            value={newStaffName}
+                            onChange={(e) => setNewStaffName(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="staffEmail">Email (Gmail)</Label>
+                          <Input 
+                            id="staffEmail" 
+                            type="email" 
+                            placeholder="staff@gmail.com" 
+                            value={newStaffEmail}
+                            onChange={(e) => setNewStaffEmail(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="staffPassword">Password</Label>
+                          <Input 
+                            id="staffPassword" 
+                            type="password" 
+                            placeholder="Min. 6 characters" 
+                            value={newStaffPassword}
+                            onChange={(e) => setNewStaffPassword(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end pt-2">
+                        <Button 
+                          onClick={handleCreateStaff} 
+                          disabled={createStaffMutation.isPending}
+                          className="bg-slate-900 text-white px-8"
+                        >
+                          {createStaffMutation.isPending ? 'Creating...' : 'Create Account'}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    <h3 className="font-bold text-slate-900">Active Staff Members</h3>
+                    <div className="grid gap-4">
+                      {isLoadingStaff ? (
+                        <div className="flex items-center justify-center p-8">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                      ) : staffMembers.length === 0 ? (
+                        <div className="text-center p-8 border-2 border-dashed rounded-2xl text-slate-400 font-medium">
+                          No staff accounts found. Create one above.
+                        </div>
+                      ) : (
+                        staffMembers.map((staff: any) => (
+                          <div key={staff.id} className="flex items-center justify-between p-4 border rounded-xl bg-slate-50/50 hover:border-primary/30 transition-colors">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                {staff.full_name?.substring(0, 2).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="font-bold text-slate-900">{staff.full_name}</p>
+                                <p className="text-xs text-slate-500">{staff.email}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Badge variant="outline" className={cn(
+                                "capitalize font-bold",
+                                staff.role === 'admin' ? "bg-purple-50 text-purple-600 border-purple-200" : "bg-blue-50 text-blue-600 border-blue-200"
+                              )}>
+                                {staff.role}
+                              </Badge>
+                              {staff.id !== profile?.id && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="text-destructive hover:bg-destructive/10"
+                                  onClick={() => {
+                                    if (confirm(`Are you sure you want to delete ${staff.full_name}?`)) {
+                                      api.profiles.delete(staff.id).then(() => {
+                                        toast.success('Staff deleted');
+                                        queryClient.invalidateQueries({ queryKey: ['staff', restaurant?.id] });
+                                      });
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <Separator className="my-8" />
+
                   <div className="space-y-6">
+                    <h3 className="font-bold text-slate-900">Display Settings</h3>
+                    <p className="text-sm text-muted-foreground -mt-4">Change how roles appear on the welcome screen</p>
                     {staffList.map((staff) => (
                       <div key={staff.id} className="flex items-center gap-4 p-4 border rounded-xl bg-slate-50/50">
                         <div className="flex-1 space-y-2">
-                          <Label htmlFor={`staff-${staff.id}`}>{staff.role} Name</Label>
+                          <Label htmlFor={`staff-${staff.id}`}>{staff.role} Display Name</Label>
                           <div className="flex gap-2">
                             <Input
                               id={`staff-${staff.id}`}

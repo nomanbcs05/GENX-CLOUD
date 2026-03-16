@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { supabaseSignup } from '@/integrations/supabase/supabaseAdmin';
 import { Database } from '@/integrations/supabase/types';
 
 type Product = Database['public']['Tables']['products']['Row'];
@@ -830,6 +831,38 @@ export const api = {
         .delete()
         .eq('id', id);
       if (error) throw error;
+    },
+    createStaff: async ({ email, password, full_name, role, restaurant_id }: any) => {
+      // 1. Sign up the user (isolated from current session)
+      const { data: authData, error: authError } = await supabaseSignup.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name,
+            role: role || 'cashier',
+          }
+        }
+      });
+
+      if (authError) throw authError;
+      if (!authData.user) throw new Error('Failed to create user account');
+
+      // 2. Create the profile entry
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          full_name,
+          email,
+          role: role || 'cashier',
+          restaurant_id,
+        })
+        .select()
+        .single();
+
+      if (profileError) throw profileError;
+      return profileData;
     },
     changePassword: async (newPassword: string) => {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
