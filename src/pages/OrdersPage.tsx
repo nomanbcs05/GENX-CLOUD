@@ -65,11 +65,9 @@ const OrdersPage = () => {
     to: undefined,
   });
   const queryClient = useQueryClient();
-  const summaryRef = useRef<HTMLDivElement>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
   const kotRef = useRef<HTMLDivElement>(null);
   const billRef = useRef<HTMLDivElement>(null);
-  const productSummaryRef = useRef<HTMLDivElement>(null);
   const [printingOrder, setPrintingOrder] = useState<any>(null);
   const [printingKOTOrder, setPrintingKOTOrder] = useState<any>(null);
   const [billOrder, setBillOrder] = useState<any>(null);
@@ -77,7 +75,6 @@ const OrdersPage = () => {
   const [viewingOrder, setViewingOrder] = useState<any>(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [productQuery, setProductQuery] = useState('');
-  const [productOrdersWithItems, setProductOrdersWithItems] = useState<any[]>([]);
   const [showProductSummaryModal, setShowProductSummaryModal] = useState(false);
   const [productSearch, setProductSearch] = useState('');
   const { data: products = [] } = useQuery({
@@ -93,60 +90,6 @@ const OrdersPage = () => {
     queryKey: ['orders'],
     queryFn: api.orders.getAll,
   });
-
-  const handlePrintSummary = useReactToPrint({
-    contentRef: summaryRef,
-    documentTitle: `Daily-Summary-${format(new Date(), 'yyyy-MM-dd')}`,
-    onAfterPrint: () => {
-      toast.success('Daily summary printed successfully');
-    },
-  });
-
-  const handlePrintProductSummary = useReactToPrint({
-    contentRef: productSummaryRef,
-    documentTitle: `Product-Summary-${format(new Date(), 'yyyy-MM-dd')}`,
-    onAfterPrint: () => {
-      toast.success('Product sales summary printed successfully');
-    },
-  });
-
-  const onPrintProductSummary = async (queryOverride?: string) => {
-    try {
-      const targetDate = date?.from ? date.from : new Date();
-      const start = startOfDay(targetDate);
-      const end = endOfDay(targetDate);
-      const dayOrders = orders.filter((o: any) => {
-        const d = new Date(o.created_at);
-        return d >= start && d <= end && o.status === 'completed';
-      });
-      if (dayOrders.length === 0) {
-        toast.info('No completed orders for the selected day');
-        return;
-      }
-      const fullOrders = await Promise.all(
-        dayOrders.map(async (o: any) => {
-          try {
-            return await api.orders.getByIdWithItems(o.id);
-          } catch {
-            return null;
-          }
-        })
-      );
-      const valid = fullOrders.filter(Boolean) as any[];
-      if (valid.length === 0) {
-        toast.error('Failed to load order items for summary');
-        return;
-      }
-      if (typeof queryOverride === 'string') {
-        setProductQuery(queryOverride);
-      }
-      setProductOrdersWithItems(valid);
-      setTimeout(() => handlePrintProductSummary(), 100);
-    } catch (e) {
-      console.error(e);
-      toast.error('Error preparing product summary');
-    }
-  };
 
   const handlePrintIndividual = useReactToPrint({
     contentRef: receiptRef,
@@ -466,24 +409,6 @@ const OrdersPage = () => {
               <p className="text-muted-foreground">View and manage order history</p>
             </div>
             <div className="flex gap-2">
-              <Button
-                onClick={() => handlePrintSummary()}
-                variant="outline"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white border-none"
-                disabled={todayOrders.length === 0}
-              >
-                <PrinterCheck className="h-4 w-4 mr-2" />
-                Print Today's Summary
-              </Button>
-              <Button
-                variant="outline"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white border-none"
-                onClick={() => onPrintProductSummary('')}
-              >
-                <Printer className="h-4 w-4 mr-2" />
-                Print Product Summary
-              </Button>
-
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" className="bg-red-600 hover:bg-red-700">
@@ -709,17 +634,6 @@ const OrdersPage = () => {
 
         {/* Hidden Summary for Printing */}
         <div className="hidden">
-          <DailySummary
-            ref={summaryRef}
-            orders={ordersWithDailyId.filter((o: any) => isToday(new Date(o.created_at)))}
-            date={new Date()}
-          />
-          <ProductSalesSummary
-            ref={productSummaryRef}
-            date={date?.from || new Date()}
-            query={productQuery}
-            orders={productOrdersWithItems}
-          />
           {printingOrder && (
             <Receipt
               ref={receiptRef}

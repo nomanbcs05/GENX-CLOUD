@@ -1,14 +1,18 @@
-import { TrendingUp, DollarSign, ShoppingCart, Users, Package, ArrowUpRight, ArrowDownRight, Loader2, Printer } from 'lucide-react';
+import { TrendingUp, DollarSign, ShoppingCart, Users, Package, ArrowUpRight, ArrowDownRight, Loader2, Printer, PrinterCheck, LogOut } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { useState, useMemo, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { DailyReport } from '@/components/pos/DailyReport';
+import DailySummary from '@/components/pos/DailySummary';
+import ProductSalesSummary from '@/components/pos/ProductSalesSummary';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   startOfDay, 
   startOfWeek, 
@@ -20,34 +24,120 @@ import {
   subMonths,
   parseISO, 
   isWithinInterval,
-  endOfDay
+  endOfDay,
+  isToday
 } from 'date-fns';
+import { toast } from 'sonner';
 
 const ReportsPage = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('month');
+  const [productOrdersWithItems, setProductOrdersWithItems] = useState<any[]>([]);
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const productSummaryRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading: isReportsLoading, isError, error } = useQuery({
     queryKey: ['reports-data'],
     queryFn: api.reports.getDashboardStats,
   });
 
-  const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
-    queryFn: api.categories.getAll,
+  const { data: openRegister } = useQuery({
+    queryKey: ['open-register'],
+    queryFn: api.registers.getOpen,
   });
 
-  const dailyReportRef = useRef<HTMLDivElement>(null);
-  
-  const handlePrintDailyReport = useReactToPrint({
-    contentRef: dailyReportRef,
-    documentTitle: `Daily-Report-${format(new Date(), 'yyyy-MM-dd')}`,
+  const closeRegisterMutation = useMutation({
+    mutationFn: async ({ id, amount }: { id: string, amount: number }) => 
+      api.registers.close(id, amount, 'Shift ended by cashier'),
+    onSuccess: async () => {
+      toast.success('Shift ended successfully');
+      // Clear local state and log out
+      localStorage.removeItem("pos_local_user");
+      await supabase.auth.signOut();
+      navigate("/auth");
+    },
+    onError: (err: any) => {
+      toast.error('Failed to end shift: ' + err.message);
+    }
   });
-  
-  const todayOrders = useMemo(() => {
-    if (!data?.orders) return [];
-    const today = startOfDay(new Date());
-    return data.orders.filter(order => order.created_at && isAfter(parseISO(order.created_at), today));
-  }, [data?.orders]);
+
+  const handleEndShift = () => {
+    if (!openRegister) {
+      toast.error('No active shift found');
+      return;
+    }
+
+    if (window.confirm('Are you sure you want to end your shift? This will log you out and close the register.')) {
+      // For simplicity, we use the current total revenue as ending amount
+      // In a real app, you might ask for a manual count
+      const currentRevenue = stats?.revenue || 0;
+      closeRegisterMutation.mutate({ 
+        id: openRegister.id, 
+        amount: openRegister.starting_amount + currentRevenue 
+      });
+    }
+  };
+
+  const handlePrintSummary = useReactToPrint({
+    contentRef: summaryRef,
+    documentTitle: `Daily-Summary-${format(new Date(), 'yyyy-MM-dd')}`,
+    onAfterPrint: () => {
+      toast.success('Daily summary printed successfully');
+    },
+  });
+
+  const handlePrintProductSummary = useReactToPrint({
+    contentRef: productSummaryRef,
+    documentTitle: `Product-Summary-${format(new Date(), 'yyyy-MM-dd')}`,
+    onAfterPrint: () => {
+      toast.success('Product sales summary printed successfully');
+    },
+  });
+
+  const onPrintProductSummary = async () => {
+    try {
+      if (!data?.orders || data.orders.length === 0) {
+        toast.info('No orders found for summary');
+        return;
+      }
+
+      const today = startOfDay(new Date());
+      const dayOrders = data.orders.filter((o: any) => {
+        const d = parseISO(o.created_at);
+        return d >= today && o.status === 'completed';
+      });
+
+      if (dayOrders.length === 0) {
+        toast.info('No completed orders for today');
+        return;
+      }
+
+      const toastId = toast.loading('Preparing product summary...');
+      const fullOrders = await Promise.all(
+        dayOrders.map(async (o: any) => {
+          try {
+            return await api.orders.getByIdWithItems(o.id);
+          } catch {
+            return null;
+          }
+        })
+      );
+      toast.dismiss(toastId);
+
+      const valid = fullOrders.filter(Boolean) as any[];
+      if (valid.length === 0) {
+        toast.error('Failed to load order items for summary');
+        return;
+      }
+
+      setProductOrdersWithItems(valid);
+      setTimeout(() => handlePrintProductSummary(), 100);
+    } catch (e) {
+      console.error(e);
+      toast.error('Error preparing product summary');
+    }
+  };
 
   const stats = useMemo(() => {
     if (!data?.orders || !data?.customers) return null;
@@ -206,13 +296,33 @@ const ReportsPage = () => {
               <p className="text-muted-foreground">Business performance overview</p>
             </div>
             <div className="flex gap-2">
-              <Button 
+              <Button
+                onClick={() => handlePrintSummary()}
                 variant="outline"
-                onClick={() => handlePrintDailyReport()}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white border-none"
+                disabled={!data?.orders || data.orders.length === 0}
+              >
+                <PrinterCheck className="h-4 w-4 mr-2" />
+                Print Today's Summary
+              </Button>
+              <Button
+                variant="outline"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white border-none"
+                onClick={onPrintProductSummary}
               >
                 <Printer className="h-4 w-4 mr-2" />
-                Print EOD
+                Print Product Summary
               </Button>
+              <Button
+                variant="destructive"
+                className="bg-red-600 hover:bg-red-700 font-bold"
+                onClick={handleEndShift}
+                disabled={closeRegisterMutation.isPending}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                End Shift
+              </Button>
+              <Separator orientation="vertical" className="h-10 mx-2" />
               <Button 
                 variant={timeRange === 'today' ? 'default' : 'outline'}
                 onClick={() => setTimeRange('today')}
@@ -408,8 +518,20 @@ const ReportsPage = () => {
         </div>
       </ScrollArea>
 
-      <div style={{ display: 'none' }}>
-        <DailyReport ref={dailyReportRef} date={new Date()} orders={todayOrders} />
+      {/* Hidden print components */}
+      <div className="hidden">
+        <div ref={summaryRef}>
+          <DailySummary 
+            orders={data?.orders?.filter(o => isToday(parseISO(o.created_at))) || []} 
+            categories={categories} 
+          />
+        </div>
+        <div ref={productSummaryRef}>
+          <ProductSalesSummary 
+            orders={productOrdersWithItems} 
+            categories={categories} 
+          />
+        </div>
       </div>
     </MainLayout>
   );
