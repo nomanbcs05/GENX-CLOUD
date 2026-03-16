@@ -130,7 +130,7 @@ const ProductsPage = () => {
     mutationFn: api.products.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast({
+      uiToast({
         title: "Success",
         description: "Product added successfully",
       });
@@ -138,7 +138,7 @@ const ProductsPage = () => {
       resetProductForm();
     },
     onError: (error) => {
-      toast({
+      uiToast({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -150,7 +150,7 @@ const ProductsPage = () => {
     mutationFn: ({ id, product }: { id: string, product: any }) => api.products.update(id, product),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast({
+      uiToast({
         title: "Success",
         description: "Product updated successfully",
       });
@@ -158,7 +158,7 @@ const ProductsPage = () => {
       resetProductForm();
     },
     onError: (error) => {
-      toast({
+      uiToast({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -170,13 +170,13 @@ const ProductsPage = () => {
     mutationFn: api.products.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast({
+      uiToast({
         title: "Success",
         description: "Product deleted successfully",
       });
     },
     onError: (error) => {
-      toast({
+      uiToast({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -188,14 +188,14 @@ const ProductsPage = () => {
     mutationFn: api.categories.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast({
+      uiToast({
         title: "Success",
         description: "Category added successfully",
       });
       setNewCategory({ name: '', icon: 'Package' });
     },
     onError: (error) => {
-      toast({
+      uiToast({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -207,13 +207,13 @@ const ProductsPage = () => {
     mutationFn: api.categories.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast({
+      uiToast({
         title: "Success",
         description: "Category deleted successfully",
       });
     },
     onError: (error) => {
-      toast({
+      uiToast({
         title: "Error",
         description: error.message,
         variant: "destructive",
@@ -225,7 +225,7 @@ const ProductsPage = () => {
     mutationFn: api.products.uploadImage,
     onError: (error) => {
       console.error("Upload error details:", error);
-      toast({
+      uiToast({
         title: "Upload Failed",
         description: error instanceof Error ? error.message : "Failed to upload image. Please check your connection and try again.",
         variant: "destructive",
@@ -239,7 +239,7 @@ const ProductsPage = () => {
       try {
         const url = await uploadImageMutation.mutateAsync(file);
         setNewProduct({ ...newProduct, image: url });
-        toast({
+        uiToast({
           title: "Success",
           description: "Image uploaded successfully",
         });
@@ -283,7 +283,7 @@ const ProductsPage = () => {
 
   const handleSaveProduct = () => {
     if (!newProduct.name || !newProduct.sku || !newProduct.price || !newProduct.cost || !newProduct.category) {
-      toast({
+      uiToast({
         title: "Error",
         description: "Please fill in all required fields",
         variant: "destructive",
@@ -313,7 +313,7 @@ const ProductsPage = () => {
 
   const handleAddCategory = () => {
     if (!newCategory.name) {
-      toast({
+      uiToast({
         title: "Error",
         description: "Category name is required",
         variant: "destructive",

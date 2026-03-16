@@ -61,7 +61,7 @@ const Welcome = () => {
         <RoleCard
           title="Administrator"
           icon={Shield}
-          description="Full access to all settings and reports"
+          description="thepizzaandburgerhouse@gmail.com"
           onSelect={() => handleRoleSelect("admin")}
         />
 
@@ -69,7 +69,7 @@ const Welcome = () => {
         <RoleCard
           title="Cashier"
           icon={User}
-          description="Process orders and manage payments"
+          description="syedabuzarzaidi07@gmail.com"
           onSelect={() => handleRoleSelect("cashier")}
         />
       </div>
