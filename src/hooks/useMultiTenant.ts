@@ -7,6 +7,7 @@ export interface Profile {
   id: string;
   full_name: string | null;
   role: 'admin' | 'cashier';
+  email?: string;
 }
 
 export const useMultiTenant = () => {
@@ -48,6 +49,7 @@ export const useMultiTenant = () => {
     profile,
     isLoading: sessionLoading || profileLoading,
     isAdmin: profile?.email === 'thepizzaandburgerhouse@gmail.com',
+    isCashier: profile?.role === 'cashier' || (profile && profile.email !== 'thepizzaandburgerhouse@gmail.com'),
     isSuperAdmin: false, // SaaS disabled
     restaurant: { 
       name: "THE pizza&burger HOUSE",

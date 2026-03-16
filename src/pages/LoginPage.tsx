@@ -85,10 +85,22 @@ const LoginPage = () => {
       localStorage.setItem("pos_saved_users", JSON.stringify(newSavedUsers));
       localStorage.setItem("active_staff_name", staffDisplayName);
 
-      toast.success(`Welcome back, ${staffDisplayName}!`);
+      // Force a profile check to determine true role after login
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', user.id)
+          .single();
 
-      if (role === "cashier") {
-        setShowStartSessionModal(true);
+        if (profile?.email === 'thepizzaandburgerhouse@gmail.com') {
+          toast.success(`Welcome back, Admin!`);
+          navigate("/");
+        } else {
+          toast.success(`Welcome back, ${staffDisplayName}!`);
+          setShowStartSessionModal(true);
+        }
       } else {
         navigate("/");
       }
