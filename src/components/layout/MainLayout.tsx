@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import AppSidebar from './AppSidebar';
 import StartDayModal from '@/components/pos/StartDayModal';
+import { LockScreen } from '@/components/pos/LockScreen';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -47,6 +48,8 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         isOpen={showStartDayModal} 
         onSuccess={() => setShowStartDayModal(false)} 
       />
+
+      <LockScreen />
     </div>
   );
 };

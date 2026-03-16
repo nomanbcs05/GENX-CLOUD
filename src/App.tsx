@@ -49,7 +49,7 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/manage-products" element={
-              <ProtectedRoute>
+              <ProtectedRoute adminOnly={true}>
                 <ManageProductsPage />
               </ProtectedRoute>
             } />
@@ -59,17 +59,17 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/customers" element={
-              <ProtectedRoute>
+              <ProtectedRoute adminOnly={true}>
                 <CustomersPage />
               </ProtectedRoute>
             } />
             <Route path="/reports" element={
-              <ProtectedRoute>
+              <ProtectedRoute adminOnly={true}>
                 <ReportsPage />
               </ProtectedRoute>
             } />
             <Route path="/settings" element={
-              <ProtectedRoute>
+              <ProtectedRoute adminOnly={true}>
                 <SettingsPage />
               </ProtectedRoute>
             } />

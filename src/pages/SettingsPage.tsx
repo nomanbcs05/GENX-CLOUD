@@ -20,6 +20,7 @@ const SettingsPage = () => {
   const queryClient = useQueryClient();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [lockPassword, setLockPassword] = useState('');
 
   const [businessName, setBusinessName] = useState(restaurant?.name || '');
   const [phone, setPhone] = useState(restaurant?.phone || '');
@@ -152,6 +153,11 @@ const SettingsPage = () => {
     if (savedStaff) {
       setStaffList(JSON.parse(savedStaff));
     }
+
+    const savedLockPassword = localStorage.getItem('pos_lock_password');
+    if (savedLockPassword) {
+      setLockPassword(savedLockPassword);
+    }
   }, []);
 
   const handleUpdateStaffName = (id: string, newName: string) => {
@@ -159,6 +165,11 @@ const SettingsPage = () => {
     setStaffList(updated);
     localStorage.setItem('pos_staff_names', JSON.stringify(updated));
     toast.success('Staff name updated successfully');
+  };
+
+  const handleSaveLockPassword = () => {
+    localStorage.setItem('pos_lock_password', lockPassword);
+    toast.success('POS Lock password updated successfully');
   };
 
   return (
@@ -602,6 +613,32 @@ const SettingsPage = () => {
                     >
                       {changePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
                     </Button>
+                  </div>
+
+                  <Separator className="my-6" />
+
+                  <div className="space-y-4 pt-4">
+                    <div className="flex items-center gap-2">
+                      <Lock className="h-5 w-5 text-primary" />
+                      <div>
+                        <h3 className="text-lg font-bold">POS Lock Screen Password</h3>
+                        <p className="text-sm text-muted-foreground">Set a password to quickly lock the POS terminal</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 max-w-sm">
+                      <Label htmlFor="lockPassword">Lock Password (PIN)</Label>
+                      <div className="flex gap-2">
+                        <Input 
+                          id="lockPassword" 
+                          type="password" 
+                          placeholder="Enter lock PIN/Password" 
+                          value={lockPassword}
+                          onChange={(e) => setLockPassword(e.target.value)}
+                        />
+                        <Button onClick={handleSaveLockPassword}>Save PIN</Button>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

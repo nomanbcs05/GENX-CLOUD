@@ -10,6 +10,7 @@ import {
    BarChart3,
   Settings,
   LogOut,
+  Lock,
   Coffee,
   PlusCircle,
   ChevronLeft,
@@ -29,7 +30,7 @@ import { useMultiTenant } from '@/hooks/useMultiTenant';
 const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, restaurant } = useMultiTenant();
+  const { profile, restaurant, isAdmin } = useMultiTenant();
   const [showStartSessionModal, setShowStartSessionModal] = useState(false);
   const queryClient = useQueryClient();
 
@@ -37,12 +38,12 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
     { name: 'Dashboard', href: '/', icon: LayoutGrid },
     { name: 'Running Orders', href: '/ongoing-orders', icon: Clock },
     { name: 'Orders', href: '/orders', icon: ClipboardList },
-    { name: 'Manage Products', href: '/manage-products', icon: Settings2 },
-    { name: 'Products', href: '/products', icon: Package },
-    { name: 'Customers', href: '/customers', icon: Users },
-    { name: 'Reports', href: '/reports', icon: BarChart3 },
-    { name: 'Settings', href: '/settings', icon: Settings },
-  ];
+    { name: 'Products', href: '/products', icon: Package, adminOnly: true },
+    { name: 'Manage Products', href: '/manage-products', icon: Settings2, adminOnly: true },
+    { name: 'Customers', href: '/customers', icon: Users, adminOnly: true },
+    { name: 'Reports', href: '/reports', icon: BarChart3, adminOnly: true },
+    { name: 'Settings', href: '/settings', icon: Settings, adminOnly: true },
+  ].filter(item => !item.adminOnly || isAdmin);
 
   const handleLogout = async () => {
     try {
@@ -53,6 +54,11 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
     } catch (error) {
       toast.error("Error logging out");
     }
+  };
+
+  const handleLock = () => {
+    localStorage.setItem('pos_is_locked', 'true');
+    window.dispatchEvent(new Event('pos-lock-state-change'));
   };
 
   const handleStartSessionSuccess = () => {
@@ -173,9 +179,38 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
+                  onClick={handleLock}
+                  className={cn(
+                    "w-full mt-3 flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold font-heading uppercase tracking-widest text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all min-w-max",
+                    "justify-center"
+                  )}
+                >
+                  <Lock className="h-3.5 w-3.5 shrink-0" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="font-bold font-heading uppercase text-[10px] tracking-widest">
+                Lock Terminal
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <button
+              onClick={handleLock}
+              className={cn(
+                "w-full mt-3 flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold font-heading uppercase tracking-widest text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all min-w-max"
+              )}
+            >
+              <Lock className="h-3.5 w-3.5 shrink-0" />
+              <span className="animate-in fade-in slide-in-from-left-2 duration-300">Lock Terminal</span>
+            </button>
+          )}
+
+          {isCollapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
                   onClick={handleLogout}
                   className={cn(
-                    "w-full mt-3 flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold font-heading uppercase tracking-widest text-sidebar-foreground/50 hover:bg-destructive/10 hover:text-destructive transition-all min-w-max",
+                    "w-full mt-1 flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold font-heading uppercase tracking-widest text-sidebar-foreground/50 hover:bg-destructive/10 hover:text-destructive transition-all min-w-max",
                     "justify-center"
                   )}
                 >
@@ -190,7 +225,7 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
             <button
               onClick={handleLogout}
               className={cn(
-                "w-full mt-3 flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold font-heading uppercase tracking-widest text-sidebar-foreground/50 hover:bg-destructive/10 hover:text-destructive transition-all min-w-max"
+                "w-full mt-1 flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold font-heading uppercase tracking-widest text-sidebar-foreground/50 hover:bg-destructive/10 hover:text-destructive transition-all min-w-max"
               )}
             >
               <LogOut className="h-3.5 w-3.5 shrink-0" />
