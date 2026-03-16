@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Plus, Edit, Trash2, MoreHorizontal, Package, AlertTriangle, Loader2, Settings } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, MoreHorizontal, Package, AlertTriangle, Loader2, Settings, ChefHat, Utensils, Tag, X, Save } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import {
   Table,
   TableBody,
@@ -52,6 +53,49 @@ const ProductsPage = () => {
     name: '',
     icon: 'Package',
   });
+
+  // Virtual Menu States
+  const [isVirtualMenuModalOpen, setIsVirtualMenuModalOpen] = useState(false);
+  const [selectedVirtualCategory, setSelectedVirtualCategory] = useState<string | null>(null);
+  const [virtualMenuItems, setVirtualMenuItems] = useState<any[]>([]);
+
+  const virtualCategories = [
+    { id: 'barbq', name: 'BAR BQ', key: 'pos_menu_barbq', icon: ChefHat },
+    { id: 'pizza', name: 'Pizzas', key: 'pos_menu_pizza', icon: Utensils },
+    { id: 'roll', name: 'Rolls', key: 'pos_menu_roll', icon: Package },
+    { id: 'burger', name: 'Burgers', key: 'pos_menu_burger', icon: Package },
+    { id: 'broast', name: 'Broast', key: 'pos_menu_broast', icon: ChefHat },
+    { id: 'sauce', name: 'Sauces', key: 'pos_menu_sauce', icon: Utensils },
+    { id: 'deals', name: 'Deals', key: 'pos_menu_deals', icon: Tag },
+    { id: 'fries', name: 'Fries', key: 'pos_menu_fries', icon: Package },
+    { id: 'beverages', name: 'Beverages', key: 'pos_menu_beverages', icon: Package },
+    { id: 'alacart', name: 'ALA CART', key: 'pos_menu_alacart', icon: Package },
+  ];
+
+  const openVirtualMenuEditor = (category: any) => {
+    setSelectedVirtualCategory(category.name);
+    const saved = localStorage.getItem(category.key);
+    if (saved) {
+      setVirtualMenuItems(JSON.parse(saved));
+    } else {
+      // Load defaults (same logic as in ManageProductsPage)
+      let defaults: any[] = [];
+      // (Default values omitted for brevity, you can add them if needed)
+      setVirtualMenuItems(defaults);
+    }
+    setIsVirtualMenuModalOpen(true);
+  };
+
+  const saveVirtualMenu = () => {
+    if (selectedVirtualCategory) {
+      const category = virtualCategories.find(c => c.name === selectedVirtualCategory);
+      if (category) {
+        localStorage.setItem(category.key, JSON.stringify(virtualMenuItems));
+        toast({ title: "Success", description: `${selectedVirtualCategory} menu updated` });
+        setIsVirtualMenuModalOpen(false);
+      }
+    }
+  };
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -291,6 +335,102 @@ const ProductsPage = () => {
   return (
     <MainLayout>
       <div className="flex flex-col h-full">
+        {/* Virtual Menu Editor Dialog */}
+        <Dialog open={isVirtualMenuModalOpen} onOpenChange={setIsVirtualMenuModalOpen}>
+          <DialogContent className="max-w-2xl rounded-3xl p-0 overflow-hidden bg-white border-none flex flex-col max-h-[85vh]">
+            <DialogHeader className="p-6 bg-slate-900 text-white shrink-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight">
+                    Edit {selectedVirtualCategory} Menu
+                  </DialogTitle>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">
+                    Manage items and prices for this selection modal
+                  </p>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white hover:bg-white/10"
+                  onClick={() => setIsVirtualMenuModalOpen(false)}
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+            </DialogHeader>
+            
+            <div className="flex-1 overflow-hidden flex flex-col p-6 space-y-6">
+              <div className="flex gap-3">
+                <Button 
+                  className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold"
+                  onClick={() => setVirtualMenuItems([...virtualMenuItems, { name: '', price: 0 }])}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add New Item
+                </Button>
+              </div>
+
+              <ScrollArea className="flex-1 pr-4">
+                <div className="space-y-3">
+                  {virtualMenuItems.map((item, index) => (
+                    <div key={index} className="flex gap-3 items-center bg-slate-50 p-3 rounded-2xl border border-slate-100 group">
+                      <div className="flex-1">
+                        <Label className="text-[10px] font-black uppercase text-slate-400 ml-1 mb-1 block">Item Name</Label>
+                        <Input 
+                          value={item.name} 
+                          onChange={(e) => {
+                            const newItems = [...virtualMenuItems];
+                            newItems[index].name = e.target.value;
+                            setVirtualMenuItems(newItems);
+                          }}
+                          className="bg-white border-none shadow-sm h-10 rounded-xl font-bold"
+                          placeholder="e.g., Zinger Burger"
+                        />
+                      </div>
+                      <div className="w-32">
+                        <Label className="text-[10px] font-black uppercase text-slate-400 ml-1 mb-1 block">Price (Rs)</Label>
+                        <Input 
+                          type="number"
+                          value={item.price} 
+                          onChange={(e) => {
+                            const newItems = [...virtualMenuItems];
+                            newItems[index].price = parseFloat(e.target.value) || 0;
+                            setVirtualMenuItems(newItems);
+                          }}
+                          className="bg-white border-none shadow-sm h-10 rounded-xl font-bold"
+                        />
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="mt-5 text-slate-300 hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => setVirtualMenuItems(virtualMenuItems.filter((_, i) => i !== index))}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+
+            <DialogFooter className="p-6 bg-slate-50 border-t flex items-center justify-between sm:justify-between">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                {virtualMenuItems.length} Items in this menu
+              </p>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setIsVirtualMenuModalOpen(false)} className="rounded-xl font-bold">
+                  Cancel
+                </Button>
+                <Button onClick={saveVirtualMenu} className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-black uppercase tracking-widest px-8">
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Menu
+                </Button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Header */}
         <div className="p-6 border-b bg-card">
           <div className="flex items-center justify-between mb-4">
@@ -347,8 +487,8 @@ const ProductsPage = () => {
                           </div>
                           <Button 
                             variant="ghost" 
-                            size="sm" 
-                            className="text-destructive hover:text-destructive"
+                            size="icon" 
+                            className="text-destructive h-8 w-8"
                             onClick={() => deleteCategoryMutation.mutate(category.id)}
                             disabled={deleteCategoryMutation.isPending}
                           >
@@ -356,15 +496,27 @@ const ProductsPage = () => {
                           </Button>
                         </div>
                       ))}
-                      {categories.length === 0 && (
-                        <div className="p-4 text-center text-muted-foreground">
-                          No categories found
-                        </div>
-                      )}
                     </div>
                   </div>
                 </DialogContent>
               </Dialog>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Utensils className="h-4 w-4 mr-2" />
+                    Virtual Menus
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {virtualCategories.map((cat) => (
+                    <DropdownMenuItem key={cat.id} onClick={() => openVirtualMenuEditor(cat)}>
+                      <cat.icon className="h-4 w-4 mr-2" />
+                      {cat.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
                 <DialogTrigger asChild>

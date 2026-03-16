@@ -39,7 +39,6 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
     { name: 'Running Orders', href: '/ongoing-orders', icon: Clock },
     { name: 'Orders', href: '/orders', icon: ClipboardList },
     { name: 'Products', href: '/products', icon: Package, adminOnly: true },
-    { name: 'Manage Products', href: '/manage-products', icon: Settings2, adminOnly: true },
     { name: 'Customers', href: '/customers', icon: Users, adminOnly: true },
     { name: 'Reports', href: '/reports', icon: BarChart3, adminOnly: true },
     { name: 'Settings', href: '/settings', icon: Settings, adminOnly: true },

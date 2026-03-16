@@ -7,7 +7,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import OngoingOrdersPage from "./pages/OngoingOrdersPage";
 import OrdersPage from "./pages/OrdersPage";
-import ManageProductsPage from "./pages/ManageProductsPage";
 import ProductsPage from "./pages/ProductsPage";
 import CustomersPage from "./pages/CustomersPage";
 import ReportsPage from "./pages/ReportsPage";
@@ -48,13 +47,8 @@ const App = () => (
                 <OrdersPage />
               </ProtectedRoute>
             } />
-            <Route path="/manage-products" element={
-              <ProtectedRoute adminOnly={true}>
-                <ManageProductsPage />
-              </ProtectedRoute>
-            } />
             <Route path="/products" element={
-              <ProtectedRoute>
+              <ProtectedRoute adminOnly={true}>
                 <ProductsPage />
               </ProtectedRoute>
             } />

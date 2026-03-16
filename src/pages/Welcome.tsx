@@ -67,7 +67,7 @@ const Welcome = () => {
 
         {/* Cashier Card */}
         <RoleCard
-          title={staffNames.cashier}
+          title="Cashier"
           icon={User}
           description="Process orders and manage payments"
           onSelect={() => handleRoleSelect("cashier")}
