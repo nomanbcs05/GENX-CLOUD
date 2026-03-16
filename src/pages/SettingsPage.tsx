@@ -188,6 +188,7 @@ const SettingsPage = () => {
   };
 
   const [staffList, setStaffList] = useState([
+    { id: 'admin', name: 'ADMIN', role: 'Administrator' },
     { id: 'cashier', name: 'ANAS', role: 'Cashier' },
     { id: 'cashier2', name: 'CASHIER 2', role: 'Secondary Cashier' }
   ]);
@@ -228,6 +229,15 @@ const SettingsPage = () => {
     const updated = staffList.map(s => s.id === id ? { ...s, name: newName } : s);
     setStaffList(updated);
     localStorage.setItem('pos_staff_names', JSON.stringify(updated));
+    
+    // If the updated staff is the current user, update their active session name
+    const activeRole = localStorage.getItem('active_role');
+    if (activeRole === id) {
+      localStorage.setItem('active_staff_name', newName);
+      // Dispatch event to notify sidebar/other components
+      window.dispatchEvent(new Event('active-staff-name-changed'));
+    }
+    
     toast.success(`${id.charAt(0).toUpperCase() + id.slice(1)} display name updated`);
   };
 

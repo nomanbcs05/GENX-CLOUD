@@ -32,7 +32,23 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
   const navigate = useNavigate();
   const { profile, restaurant, isAdmin } = useMultiTenant();
   const [showStartSessionModal, setShowStartSessionModal] = useState(false);
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const updateDisplayName = () => {
+      const saved = localStorage.getItem('active_staff_name');
+      if (saved) {
+        setDisplayName(saved);
+      } else {
+        setDisplayName(profile?.full_name || "User");
+      }
+    };
+
+    updateDisplayName();
+    window.addEventListener('active-staff-name-changed', updateDisplayName);
+    return () => window.removeEventListener('active-staff-name-changed', updateDisplayName);
+  }, [profile]);
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: LayoutGrid },
@@ -159,13 +175,13 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
           )}>
             <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center shadow-md shrink-0">
               <span className="text-[10px] font-black font-heading text-sidebar-primary-foreground">
-                {(profile?.full_name || "US").substring(0, 2).toUpperCase()}
+                {(displayName || profile?.full_name || "US").substring(0, 2).toUpperCase()}
               </span>
             </div>
             {!isCollapsed && (
               <div className="flex-1 min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
                 <p className="text-xs font-black font-heading truncate leading-tight tracking-tight uppercase">
-                  {profile?.full_name || "User"}
+                  {displayName || profile?.full_name || "User"}
                 </p>
                 <p className="text-[10px] font-black text-sidebar-foreground/40 uppercase tracking-widest mt-0.5">
                   {profile?.role || "Staff"}
