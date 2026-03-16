@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/stores/cartStore';
@@ -11,21 +11,22 @@ interface RiderSelectionModalProps {
   onClose: () => void;
 }
 
-const RIDERS = [
-  { id: 1, name: 'Ayaz' },
-  { id: 2, name: 'Mumtaz' },
-  { id: 3, name: 'Abuzar' },
-  { id: 4, name: 'Zafar' },
-];
-
 const RiderSelectionModal = ({ isOpen, onClose }: RiderSelectionModalProps) => {
   const { setRider } = useCartStore();
   const [selectedRider, setSelectedRider] = useState<any>(null);
+  const [riderList, setRiderList] = useState<string[]>(['Ayaz', 'Mumtaz', 'Abuzar', 'Zafar']);
 
-  const handleSelectRider = (rider: any) => {
-    setSelectedRider(rider);
-    setRider({ name: rider.name });
-    toast.success(`Rider ${rider.name} assigned to delivery`);
+  useEffect(() => {
+    const saved = localStorage.getItem('pos_rider_names');
+    if (saved) {
+      setRiderList(JSON.parse(saved));
+    }
+  }, [isOpen]);
+
+  const handleSelectRider = (name: string) => {
+    setSelectedRider(name);
+    setRider({ name });
+    toast.success(`Rider ${name} assigned to delivery`);
     onClose();
     setTimeout(() => {
       setSelectedRider(null);
@@ -36,9 +37,6 @@ const RiderSelectionModal = ({ isOpen, onClose }: RiderSelectionModalProps) => {
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) {
         setSelectedRider(null);
-        setAddress('');
-        setCustomerName('');
-        setCustomerPhone('');
         onClose();
       }
     }}>
@@ -53,16 +51,16 @@ const RiderSelectionModal = ({ isOpen, onClose }: RiderSelectionModalProps) => {
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-4">
-          {RIDERS.map((rider) => (
+          {riderList.map((name) => (
             <motion.button
-              key={rider.id}
+              key={name}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => handleSelectRider(rider)}
+              onClick={() => handleSelectRider(name)}
               className="p-6 rounded-xl border-2 border-muted hover:border-primary hover:bg-primary/5 bg-card transition-all flex flex-col items-center justify-center gap-2 h-32"
             >
               <User className="h-8 w-8 text-muted-foreground" />
-              <h3 className="font-bold text-lg">{rider.name}</h3>
+              <h3 className="font-bold text-lg">{name}</h3>
             </motion.button>
           ))}
         </div>

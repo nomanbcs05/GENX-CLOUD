@@ -192,9 +192,11 @@ const SettingsPage = () => {
     { id: 'cashier2', name: 'CASHIER 2', role: 'Secondary Cashier' }
   ]);
 
-  // Server management state
+  // Server and Rider management state
   const [serverList, setServerList] = useState<string[]>([]);
+  const [riderList, setRiderList] = useState<string[]>([]);
   const [newServerName, setNewServerName] = useState('');
+  const [newRiderName, setNewRiderName] = useState('');
 
   useEffect(() => {
     const savedStaff = localStorage.getItem('pos_staff_names');
@@ -207,6 +209,13 @@ const SettingsPage = () => {
       setServerList(JSON.parse(savedServers));
     } else {
       setServerList(['Babar', 'Touheed', 'Nasrullah']); // Defaults
+    }
+
+    const savedRiders = localStorage.getItem('pos_rider_names');
+    if (savedRiders) {
+      setRiderList(JSON.parse(savedRiders));
+    } else {
+      setRiderList(['Ayaz', 'Mumtaz', 'Abuzar', 'Zafar']); // Defaults
     }
 
     const savedLockPassword = localStorage.getItem('pos_lock_password');
@@ -238,6 +247,22 @@ const SettingsPage = () => {
     toast.success('Server removed');
   };
 
+  const handleAddRider = () => {
+    if (!newRiderName.trim()) return;
+    const updated = [...riderList, newRiderName.trim()];
+    setRiderList(updated);
+    localStorage.setItem('pos_rider_names', JSON.stringify(updated));
+    setNewRiderName('');
+    toast.success('Rider added successfully');
+  };
+
+  const handleDeleteRider = (name: string) => {
+    const updated = riderList.filter(r => r !== name);
+    setRiderList(updated);
+    localStorage.setItem('pos_rider_names', JSON.stringify(updated));
+    toast.success('Rider removed');
+  };
+
   const handleSaveLockPassword = () => {
     localStorage.setItem('pos_lock_password', lockPassword);
     toast.success('POS Lock password updated successfully');
@@ -258,7 +283,7 @@ const SettingsPage = () => {
               <TabsTrigger value="receipt">Receipt</TabsTrigger>
               <TabsTrigger value="tax">Tax & Payment</TabsTrigger>
               <TabsTrigger value="notifications">Notifications</TabsTrigger>
-              {isAdmin && <TabsTrigger value="staff">Staff</TabsTrigger>}
+              <TabsTrigger value="staff">Staff & Servers</TabsTrigger>
               <TabsTrigger value="security">Security</TabsTrigger>
             </TabsList>
 
@@ -607,21 +632,23 @@ const SettingsPage = () => {
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <Users className="h-5 w-5" />
-                      Staff Management
+                      Staff & Service Management
                     </CardTitle>
                     <CardDescription>
-                      Create and manage staff accounts for your restaurant
+                      Manage cashiers, servers, and riders for your restaurant
                     </CardDescription>
                   </div>
-                  <Button 
-                    onClick={() => setIsAddingStaff(!isAddingStaff)}
-                    variant={isAddingStaff ? "outline" : "default"}
-                  >
-                    {isAddingStaff ? 'Cancel' : 'Add New Staff'}
-                  </Button>
+                  {isAdmin && (
+                    <Button 
+                      onClick={() => setIsAddingStaff(!isAddingStaff)}
+                      variant={isAddingStaff ? "outline" : "default"}
+                    >
+                      {isAddingStaff ? 'Cancel' : 'Add New Staff'}
+                    </Button>
+                  )}
                 </CardHeader>
                 <CardContent>
-                  {isAddingStaff && (
+                  {isAddingStaff && isAdmin && (
                     <div className="mb-8 p-6 border-2 border-primary/20 rounded-2xl bg-primary/5 space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
                       <h3 className="font-bold text-lg">Create New Staff Account</h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -674,6 +701,10 @@ const SettingsPage = () => {
                         <div className="flex items-center justify-center p-8">
                           <Loader2 className="h-8 w-8 animate-spin text-primary" />
                         </div>
+                      ) : !isAdmin ? (
+                        <div className="text-sm text-muted-foreground p-4 bg-slate-50 rounded-xl border border-dashed">
+                          Contact Administrator to manage permanent staff accounts.
+                        </div>
                       ) : staffMembers.length === 0 ? (
                         <div className="text-center p-8 border-2 border-dashed rounded-2xl text-slate-400 font-medium">
                           No staff accounts found. Create one above.
@@ -697,7 +728,7 @@ const SettingsPage = () => {
                               )}>
                                 {staff.role}
                               </Badge>
-                              {staff.id !== profile?.id && (
+                              {isAdmin && staff.id !== profile?.id && (
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
@@ -723,13 +754,13 @@ const SettingsPage = () => {
 
                   <Separator className="my-8" />
 
-                    <div className="space-y-6">
+                  <div className="space-y-6">
                     <h3 className="font-bold text-slate-900">Display Settings</h3>
                     <p className="text-sm text-muted-foreground -mt-4">Change how roles appear on the welcome screen</p>
-                    {staffList.map((staff) => (
-                      <div key={staff.id} className="flex items-center gap-4 p-4 border rounded-xl bg-slate-50/50">
-                        <div className="flex-1 space-y-2">
-                          <Label htmlFor={`staff-${staff.id}`}>{staff.role} Display Name</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {staffList.map((staff) => (
+                        <div key={staff.id} className="flex flex-col gap-2 p-4 border rounded-xl bg-slate-50/50">
+                          <Label htmlFor={`staff-${staff.id}`} className="text-xs font-bold text-slate-500 uppercase tracking-wider">{staff.role} Display Name</Label>
                           <div className="flex gap-2">
                             <Input
                               id={`staff-${staff.id}`}
@@ -738,49 +769,89 @@ const SettingsPage = () => {
                                 const updated = staffList.map(s => s.id === staff.id ? { ...s, name: e.target.value } : s);
                                 setStaffList(updated);
                               }}
-                              className="bg-white"
+                              className="bg-white font-bold"
                             />
                             <Button 
                               onClick={() => handleUpdateStaffName(staff.id, staff.name)}
                               size="sm"
-                              className="bg-slate-900 text-white"
+                              className="bg-slate-900 text-white font-bold px-4"
                             >
                               Save
                             </Button>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
 
                   <Separator className="my-8" />
 
                   <div className="space-y-6">
-                    <h3 className="font-bold text-slate-900">Servers Management</h3>
-                    <p className="text-sm text-muted-foreground -mt-4">Add or remove servers for Dine-In orders</p>
+                    <div className="flex flex-col gap-1">
+                      <h3 className="font-bold text-slate-900">Servers Management</h3>
+                      <p className="text-sm text-muted-foreground">Add or remove servers for Dine-In orders</p>
+                    </div>
                     
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 max-w-md">
                       <Input 
                         placeholder="Enter new server name" 
                         value={newServerName}
                         onChange={(e) => setNewServerName(e.target.value)}
-                        className="bg-white"
+                        className="bg-white font-bold"
                       />
-                      <Button onClick={handleAddServer} className="bg-slate-900 text-white">
+                      <Button onClick={handleAddServer} className="bg-slate-900 text-white font-bold px-6 shrink-0">
                         <Plus className="h-4 w-4 mr-2" />
                         Add Server
                       </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
                       {serverList.map((name) => (
-                        <div key={name} className="flex items-center justify-between p-3 border rounded-xl bg-white shadow-sm">
-                          <span className="font-bold text-slate-700">{name}</span>
+                        <div key={name} className="flex items-center justify-between p-3 border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow group">
+                          <span className="font-bold text-slate-700 ml-2">{name}</span>
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                            className="h-8 w-8 text-slate-300 hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={() => handleDeleteServer(name)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator className="my-8" />
+
+                  <div className="space-y-6">
+                    <div className="flex flex-col gap-1">
+                      <h3 className="font-bold text-slate-900">Rider Management</h3>
+                      <p className="text-sm text-muted-foreground">Add or remove riders for Delivery orders</p>
+                    </div>
+                    
+                    <div className="flex gap-2 max-w-md">
+                      <Input 
+                        placeholder="Enter new rider name" 
+                        value={newRiderName}
+                        onChange={(e) => setNewRiderName(e.target.value)}
+                        className="bg-white font-bold"
+                      />
+                      <Button onClick={handleAddRider} className="bg-slate-900 text-white font-bold px-6 shrink-0">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Rider
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {riderList.map((name) => (
+                        <div key={name} className="flex items-center justify-between p-3 border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow group">
+                          <span className="font-bold text-slate-700 ml-2">{name}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-slate-300 hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleDeleteRider(name)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
