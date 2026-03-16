@@ -1,4 +1,4 @@
-import { Store, Receipt, Users, CreditCard, Bell, Shield, Lock, Trash2, Edit, Image as ImageIcon, Upload } from 'lucide-react';
+import { Store, Receipt, Users, CreditCard, Bell, Shield, Lock, Trash2, Edit, Image as ImageIcon, Upload, Plus } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
