@@ -21,8 +21,16 @@ type TableSection = 'indoor' | 'outdoor' | 'vip';
 
 const TableSelectionModal = ({ isOpen, onClose }: TableSelectionModalProps) => {
   const [activeFilter, setActiveFilter] = useState<TableSection | 'all'>('all');
+  const [serverList, setServerList] = useState<string[]>(['Babar', 'Touheed', 'Nasrullah']);
   const { setTableId, setOrderType, serverName, setServerName } = useCartStore();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const savedServers = localStorage.getItem('pos_server_names');
+    if (savedServers) {
+      setServerList(JSON.parse(savedServers));
+    }
+  }, [isOpen]);
 
   const { data: tables = [], isLoading } = useQuery({
     queryKey: ['tables'],
@@ -159,7 +167,7 @@ const TableSelectionModal = ({ isOpen, onClose }: TableSelectionModalProps) => {
                 Select Server
               </div>
               <div className="grid grid-cols-3 gap-3">
-                {SERVERS.map((name) => (
+                {serverList.map((name) => (
                   <Button
                     key={name}
                     variant={serverName === name ? "default" : "outline"}

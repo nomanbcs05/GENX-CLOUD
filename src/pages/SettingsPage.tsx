@@ -192,10 +192,21 @@ const SettingsPage = () => {
     { id: 'cashier2', name: 'CASHIER 2', role: 'Secondary Cashier' }
   ]);
 
+  // Server management state
+  const [serverList, setServerList] = useState<string[]>([]);
+  const [newServerName, setNewServerName] = useState('');
+
   useEffect(() => {
     const savedStaff = localStorage.getItem('pos_staff_names');
     if (savedStaff) {
       setStaffList(JSON.parse(savedStaff));
+    }
+
+    const savedServers = localStorage.getItem('pos_server_names');
+    if (savedServers) {
+      setServerList(JSON.parse(savedServers));
+    } else {
+      setServerList(['Babar', 'Touheed', 'Nasrullah']); // Defaults
     }
 
     const savedLockPassword = localStorage.getItem('pos_lock_password');
@@ -208,7 +219,23 @@ const SettingsPage = () => {
     const updated = staffList.map(s => s.id === id ? { ...s, name: newName } : s);
     setStaffList(updated);
     localStorage.setItem('pos_staff_names', JSON.stringify(updated));
-    toast.success('Staff name updated successfully');
+    toast.success(`${id.charAt(0).toUpperCase() + id.slice(1)} display name updated`);
+  };
+
+  const handleAddServer = () => {
+    if (!newServerName.trim()) return;
+    const updated = [...serverList, newServerName.trim()];
+    setServerList(updated);
+    localStorage.setItem('pos_server_names', JSON.stringify(updated));
+    setNewServerName('');
+    toast.success('Server added successfully');
+  };
+
+  const handleDeleteServer = (name: string) => {
+    const updated = serverList.filter(s => s !== name);
+    setServerList(updated);
+    localStorage.setItem('pos_server_names', JSON.stringify(updated));
+    toast.success('Server removed');
   };
 
   const handleSaveLockPassword = () => {
@@ -696,7 +723,7 @@ const SettingsPage = () => {
 
                   <Separator className="my-8" />
 
-                  <div className="space-y-6">
+                    <div className="space-y-6">
                     <h3 className="font-bold text-slate-900">Display Settings</h3>
                     <p className="text-sm text-muted-foreground -mt-4">Change how roles appear on the welcome screen</p>
                     {staffList.map((staff) => (
@@ -724,6 +751,42 @@ const SettingsPage = () => {
                         </div>
                       </div>
                     ))}
+                  </div>
+
+                  <Separator className="my-8" />
+
+                  <div className="space-y-6">
+                    <h3 className="font-bold text-slate-900">Servers Management</h3>
+                    <p className="text-sm text-muted-foreground -mt-4">Add or remove servers for Dine-In orders</p>
+                    
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="Enter new server name" 
+                        value={newServerName}
+                        onChange={(e) => setNewServerName(e.target.value)}
+                        className="bg-white"
+                      />
+                      <Button onClick={handleAddServer} className="bg-slate-900 text-white">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Server
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {serverList.map((name) => (
+                        <div key={name} className="flex items-center justify-between p-3 border rounded-xl bg-white shadow-sm">
+                          <span className="font-bold text-slate-700">{name}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDeleteServer(name)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
