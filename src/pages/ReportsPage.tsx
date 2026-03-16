@@ -3,6 +3,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
@@ -40,6 +41,11 @@ const ReportsPage = () => {
   const { data, isLoading: isReportsLoading, isError, error } = useQuery({
     queryKey: ['reports-data'],
     queryFn: api.reports.getDashboardStats,
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: api.categories.getAll,
   });
 
   const { data: openRegister } = useQuery({
@@ -523,13 +529,14 @@ const ReportsPage = () => {
         <div ref={summaryRef}>
           <DailySummary 
             orders={data?.orders?.filter(o => isToday(parseISO(o.created_at))) || []} 
-            categories={categories} 
+            date={new Date()}
           />
         </div>
         <div ref={productSummaryRef}>
           <ProductSalesSummary 
             orders={productOrdersWithItems} 
-            categories={categories} 
+            date={new Date()}
+            query=""
           />
         </div>
       </div>
