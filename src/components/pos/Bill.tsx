@@ -83,7 +83,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
 
       {/* Order Number Box */}
       <div className="border-x border-t border-black p-1 text-center">
-        <div className="text-3xl font-black tracking-widest">{order.orderNumber.slice(-3)}</div>
+        <div className="text-3xl font-black tracking-widest">{order.orderNumber}</div>
       </div>
 
       {/* Info Section */}
