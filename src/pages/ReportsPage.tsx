@@ -329,12 +329,12 @@ const ReportsPage = () => {
       <ScrollArea className="h-full">
         <div className="p-6 space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-2xl font-bold">Reports & Analytics</h1>
               <p className="text-muted-foreground">Business performance overview</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 md:gap-3">
               {/* Clear All History */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -408,7 +408,7 @@ const ReportsPage = () => {
                 <LogOut className="h-4 w-4 mr-2" />
                 End Shift
               </Button>
-              <Separator orientation="vertical" className="h-10 mx-2" />
+              <Separator orientation="vertical" className="h-10 mx-2 hidden md:block" />
               <Button 
                 variant={timeRange === 'today' ? 'default' : 'outline'}
                 onClick={() => setTimeRange('today')}
