@@ -605,7 +605,7 @@ const ReportsPage = () => {
       </ScrollArea>
 
       {/* Hidden print components */}
-      <div className="hidden">
+      <div className="sr-only">
         <div ref={summaryRef}>
           <DailySummary 
             orders={data?.orders?.filter(o => isToday(parseISO(o.created_at))) || []} 

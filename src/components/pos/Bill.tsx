@@ -45,8 +45,8 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
   return (
     <div
       ref={ref}
-      className="receipt-print bg-white text-black p-2 font-mono text-[11px] leading-tight mx-auto"
-      style={{ width: '80mm' }}
+      className="receipt-print bg-white text-black p-4 font-mono text-[13px] leading-loose mx-auto"
+      style={{ width: '80mm', letterSpacing: '0.5px' }}
     >
       {/* Header */}
       <div className="text-center mb-1">
@@ -54,12 +54,12 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
           <img
             src={logoSrc}
             alt="Logo"
-            className="mx-auto mb-1 object-contain h-24 max-w-[150px] w-auto" // Increased logo size
+            className="mx-auto mb-2 object-contain h-20 max-w-[120px] w-auto"
             onError={() => setLogoError(true)}
           />
         ) : (
-          <div className="border-2 border-dashed border-gray-400 rounded-xl p-2 mx-auto flex items-center justify-center mb-1">
-            <h1 className="text-sm font-bold uppercase">{name}</h1>
+          <div className="border-2 border-dashed border-gray-400 rounded-xl p-2 mx-auto flex items-center justify-center mb-2">
+            <h1 className="text-base font-bold uppercase">{name}</h1>
           </div>
         )}
       </div>
@@ -83,7 +83,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
 
       {/* Order Number Box */}
       <div className="border-x border-t border-black p-1 text-center">
-        <div className="text-2xl font-bold">{order.orderNumber.slice(-3)}</div>
+        <div className="text-3xl font-black tracking-widest">{order.orderNumber.slice(-3)}</div>
       </div>
 
       {/* Info Section */}
