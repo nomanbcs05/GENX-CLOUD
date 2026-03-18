@@ -290,27 +290,6 @@ const OrdersPage = () => {
     return orders.filter((order: any) => isToday(new Date(order.created_at)));
   }, [orders]);
 
-  const deleteTodayMutation = useMutation({
-    mutationFn: api.orders.deleteTodayOrders,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      toast.success("Today's orders cleared successfully");
-    },
-    onError: (error) => {
-      toast.error(`Failed to clear orders: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  });
-
-  const deleteAllMutation = useMutation({
-    mutationFn: api.orders.deleteAllOrders,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      toast.success("All order history cleared successfully");
-    },
-    onError: (error) => {
-      toast.error(`Failed to clear history: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  });
 
   if (isError) {
     return (
@@ -409,51 +388,6 @@ const OrdersPage = () => {
               <p className="text-muted-foreground">View and manage order history</p>
             </div>
             <div className="flex gap-2">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="bg-red-600 hover:bg-red-700">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Clear All History
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently delete ALL order history from the database. This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => deleteAllMutation.mutate()} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Delete All History
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="text-destructive border-destructive hover:bg-destructive/10">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Clear Today
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently delete all orders created today. This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => deleteTodayMutation.mutate()} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Delete Today's Orders
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button

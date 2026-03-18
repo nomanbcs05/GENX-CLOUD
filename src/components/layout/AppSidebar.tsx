@@ -63,7 +63,7 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
   const handleLogout = async () => {
     try {
       localStorage.removeItem("pos_local_user"); // Clear local dev session
-      await supabase.auth.signOut();
+      await supabase.auth.signOut(); 
       toast.success("Logged out successfully");
       navigate("/auth");
     } catch (error) {
