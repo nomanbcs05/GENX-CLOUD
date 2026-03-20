@@ -176,8 +176,8 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
                   {item.product.name}
                   {/* Modifiers could go here */}
                 </td>
-                <td className="text-right py-1 align-top">{item.product.price}</td>
-                <td className="text-right py-1 pr-1 align-top">{item.lineTotal.toFixed(3)}</td>
+                <td className="text-right py-1 align-top">{Number(item.product.price).toLocaleString()}</td>
+                <td className="text-right py-1 pr-1 align-top">{Number(item.lineTotal).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
@@ -188,7 +188,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
       <div className="border-x border-b border-black p-1 text-[13px]">
         <div className="flex justify-between">
           <span>SubTotal :</span>
-          <span>{order.subtotal.toFixed(3)}</span>
+          <span>{Number(order.subtotal).toLocaleString()}</span>
         </div>
         {order.deliveryFee && order.deliveryFee > 0 && (
           <div className="flex justify-between">
@@ -198,7 +198,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
         )}
         <div className="flex justify-between font-bold text-base mt-1 bg-gray-100 p-1">
           <span>Net Bill :</span>
-          <span>{order.total.toFixed(0)}</span>
+          <span>{Number(order.total).toLocaleString()}</span>
         </div>
       </div>
 
