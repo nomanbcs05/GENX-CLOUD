@@ -8,7 +8,7 @@ type Role = "admin" | "cashier" | "cashier2";
 const Welcome = () => {
   const navigate = useNavigate();
   const [staffNames, setStaffNames] = useState({
-    cashier: 'Anas',
+    cashier: 'Ali Hyder',
     cashier2: 'Cashier 2'
   });
 
@@ -67,7 +67,7 @@ const Welcome = () => {
 
         {/* Cashier Card */}
         <RoleCard
-          title="Cashier"
+          title="Ali Hyder"
           icon={User}
           description="syedabuzarzaidi07@gmail.com"
           onSelect={() => handleRoleSelect("cashier")}

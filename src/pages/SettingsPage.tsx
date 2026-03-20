@@ -189,7 +189,7 @@ const SettingsPage = () => {
 
   const [staffList, setStaffList] = useState([
     { id: 'admin', name: 'ADMIN', role: 'Administrator' },
-    { id: 'cashier', name: 'ANAS', role: 'Cashier' },
+    { id: 'cashier', name: 'ALI HYDER', role: 'Cashier' },
     { id: 'cashier2', name: 'CASHIER 2', role: 'Secondary Cashier' }
   ]);
 

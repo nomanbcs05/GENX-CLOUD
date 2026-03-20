@@ -64,7 +64,7 @@ const OngoingOrdersPage = () => {
   const [showBill, setShowBill] = useState(false);
   const [billOrder, setBillOrder] = useState<any>(null);
   const billRef = useRef<HTMLDivElement>(null);
-  const [cashierName, setCashierName] = useState('Cashier');
+  const [cashierName, setCashierName] = useState('Ali Hyder');
   const [showDetailPanel, setShowDetailPanel] = useState(() => {
     const saved = localStorage.getItem('ongo_detail_panel');
     return saved !== 'false';

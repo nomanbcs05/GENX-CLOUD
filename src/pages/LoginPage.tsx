@@ -33,10 +33,10 @@ const LoginPage = () => {
       if (staff) {
         setStaffDisplayName(staff.name);
       } else {
-        setStaffDisplayName(role === 'admin' ? 'Admin' : (role === 'cashier' ? 'Anas' : 'Cashier 2'));
+        setStaffDisplayName(role === 'admin' ? 'Admin' : (role === 'cashier' ? 'Ali Hyder' : 'Cashier 2'));
       }
     } else {
-      setStaffDisplayName(role === 'admin' ? 'Admin' : (role === 'cashier' ? 'Anas' : 'Cashier 2'));
+      setStaffDisplayName(role === 'admin' ? 'Admin' : (role === 'cashier' ? 'Ali Hyder' : 'Cashier 2'));
     }
 
     // Save current role to localStorage for other components to use

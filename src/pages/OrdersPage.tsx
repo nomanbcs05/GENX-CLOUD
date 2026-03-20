@@ -175,7 +175,7 @@ const OrdersPage = () => {
         paymentMethod: fullOrder.payment_method,
         orderType: fullOrder.order_type,
         createdAt: new Date(fullOrder.created_at),
-        cashierName: 'Cashier',
+        cashierName: 'Ali Hyder',
         serverName: ((fullOrder as any).server_name || '').replace(/^\[.*?\]\s*/, ''),
         tableId: (fullOrder as any).restaurant_tables?.table_number
       };
