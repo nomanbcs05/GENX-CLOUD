@@ -87,7 +87,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
       </div>
 
       {/* Info Section */}
-      <div className="border border-black p-1 text-[10px]">
+      <div className="border border-black p-1 text-[13px]">
         <div className="flex justify-between">
           <span>Invoice #:</span>
           <span>{order.orderNumber}</span>
@@ -159,7 +159,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
 
       {/* Items Table */}
       <div className="border-x border-b border-black">
-        <table className="w-full table-fixed text-[10px]">
+        <table className="w-full table-fixed text-[13px]">
           <thead>
             <tr className="border-b border-black bg-gray-100">
               <th className="text-left py-1 pl-1 w-8">Qty</th>
@@ -185,7 +185,7 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
       </div>
 
       {/* Totals */}
-      <div className="border-x border-b border-black p-1 text-[11px]">
+      <div className="border-x border-b border-black p-1 text-[13px]">
         <div className="flex justify-between">
           <span>SubTotal :</span>
           <span>{order.subtotal.toFixed(3)}</span>
