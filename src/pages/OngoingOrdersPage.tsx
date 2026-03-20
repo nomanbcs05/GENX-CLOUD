@@ -185,9 +185,23 @@ const OngoingOrdersPage = () => {
       // Prepare bill data
       const order = selectedOrder;
       if (order) {
+        // Find the daily sequential number for this order
+        let dailyOrderNumber = '';
+        if (Array.isArray(orders)) {
+          // Get today's orders sorted by created_at
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const sortedTodayOrders = orders
+            .filter((o: any) => new Date(o.created_at) >= today)
+            .sort((a: any, b: any) => new Date(a.created_at) - new Date(b.created_at));
+          const dailyIndex = sortedTodayOrders.findIndex((o: any) => o.id === order.id);
+          if (dailyIndex !== -1) {
+            dailyOrderNumber = (dailyIndex + 1).toString().padStart(2, '0');
+          }
+        }
         const billData = {
           id: order.id, // Include order ID for auto-save
-          orderNumber: order.id.slice(0, 8).toUpperCase(),
+          orderNumber: dailyOrderNumber || order.id.slice(0, 8).toUpperCase(),
           items: order.order_items?.map((item: any) => {
             const matched = (products as any[]).find((p: any) =>
               p.id === item.product_id ||
@@ -496,9 +510,22 @@ const OngoingOrdersPage = () => {
                               className="h-8 px-3 font-bold text-xs bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm transition-all"
                               onClick={(e) => {
                                 e.stopPropagation();
+                                // Find the daily sequential number for this order
+                                let dailyOrderNumber = '';
+                                if (Array.isArray(orders)) {
+                                  const today = new Date();
+                                  today.setHours(0, 0, 0, 0);
+                                  const sortedTodayOrders = orders
+                                    .filter((o: any) => new Date(o.created_at) >= today)
+                                    .sort((a: any, b: any) => new Date(a.created_at) - new Date(b.created_at));
+                                  const dailyIndex = sortedTodayOrders.findIndex((o: any) => o.id === order.id);
+                                  if (dailyIndex !== -1) {
+                                    dailyOrderNumber = (dailyIndex + 1).toString().padStart(2, '0');
+                                  }
+                                }
                                 const billData = {
                                   id: order.id,
-                                  orderNumber: order.id.slice(0, 8).toUpperCase(),
+                                  orderNumber: dailyOrderNumber || order.id.slice(0, 8).toUpperCase(),
                                   items: order.order_items?.map((item: any) => ({
                                     product: {
                                       id: item.product_id,
