@@ -90,7 +90,7 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
 
       {/* Order Number Box */}
       <div className="border-x border-t border-black p-1 text-center bg-gray-100">
-        <div className="text-2xl font-black">{order.orderNumber.slice(-3)}</div>
+        <div className="text-2xl font-black">{order.orderNumber}</div>
       </div>
 
       {/* Info Section */}
