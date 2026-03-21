@@ -91,7 +91,6 @@ const Bill = forwardRef<HTMLDivElement, BillProps>(({ order }, ref) => {
         <div className="flex justify-between">
           <span>Invoice #:</span>
           <span>{order.orderNumber}</span>
-          <span>DAY-00{new Date().getDate()}</span>
         </div>
         <div className="flex justify-between mt-1">
           <span>Restaurant:</span>

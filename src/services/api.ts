@@ -491,6 +491,11 @@ export const api = {
         safeOrder.server_name = order.server_name;
       }
 
+      // Add customer_address if present
+      if (order.customer_address) {
+        safeOrder.customer_address = order.customer_address;
+      }
+
       // Handle customer_id as number if it's an integer-like string or number
       if (order.customer_id) {
         const cid = parseInt(String(order.customer_id));
@@ -587,6 +592,10 @@ export const api = {
 
       if (order.server_name) {
         safeOrder.server_name = order.server_name;
+      }
+
+      if (order.customer_address) {
+        safeOrder.customer_address = order.customer_address;
       }
 
       if (order.customer_id) {
