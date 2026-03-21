@@ -355,6 +355,7 @@ const CartPanel = () => {
       order_type: orderType,
       table_id: tableId || null,
       server_name: getServerNameWithRole(),
+      customer_address: customerAddress || null,
     };
 
     const orderItemsInsert = items.map(item => ({
