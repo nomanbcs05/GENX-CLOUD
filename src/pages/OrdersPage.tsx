@@ -195,7 +195,8 @@ const OrdersPage = () => {
         createdAt: new Date(fullOrder.created_at),
         cashierName: 'Ali Hyder',
         serverName: ((fullOrder as any).server_name || '').replace(/^\[.*?\]\s*/, ''),
-        tableId: (fullOrder as any).restaurant_tables?.table_number
+        tableId: (fullOrder as any).restaurant_tables?.table_number,
+        customerAddress: (fullOrder as any).customer_address || null
       };
 
       setPrintingOrder(formattedOrder);
@@ -231,7 +232,8 @@ const OrdersPage = () => {
         createdAt: new Date(fullOrder.created_at),
         cashierName: 'Cashier',
         serverName: ((fullOrder as any).server_name || '').replace(/^\[.*?\]\s*/, ''),
-        tableId: (fullOrder as any).restaurant_tables?.table_number
+        tableId: (fullOrder as any).restaurant_tables?.table_number,
+        customerAddress: (fullOrder as any).customer_address || null
       };
 
       setPrintingKOTOrder(formattedOrder);
@@ -278,7 +280,8 @@ const OrdersPage = () => {
         createdAt: new Date(fullOrder.created_at),
         cashierName: 'Cashier',
         serverName: ((fullOrder as any).server_name || '').replace(/^\[.*?\]\s*/, ''),
-        tableId: (fullOrder as any).restaurant_tables?.table_number
+        tableId: (fullOrder as any).restaurant_tables?.table_number,
+        customerAddress: (fullOrder as any).customer_address || null
       };
 
       setBillOrder(billData);
@@ -644,7 +647,8 @@ const OrdersPage = () => {
                   orderType: viewingOrder.order_type,
                   createdAt: new Date(viewingOrder.created_at),
                   tableId: viewingOrder.restaurant_tables?.table_number,
-                  serverName: viewingOrder.server_name
+                  serverName: viewingOrder.server_name,
+                  customerAddress: viewingOrder.customer_address || null
                 }} />
               </div>
             )}
