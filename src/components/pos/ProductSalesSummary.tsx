@@ -96,37 +96,32 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
         className="receipt-print bg-white text-black p-4 font-mono text-[9px] mx-auto leading-relaxed"
         style={{ width: '80mm' }}
       >
-        <div className="text-center mb-2">
-          <h1 className="text-[11px] font-bold uppercase tracking-wider">Product Sales Monitoring</h1>
+        <div className="text-center mb-4 border-y border-black py-1">
+          <h1 className="text-[11px] font-bold uppercase tracking-widest">Product Sales Monitoring</h1>
           <p className="font-bold text-[8px]">{format(date, 'EEEE, dd MMMM yyyy')}</p>
-          {query?.trim() && (
-            <p className="text-[7px]">Filter: {tokens.join(', ')}</p>
-          )}
         </div>
 
-        <div className="border-t-[1.5px] border-black mt-1 mb-2" />
-
         {Array.from(categoriesMap.entries()).map(([category, items]) => (
-          <div key={category} className="mb-3">
-            <h2 className="font-bold border-b border-black mb-1 uppercase bg-gray-50 px-1 text-center py-0.5">{category}</h2>
+          <div key={category} className="mb-4">
+            <h2 className="font-bold uppercase mb-1 text-[10px]">{category}</h2>
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b border-black text-[8px]">
-                  <th className="text-left font-bold py-0.5 w-24">Item</th>
-                  <th className="text-right font-bold py-0.5">Qty</th>
-                  <th className="text-right font-bold py-0.5">Sales</th>
-                  <th className="text-right font-bold py-0.5">Profit</th>
-                  <th className="text-right font-bold py-0.5">Stk</th>
+                  <th className="text-left font-bold py-1 w-32">Item</th>
+                  <th className="text-right font-bold py-1 px-1">Qty</th>
+                  <th className="text-right font-bold py-1 px-1">Sales</th>
+                  <th className="text-right font-bold py-1 px-1">Profit</th>
+                  <th className="text-right font-bold py-1">Stk</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((r) => (
                   <tr key={r.name} className="border-b border-dotted border-gray-300 text-[8px]">
-                    <td className="py-1 break-words leading-tight uppercase">{r.name}</td>
-                    <td className="py-1 text-right align-top">{r.quantity}</td>
-                    <td className="py-1 text-right align-top">{r.revenue.toFixed(0)}</td>
-                    <td className="py-1 text-right align-top">{r.profit.toFixed(0)}</td>
-                    <td className="py-1 text-right align-top text-[7px]">{r.stock}</td>
+                    <td className="py-1.5 break-words leading-tight">{r.name}</td>
+                    <td className="py-1.5 text-right align-top px-1 font-bold">{r.quantity}</td>
+                    <td className="py-1.5 text-right align-top px-1">{r.revenue.toLocaleString()}</td>
+                    <td className="py-1.5 text-right align-top px-1">{r.profit.toLocaleString()}</td>
+                    <td className="py-1.5 text-right align-top font-bold">{r.stock}</td>
                   </tr>
                 ))}
               </tbody>
@@ -134,26 +129,26 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
           </div>
         ))}
 
-        <div className="border-t-[1.5px] border-black mt-2 pt-1 font-bold space-y-0.5 uppercase">
-          <div className="flex justify-between border-b border-dotted border-gray-400 pb-0.5">
+        <div className="border-t-[1.5px] border-black mt-4 pt-1 font-bold space-y-1 uppercase">
+          <div className="flex justify-between border-b border-black pb-1">
             <span>TOTAL ITEMS SOLD:</span>
             <span>{totalQty}</span>
           </div>
-          <div className="flex justify-between border-b border-dotted border-gray-400 py-0.5">
+          <div className="flex justify-between border-b border-black py-1">
             <span>TOTAL REVENUE:</span>
             <span>Rs {totalRevenue.toLocaleString()}</span>
           </div>
-          <div className="flex justify-between border-b border-black py-0.5">
+          <div className="flex justify-between border-b-[1.5px] border-black py-1">
             <span>EST. TOTAL PROFIT:</span>
             <span>Rs {totalProfit.toLocaleString()}</span>
           </div>
         </div>
 
-        <div className="text-center space-y-0.5 text-[8px] mt-4 pt-2 border-t border-dotted border-black">
-          <p className="font-bold uppercase tracking-tighter">GEN X CLOUD POS - MONITORING REPORT</p>
+        <div className="text-center space-y-1 text-[8px] mt-6 pt-2 border-t border-dotted border-black">
+          <p className="font-bold uppercase tracking-tight">GEN X CLOUD POS - MONITORING REPORT</p>
           <p>{format(new Date(), 'dd-MMM-yyyy HH:mm:ss')}</p>
           <p className="font-bold">GENX-POS-NAWABSHAH CONTACT 033102826675</p>
-          <p className="mt-1 font-bold">********************************</p>
+          <p className="mt-2 text-[10px]">********************************</p>
         </div>
       </div>
     );
