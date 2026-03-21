@@ -93,40 +93,40 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
     return (
       <div
         ref={ref}
-        className="receipt-print bg-white text-black p-4 font-mono text-[10px] mx-auto"
+        className="receipt-print bg-white text-black p-4 font-mono text-[9px] mx-auto leading-relaxed"
         style={{ width: '80mm' }}
       >
         <div className="text-center mb-2">
-          <h1 className="text-sm font-bold uppercase underline">Product Sales Monitoring</h1>
-          <p className="font-bold">{format(date, 'EEEE, dd MMMM yyyy')}</p>
+          <h1 className="text-[11px] font-bold uppercase tracking-wider">Product Sales Monitoring</h1>
+          <p className="font-bold text-[8px]">{format(date, 'EEEE, dd MMMM yyyy')}</p>
           {query?.trim() && (
-            <p className="text-[9px]">Filter: {tokens.join(', ')}</p>
+            <p className="text-[7px]">Filter: {tokens.join(', ')}</p>
           )}
         </div>
 
-        <div className="border-t border-black my-2" />
+        <div className="border-t-[1.5px] border-black mt-1 mb-2" />
 
         {Array.from(categoriesMap.entries()).map(([category, items]) => (
-          <div key={category} className="mb-4">
-            <h2 className="font-bold border-b border-black mb-1 uppercase bg-gray-50 px-1">{category}</h2>
-            <table className="w-full">
+          <div key={category} className="mb-3">
+            <h2 className="font-bold border-b border-black mb-1 uppercase bg-gray-50 px-1 text-center py-0.5">{category}</h2>
+            <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b border-black text-[9px]">
-                  <th className="text-left w-24">Item</th>
-                  <th className="text-right">Qty</th>
-                  <th className="text-right">Sales</th>
-                  <th className="text-right">Profit</th>
-                  <th className="text-right">Stk</th>
+                <tr className="border-b border-black text-[8px]">
+                  <th className="text-left font-bold py-0.5 w-24">Item</th>
+                  <th className="text-right font-bold py-0.5">Qty</th>
+                  <th className="text-right font-bold py-0.5">Sales</th>
+                  <th className="text-right font-bold py-0.5">Profit</th>
+                  <th className="text-right font-bold py-0.5">Stk</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((r) => (
-                  <tr key={r.name} className="border-b border-dotted border-gray-300">
-                    <td className="py-1 break-words leading-tight">{r.name}</td>
+                  <tr key={r.name} className="border-b border-dotted border-gray-300 text-[8px]">
+                    <td className="py-1 break-words leading-tight uppercase">{r.name}</td>
                     <td className="py-1 text-right align-top">{r.quantity}</td>
                     <td className="py-1 text-right align-top">{r.revenue.toFixed(0)}</td>
                     <td className="py-1 text-right align-top">{r.profit.toFixed(0)}</td>
-                    <td className="py-1 text-right align-top text-[8px]">{r.stock}</td>
+                    <td className="py-1 text-right align-top text-[7px]">{r.stock}</td>
                   </tr>
                 ))}
               </tbody>
@@ -134,24 +134,26 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
           </div>
         ))}
 
-        <div className="border-t-2 border-black mt-2 pt-1 font-bold space-y-1">
-          <div className="flex justify-between">
+        <div className="border-t-[1.5px] border-black mt-2 pt-1 font-bold space-y-0.5 uppercase">
+          <div className="flex justify-between border-b border-dotted border-gray-400 pb-0.5">
             <span>TOTAL ITEMS SOLD:</span>
             <span>{totalQty}</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between border-b border-dotted border-gray-400 py-0.5">
             <span>TOTAL REVENUE:</span>
             <span>Rs {totalRevenue.toLocaleString()}</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between border-b border-black py-0.5">
             <span>EST. TOTAL PROFIT:</span>
             <span>Rs {totalProfit.toLocaleString()}</span>
           </div>
         </div>
 
-        <div className="text-center mt-6 border-t border-dotted border-black pt-2 text-[9px]">
-          <p className="font-bold uppercase">GEN X CLOUD POS - MONITORING REPORT</p>
-          <p>{format(new Date(), 'dd-MMM HH:mm:ss')}</p>
+        <div className="text-center space-y-0.5 text-[8px] mt-4 pt-2 border-t border-dotted border-black">
+          <p className="font-bold uppercase tracking-tighter">GEN X CLOUD POS - MONITORING REPORT</p>
+          <p>{format(new Date(), 'dd-MMM-yyyy HH:mm:ss')}</p>
+          <p className="font-bold">GENX-POS-NAWABSHAH CONTACT 033102826675</p>
+          <p className="mt-1 font-bold">********************************</p>
         </div>
       </div>
     );
