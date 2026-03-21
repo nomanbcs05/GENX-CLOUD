@@ -54,6 +54,7 @@ export const useMultiTenant = () => {
                (profile && profile.email !== 'thepizzaandburgerhouse@gmail.com'),
     isSuperAdmin: false, // SaaS disabled
     restaurant: { 
+      id: "the-pizza-burger-house-id",
       name: "THE pizza&burger HOUSE",
       logo_url: "/pbh-logo.png",
       address: "Near Lasani Chicken Broast, Gol Wala Complex",
