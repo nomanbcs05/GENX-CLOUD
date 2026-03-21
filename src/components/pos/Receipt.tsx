@@ -143,23 +143,18 @@ const Receipt = forwardRef<HTMLDivElement, ReceiptProps>(({ order }, ref) => {
             </div>
             {order.customer.phone && (
               <div className="flex justify-between">
-                <span>PH#:</span>
+                <span>Phone:</span>
                 <span>{order.customer.phone}</span>
               </div>
             )}
-            <div className="flex justify-between">
-              <span>CELL#:</span>
-              <span>{order.customer.phone}</span>
-            </div>
-          </div>
-        )}
-
-        {order.customerAddress && (
-          <div className="mt-1 border-t border-dotted border-black pt-1">
-            <span className="font-bold">Address :</span>
-            <p className="break-words uppercase text-[11px] leading-tight mt-0.5">
-              {order.customerAddress}
-            </p>
+            {order.customerAddress && (
+              <div className="mt-1">
+                <div className="text-[11px] font-bold">Address:</div>
+                <p className="break-words uppercase text-[11px] leading-tight mt-0.5">
+                  {order.customerAddress}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
