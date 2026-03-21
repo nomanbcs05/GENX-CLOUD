@@ -91,6 +91,24 @@ const OrdersPage = () => {
     queryFn: api.orders.getAll,
   });
 
+  // --- Refund Mutation ---
+  const refundMutation = useMutation({
+    mutationFn: (orderId: string) => api.orders.delete(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast.success('Order refunded and deleted successfully');
+    },
+    onError: (error) => {
+      toast.error(`Failed to refund order: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  });
+
+  const handleRefund = (orderId: string) => {
+    if (window.confirm('Are you sure you want to refund this order? This action cannot be undone.')) {
+      refundMutation.mutate(orderId);
+    }
+  };
+
   const handlePrintIndividual = useReactToPrint({
     contentRef: receiptRef,
     documentTitle: `Receipt-${printingOrder?.dailyId || printingOrder?.id?.slice(0, 8)}`,
@@ -544,7 +562,10 @@ const OrdersPage = () => {
                                 Duplicate KOT
                               </DropdownMenuItem>
                               {order.status === 'completed' && (
-                                <DropdownMenuItem className="text-destructive">
+                                <DropdownMenuItem 
+                                  className="text-destructive"
+                                  onClick={() => handleRefund(order.id)}
+                                >
                                   <RotateCcw className="h-4 w-4 mr-2" />
                                   Refund Order
                                 </DropdownMenuItem>
