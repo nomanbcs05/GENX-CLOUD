@@ -97,7 +97,7 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
         style={{ width: '80mm' }}
       >
         <div className="text-center mb-2">
-          <h1 className="text-sm font-bold uppercase">Product Sales Monitoring</h1>
+          <h1 className="text-sm font-bold uppercase underline">Product Sales Monitoring</h1>
           <p className="font-bold">{format(date, 'EEEE, dd MMMM yyyy')}</p>
           {query?.trim() && (
             <p className="text-[9px]">Filter: {tokens.join(', ')}</p>
@@ -108,10 +108,10 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
 
         {Array.from(categoriesMap.entries()).map(([category, items]) => (
           <div key={category} className="mb-4">
-            <h2 className="font-bold border-b border-black mb-1 uppercase bg-gray-100 px-1">{category}</h2>
+            <h2 className="font-bold border-b border-black mb-1 uppercase bg-gray-50 px-1">{category}</h2>
             <table className="w-full">
               <thead>
-                <tr className="border-b border-dotted border-black text-[9px]">
+                <tr className="border-b border-black text-[9px]">
                   <th className="text-left w-24">Item</th>
                   <th className="text-right">Qty</th>
                   <th className="text-right">Sales</th>
@@ -143,14 +143,14 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
             <span>TOTAL REVENUE:</span>
             <span>Rs {totalRevenue.toLocaleString()}</span>
           </div>
-          <div className="flex justify-between text-blue-800">
+          <div className="flex justify-between">
             <span>EST. TOTAL PROFIT:</span>
             <span>Rs {totalProfit.toLocaleString()}</span>
           </div>
         </div>
 
-        <div className="text-center mt-4 border-t border-dotted border-black pt-2 text-[9px]">
-          <p>THE PIZZA&BURGER HOUSE - MONITORING REPORT</p>
+        <div className="text-center mt-6 border-t border-dotted border-black pt-2 text-[9px]">
+          <p className="font-bold uppercase">GEN X CLOUD POS - MONITORING REPORT</p>
           <p>{format(new Date(), 'dd-MMM HH:mm:ss')}</p>
         </div>
       </div>
