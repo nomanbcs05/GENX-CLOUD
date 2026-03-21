@@ -105,7 +105,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         ? subtotal * (state.discount / 100) 
         : state.discount;
       const taxAmount = (subtotal - discountAmount) * (state.taxRate / 100);
-      const deliveryFee = state.orderType === 'delivery' ? 30 : 0;
+      const deliveryFee = state.orderType === 'delivery' ? 50 : 0;
       const total = subtotal - discountAmount + taxAmount + deliveryFee;
       
       return { items: newItems, subtotal, discountAmount, taxAmount, deliveryFee, total };
@@ -120,7 +120,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         ? subtotal * (state.discount / 100) 
         : state.discount;
       const taxAmount = (subtotal - discountAmount) * (state.taxRate / 100);
-      const deliveryFee = state.orderType === 'delivery' ? 30 : 0;
+      const deliveryFee = state.orderType === 'delivery' ? 50 : 0;
       const total = subtotal - discountAmount + taxAmount + deliveryFee;
       
       return { items: newItems, subtotal, discountAmount, taxAmount, deliveryFee, total };
@@ -145,7 +145,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         ? subtotal * (state.discount / 100) 
         : state.discount;
       const taxAmount = (subtotal - discountAmount) * (state.taxRate / 100);
-      const deliveryFee = state.orderType === 'delivery' ? 30 : 0;
+      const deliveryFee = state.orderType === 'delivery' ? 50 : 0;
       const total = subtotal - discountAmount + taxAmount + deliveryFee;
       
       return { items: newItems, subtotal, discountAmount, taxAmount, deliveryFee, total };
@@ -159,7 +159,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   setCustomerAddress: (customerAddress) => set({ customerAddress }), // Added setCustomerAddress implementation
   setOrderType: (orderType) => {
     set((state) => {
-      const deliveryFee = orderType === 'delivery' ? 30 : 0;
+      const deliveryFee = orderType === 'delivery' ? 50 : 0;
       const total = state.subtotal - state.discountAmount + state.taxAmount + deliveryFee;
       
       // Clear relevant fields when switching types
@@ -180,7 +180,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         ? state.subtotal * (discount / 100) 
         : discount;
       const taxAmount = (state.subtotal - discountAmount) * (state.taxRate / 100);
-      const deliveryFee = state.orderType === 'delivery' ? 30 : 0;
+      const deliveryFee = state.orderType === 'delivery' ? 50 : 0;
       const total = state.subtotal - discountAmount + taxAmount + deliveryFee;
       
       return { discount, discountType: type, discountAmount, taxAmount, deliveryFee, total };
