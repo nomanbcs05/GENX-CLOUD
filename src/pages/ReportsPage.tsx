@@ -604,6 +604,11 @@ const ReportsPage = () => {
         </div>
       </ScrollArea>
 
+      {/* Debug: Show productOrdersWithItems for troubleshooting */}
+      <div style={{ background: '#fffbe6', color: '#b45309', padding: 8, margin: 8, border: '1px solid #fde68a', borderRadius: 4 }}>
+        <strong>Debug Product Orders With Items:</strong>
+        <pre style={{ maxHeight: 200, overflow: 'auto', fontSize: 12 }}>{JSON.stringify(productOrdersWithItems, null, 2)}</pre>
+      </div>
       {/* Hidden print components */}
       <div className="sr-only">
         <div ref={summaryRef}>
