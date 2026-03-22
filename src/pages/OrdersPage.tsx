@@ -299,12 +299,90 @@ const OrdersPage = () => {
     }
   };
 
+  const todayOrders = useMemo(() => {
+    return orders.filter((order: any) => isToday(new Date(order.created_at)));
+  }, [orders]);
+
+
+  if (isError) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center space-y-4">
+            <p className="text-destructive font-medium">Failed to load orders</p>
+            <p className="text-sm text-muted-foreground">{error instanceof Error ? error.message : 'Unknown error'}</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Calculate daily IDs for today's orders
+  const ordersWithDailyId = useMemo(() => {
+    // 1. Get all orders from today (already sorted in memo or sort here)
+    const sortedTodayOrders = [...todayOrders].sort((a: any, b: any) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+
+    // 2. Create a map of ID -> Daily Index (1-based)
+    const dailyIdMap = new Map();
+    sortedTodayOrders.forEach((order: any, index: number) => {
+      dailyIdMap.set(order.id, (index + 1).toString().padStart(2, '0'));
+    });
+
+    // 3. Return orders with dailyId attached
+    return orders.map((order: any) => ({
+      ...order,
+      dailyId: dailyIdMap.get(order.id)
+    }));
+  }, [orders, todayOrders]);
+
+  const filteredOrders = ordersWithDailyId.filter((order: any) => {
+    const customerName = order.customers?.name || 'Walk-in Customer';
+    const orderDate = new Date(order.created_at);
+
+    // Filter by order type if not 'all'
+    const matchesOrderType = orderTypeFilter === 'all' || order.order_type === orderTypeFilter;
+
+    // Filter by Role (using server_name tag)
+    const activeRole = localStorage.getItem('active_role');
+    let matchesRole = true;
+    if (activeRole && activeRole !== 'admin') {
+      const serverName = (order as any).server_name || '';
+      matchesRole = serverName.startsWith(`[${activeRole}]`);
+    }
+
+    // Filter by date range if set
+    let matchesDateRange = true;
+    if (date?.from) {
+      if (date.to) {
+        matchesDateRange = isWithinInterval(orderDate, {
+          start: startOfDay(date.from),
+          end: endOfDay(date.to),
+        });
+      } else {
+        // If only from is selected, check if it's the same day
+        matchesDateRange = orderDate >= startOfDay(date.from) && orderDate <= endOfDay(date.from);
+      }
+    }
+
+    const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (order.dailyId && order.dailyId.includes(searchQuery));
+
+    return matchesOrderType && matchesDateRange && matchesSearch && matchesRole;
+  });
+
   // --- Summary Printing Logic ---
   const getRangeInterval = () => {
     const start = date?.from ? startOfDay(date.from) : startOfDay(new Date());
     const end = date?.to ? endOfDay(date.to) : endOfDay(date?.from ?? new Date());
     return { start, end };
   };
+
+  const summaryOrders = useMemo(() => {
+    return filteredOrders.filter(o => o.status === 'completed');
+  }, [filteredOrders]);
 
   const handlePrintSummary = useReactToPrint({
     contentRef: summaryRef,
@@ -383,10 +461,6 @@ const OrdersPage = () => {
     }
   };
 
-  const summaryOrders = useMemo(() => {
-    return filteredOrders.filter(o => o.status === 'completed');
-  }, [filteredOrders]);
-
   const onViewOrderDetails = async (orderId: string) => {
     try {
       const fullOrder = await api.orders.getByIdWithItems(orderId);
@@ -398,80 +472,6 @@ const OrdersPage = () => {
       toast.error('Failed to load order details');
     }
   };
-
-  const todayOrders = useMemo(() => {
-    return orders.filter((order: any) => isToday(new Date(order.created_at)));
-  }, [orders]);
-
-
-  if (isError) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center space-y-4">
-            <p className="text-destructive font-medium">Failed to load orders</p>
-            <p className="text-sm text-muted-foreground">{error instanceof Error ? error.message : 'Unknown error'}</p>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  // Calculate daily IDs for today's orders
-  const ordersWithDailyId = useMemo(() => {
-    // 1. Get all orders from today (already sorted in memo or sort here)
-    const sortedTodayOrders = [...todayOrders].sort((a: any, b: any) =>
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    );
-
-    // 2. Create a map of ID -> Daily Index (1-based)
-    const dailyIdMap = new Map();
-    sortedTodayOrders.forEach((order: any, index: number) => {
-      dailyIdMap.set(order.id, (index + 1).toString().padStart(2, '0'));
-    });
-
-    // 3. Return orders with dailyId attached
-    return orders.map((order: any) => ({
-      ...order,
-      dailyId: dailyIdMap.get(order.id)
-    }));
-  }, [orders, todayOrders]);
-
-  const filteredOrders = ordersWithDailyId.filter((order: any) => {
-    const customerName = order.customers?.name || 'Walk-in Customer';
-    const orderDate = new Date(order.created_at);
-
-    // Filter by order type if not 'all'
-    const matchesOrderType = orderTypeFilter === 'all' || order.order_type === orderTypeFilter;
-
-    // Filter by Role (using server_name tag)
-    const activeRole = localStorage.getItem('active_role');
-    let matchesRole = true;
-    if (activeRole && activeRole !== 'admin') {
-      const serverName = (order as any).server_name || '';
-      matchesRole = serverName.startsWith(`[${activeRole}]`);
-    }
-
-    // Filter by date range if set
-    let matchesDateRange = true;
-    if (date?.from) {
-      if (date.to) {
-        matchesDateRange = isWithinInterval(orderDate, {
-          start: startOfDay(date.from),
-          end: endOfDay(date.to),
-        });
-      } else {
-        // If only from is selected, check if it's the same day
-        matchesDateRange = orderDate >= startOfDay(date.from) && orderDate <= endOfDay(date.from);
-      }
-    }
-
-    const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (order.dailyId && order.dailyId.includes(searchQuery));
-
-    return matchesOrderType && matchesDateRange && matchesSearch && matchesRole;
-  });
 
   const getPaymentBadge = (method: string) => {
     const variants: Record<string, 'default' | 'secondary' | 'outline'> = {
