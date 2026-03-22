@@ -18,19 +18,24 @@ type OrderWithItems = {
 };
 
 interface ProductSalesSummaryProps {
-  date: Date;
+  date?: Date;
+  dateRange?: { from?: Date; to?: Date };
   query: string;
   orders: OrderWithItems[];
 }
 
 const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>(
-  ({ date, query, orders }, ref) => {
+  ({ date, dateRange, query, orders = [] }, ref) => {
     const tokens = query
-      .split(',')
-      .map((s) => s.trim().toLowerCase())
-      .filter(Boolean);
+      ? query
+          .split(',')
+          .map((s) => s.trim().toLowerCase())
+          .filter(Boolean)
+      : [];
 
-    const allItems: OrderItem[] = orders.flatMap((o) => o.order_items || []);
+    const allItems: OrderItem[] = Array.isArray(orders) 
+      ? orders.flatMap((o) => o.order_items || [])
+      : [];
 
     const matchesQuery = (name?: string, category?: string) => {
       if (tokens.length === 0) return true;
@@ -90,23 +95,32 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
     const totalCost = rows.reduce((s, r) => s + r.cost, 0);
     const totalProfit = rows.reduce((s, r) => s + r.profit, 0);
 
+    const startDate = dateRange?.from ?? date ?? new Date();
+    const endDate = dateRange?.to ?? dateRange?.from ?? date ?? new Date();
+
     return (
       <div
         ref={ref}
-        className="receipt-print bg-white text-black p-4 font-mono text-[9px] mx-auto leading-relaxed"
-        style={{ width: '80mm' }}
+        className="bg-white text-black p-4 font-mono text-[10px] mx-auto leading-normal"
+        style={{ width: '80mm', minHeight: '100px' }}
       >
         <div className="text-center mb-4 border-y border-black py-1">
-          <h1 className="text-[11px] font-bold uppercase tracking-widest">Product Sales Monitoring</h1>
-          <p className="font-bold text-[8px]">{format(date, 'EEEE, dd MMMM yyyy')}</p>
+          <h1 className="text-[13px] font-bold uppercase tracking-widest">Product Sales Monitoring</h1>
+          <p className="font-bold text-[10px]">{
+            dateRange?.from ?
+              dateRange?.to ?
+                `${format(startDate, 'dd MMM yyyy')} - ${format(endDate, 'dd MMM yyyy')}` :
+                format(startDate, 'EEEE, dd MMMM yyyy') :
+              format(startDate, 'EEEE, dd MMMM yyyy')
+          }</p>
         </div>
 
         {Array.from(categoriesMap.entries()).map(([category, items]) => (
           <div key={category} className="mb-4">
-            <h2 className="font-bold uppercase mb-1 text-[10px]">{category}</h2>
+            <h2 className="font-bold uppercase mb-1 text-[11px] border-y border-black py-0.5 bg-gray-50">{category}</h2>
             <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b border-black text-[8px]">
+                <tr className="border-b border-black text-[9px]">
                   <th className="text-left font-bold py-1 w-32">Item</th>
                   <th className="text-right font-bold py-1 px-1">Qty</th>
                   <th className="text-right font-bold py-1 px-1">Sales</th>
@@ -116,7 +130,7 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
               </thead>
               <tbody>
                 {items.map((r) => (
-                  <tr key={r.name} className="border-b border-dotted border-gray-300 text-[8px]">
+                  <tr key={r.name} className="border-b border-dotted border-gray-300 text-[9px]">
                     <td className="py-1.5 break-words leading-tight">{r.name}</td>
                     <td className="py-1.5 text-right align-top px-1 font-bold">{r.quantity}</td>
                     <td className="py-1.5 text-right align-top px-1">{r.revenue.toLocaleString()}</td>
@@ -129,7 +143,7 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
           </div>
         ))}
 
-        <div className="border-t-[1.5px] border-black mt-4 pt-1 font-bold space-y-1 uppercase">
+        <div className="border-t border-black mt-4 pt-1 font-bold space-y-1 uppercase">
           <div className="flex justify-between border-b border-black pb-1">
             <span>TOTAL ITEMS SOLD:</span>
             <span>{totalQty}</span>
@@ -138,16 +152,15 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
             <span>TOTAL REVENUE:</span>
             <span>Rs {totalRevenue.toLocaleString()}</span>
           </div>
-          <div className="flex justify-between border-b-[1.5px] border-black py-1">
+          <div className="flex justify-between border-b border-black py-1">
             <span>EST. TOTAL PROFIT:</span>
             <span>Rs {totalProfit.toLocaleString()}</span>
           </div>
         </div>
 
-        <div className="text-center space-y-1 text-[8px] mt-6 pt-2 border-t border-dotted border-black">
-          <p className="font-bold uppercase tracking-tight">GEN X CLOUD POS - MONITORING REPORT</p>
-          <p>{format(new Date(), 'dd-MMM-yyyy HH:mm:ss')}</p>
-          <p className="font-bold">GENX-POS-NAWABSHAH CONTACT 033102826675</p>
+        <div className="text-center space-y-1 text-[9px] mt-6 pt-2 border-t border-dotted border-black">
+          <p className="font-bold uppercase tracking-tight">GEN XCLOUD POS - MONITORING REPORT</p>
+          <p>{format(new Date(), 'dd-MMM HH:mm:ss')}</p>
           <p className="mt-2 text-[10px]">********************************</p>
         </div>
       </div>

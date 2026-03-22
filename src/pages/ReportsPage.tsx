@@ -9,13 +9,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { TrendingUp, DollarSign, ShoppingCart, Users, Package, ArrowUpRight, ArrowDownRight, Loader2, Printer, PrinterCheck, LogOut, Trash2 } from 'lucide-react';
+import { TrendingUp, DollarSign, ShoppingCart, Users, Package, ArrowUpRight, ArrowDownRight, Loader2, Printer, PrinterCheck, LogOut, Trash2, Calendar as CalendarIcon } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
 import { useState, useMemo, useRef } from 'react';
@@ -37,7 +39,8 @@ import {
   parseISO, 
   isWithinInterval,
   endOfDay,
-  isToday
+  isToday,
+  differenceInCalendarDays
 } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -66,7 +69,7 @@ const ReportsPage = () => {
     });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('month');
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date } | undefined>(undefined);
   const [productOrdersWithItems, setProductOrdersWithItems] = useState<any[]>([]);
   const summaryRef = useRef<HTMLDivElement>(null);
   const productSummaryRef = useRef<HTMLDivElement>(null);
@@ -118,17 +121,25 @@ const ReportsPage = () => {
     }
   };
 
+  const getRangeInterval = () => {
+    const start = dateRange?.from ? startOfDay(dateRange.from) : startOfDay(new Date());
+    const end = dateRange?.to ? endOfDay(dateRange.to) : endOfDay(dateRange?.from ?? new Date());
+    return { start, end };
+  };
+
+  const rangeInterval = getRangeInterval();
+
   const handlePrintSummary = useReactToPrint({
     contentRef: summaryRef,
-    documentTitle: `Daily-Summary-${format(new Date(), 'yyyy-MM-dd')}`,
+    documentTitle: `Sales-Summary-${format(rangeInterval.start, 'yyyy-MM-dd')}${dateRange?.to ? `-to-${format(rangeInterval.end, 'yyyy-MM-dd')}` : ''}`,
     onAfterPrint: () => {
-      toast.success('Daily summary printed successfully');
+      toast.success('Summary printed successfully');
     },
   });
 
   const handlePrintProductSummary = useReactToPrint({
     contentRef: productSummaryRef,
-    documentTitle: `Product-Summary-${format(new Date(), 'yyyy-MM-dd')}`,
+    documentTitle: `Product-Summary-${format(rangeInterval.start, 'yyyy-MM-dd')}${dateRange?.to ? `-to-${format(rangeInterval.end, 'yyyy-MM-dd')}` : ''}`,
     onAfterPrint: () => {
       toast.success('Product sales summary printed successfully');
     },
@@ -141,14 +152,14 @@ const ReportsPage = () => {
         return;
       }
 
-      const today = startOfDay(new Date());
+      const { start, end } = rangeInterval;
       const dayOrders = data.orders.filter((o: any) => {
         const d = parseISO(o.created_at);
-        return d >= today && o.status === 'completed';
+        return isWithinInterval(d, { start, end }) && o.status === 'completed';
       });
 
       if (dayOrders.length === 0) {
-        toast.info('No completed orders for today');
+        toast.info('No completed orders in selected range');
         return;
       }
 
@@ -183,33 +194,35 @@ const ReportsPage = () => {
 
     const now = new Date();
     let startDate = startOfMonth(now);
+    let endDate = endOfDay(now);
     let previousStartDate = startOfMonth(subMonths(now, 1));
-    let previousEndDate = subMonths(now, 1); // Approximation
+    let previousEndDate = endOfDay(subMonths(now, 1));
 
-    if (timeRange === 'today') {
-      startDate = startOfDay(now);
-      previousStartDate = startOfDay(subDays(now, 1));
-      previousEndDate = endOfDay(subDays(now, 1));
-    } else if (timeRange === 'week') {
-      startDate = startOfWeek(now);
-      previousStartDate = startOfWeek(subWeeks(now, 1));
-      previousEndDate = subWeeks(now, 1);
+    if (dateRange?.from) {
+      startDate = startOfDay(dateRange.from);
+      endDate = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+
+      const days = differenceInCalendarDays(endDate, startDate) + 1;
+      previousEndDate = subDays(startDate, 1);
+      previousStartDate = startOfDay(subDays(previousEndDate, days - 1));
     }
 
     // Filter current period orders
-    const currentOrders = data.orders.filter(order => 
-      isAfter(parseISO(order.created_at), startDate)
-    );
+    const currentOrders = data.orders.filter(order => {
+      const orderDate = parseISO(order.created_at);
+      return isWithinInterval(orderDate, { start: startDate, end: endDate });
+    });
 
     // Filter previous period orders (for comparison)
-    const previousOrders = data.orders.filter(order => 
-      isWithinInterval(parseISO(order.created_at), { start: previousStartDate, end: previousEndDate })
-    );
+    const previousOrders = data.orders.filter(order => {
+      const orderDate = parseISO(order.created_at);
+      return isWithinInterval(orderDate, { start: previousStartDate, end: previousEndDate });
+    });
 
     // Calculate metrics
     const currentRevenue = currentOrders.reduce((sum, order) => sum + Number(order.total_amount), 0);
     const previousRevenue = previousOrders.reduce((sum, order) => sum + Number(order.total_amount), 0);
-    
+
     const currentOrdersCount = currentOrders.length;
     const previousOrdersCount = previousOrders.length;
 
@@ -217,13 +230,15 @@ const ReportsPage = () => {
     const previousAvgOrderValue = previousOrdersCount > 0 ? previousRevenue / previousOrdersCount : 0;
 
     // New Customers
-    const newCustomers = data.customers.filter(customer => 
-      customer.created_at && isAfter(parseISO(customer.created_at), startDate)
-    ).length;
-    
-    const previousNewCustomers = data.customers.filter(customer => 
-      customer.created_at && isWithinInterval(parseISO(customer.created_at), { start: previousStartDate, end: previousEndDate })
-    ).length;
+    const newCustomers = data.customers.filter(customer => {
+      const customerDate = parseISO(customer.created_at);
+      return customer.created_at && isWithinInterval(customerDate, { start: startDate, end: endDate });
+    }).length;
+
+    const previousNewCustomers = data.customers.filter(customer => {
+      const customerDate = parseISO(customer.created_at);
+      return customer.created_at && isWithinInterval(customerDate, { start: previousStartDate, end: previousEndDate });
+    }).length;
 
     // Calculate growth percentages
     const calculateGrowth = (current: number, previous: number) => {
@@ -237,15 +252,17 @@ const ReportsPage = () => {
     const customersGrowth = calculateGrowth(newCustomers, previousNewCustomers);
 
     // Prepare Chart Data
-    // Sales Chart
     const salesDataMap = new Map<string, number>();
+    const chartFormat = differenceInCalendarDays(endDate, startDate) === 0 ? 'HH:00' : 'dd MMM';
+
     currentOrders.forEach(order => {
-      const dateKey = format(parseISO(order.created_at), timeRange === 'today' ? 'HH:00' : 'EEE');
+      const orderDate = parseISO(order.created_at);
+      const dateKey = format(orderDate, chartFormat);
       salesDataMap.set(dateKey, (salesDataMap.get(dateKey) || 0) + Number(order.total_amount));
     });
 
     const salesData = Array.from(salesDataMap.entries()).map(([name, sales]) => ({ name, sales }));
-    
+
     // Category Data
     const categoryMap = new Map<string, number>();
     currentOrders.forEach(order => {
@@ -263,11 +280,11 @@ const ReportsPage = () => {
     const categoryData = Array.from(categoryMap.entries()).map(([name, value], index) => ({
       name,
       value: Number(value.toFixed(2)),
-      color: categoryColors[index % categoryColors.length]
+      color: categoryColors[index % categoryColors.length],
     }));
 
     // Top Products
-    const productMap = new Map<string, { sold: number, revenue: number }>();
+    const productMap = new Map<string, { sold: number; revenue: number }>();
     currentOrders.forEach(order => {
       if (order.order_items) {
         order.order_items.forEach((item: any) => {
@@ -275,7 +292,7 @@ const ReportsPage = () => {
           const existing = productMap.get(name) || { sold: 0, revenue: 0 };
           productMap.set(name, {
             sold: existing.sold + item.quantity,
-            revenue: existing.revenue + (Number(item.price) * item.quantity)
+            revenue: existing.revenue + Number(item.price) * item.quantity,
           });
         });
       }
@@ -297,9 +314,18 @@ const ReportsPage = () => {
       customersGrowth,
       salesData,
       categoryData,
-      topProducts
+      topProducts,
     };
-  }, [data, timeRange, categories]);
+  }, [data, dateRange, categories]);
+
+  const summaryOrders = useMemo(() => {
+    if (!data?.orders) return [];
+    const { start, end } = getRangeInterval();
+    return data.orders.filter((order: any) => {
+      const orderDate = parseISO(order.created_at);
+      return isWithinInterval(orderDate, { start, end }) && order.status === 'completed';
+    });
+  }, [data, dateRange]);
 
   if (isError) {
     return (
@@ -339,10 +365,10 @@ const ReportsPage = () => {
                 onClick={() => handlePrintSummary()}
                 variant="default"
                 className="bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-lg shadow-indigo-500/20"
-                disabled={!data?.orders || data.orders.length === 0}
+                disabled={summaryOrders.length === 0}
               >
                 <PrinterCheck className="h-4 w-4 mr-2" />
-                Print Today's Summary
+                Print Summary
               </Button>
               <Button
                 variant="default"
@@ -355,25 +381,45 @@ const ReportsPage = () => {
               </Button>
 
               <Separator orientation="vertical" className="h-10 mx-2 hidden md:block" />
-              
-              <Button 
-                variant={timeRange === 'today' ? 'default' : 'outline'}
-                onClick={() => setTimeRange('today')}
-              >
-                Today
-              </Button>
-              <Button 
-                variant={timeRange === 'week' ? 'default' : 'outline'}
-                onClick={() => setTimeRange('week')}
-              >
-                This Week
-              </Button>
-              <Button 
-                variant={timeRange === 'month' ? 'default' : 'outline'}
-                onClick={() => setTimeRange('month')}
-              >
-                This Month
-              </Button>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="date"
+                    variant={dateRange?.from ? 'default' : 'outline'}
+                    className={!dateRange?.from ? 'text-muted-foreground' : ''}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRange?.from ? (
+                      dateRange.to ?
+                        `${format(dateRange.from, 'LLL dd, y')} - ${format(dateRange.to, 'LLL dd, y')}` :
+                        format(dateRange.from, 'LLL dd, y')
+                    ) : (
+                      'Date Range'
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={dateRange?.from}
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    numberOfMonths={2}
+                  />
+                  <div className="p-3 border-t flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDateRange(undefined)}
+                      className="text-xs h-8"
+                    >
+                      Clear Range
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
@@ -615,23 +661,18 @@ const ReportsPage = () => {
         </div>
       </ScrollArea>
 
-      {/* Debug: Show productOrdersWithItems for troubleshooting */}
-      <div style={{ background: '#fffbe6', color: '#b45309', padding: 8, margin: 8, border: '1px solid #fde68a', borderRadius: 4 }}>
-        <strong>Debug Product Orders With Items:</strong>
-        <pre style={{ maxHeight: 200, overflow: 'auto', fontSize: 12 }}>{JSON.stringify(productOrdersWithItems, null, 2)}</pre>
-      </div>
       {/* Hidden print components */}
-      <div className="sr-only">
+      <div className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none">
         <div ref={summaryRef}>
           <DailySummary 
-            orders={data?.orders?.filter(o => isToday(parseISO(o.created_at))) || []} 
-            date={new Date()}
+            orders={summaryOrders} 
+            dateRange={dateRange}
           />
         </div>
         <div ref={productSummaryRef}>
           <ProductSalesSummary 
             orders={productOrdersWithItems} 
-            date={new Date()}
+            dateRange={dateRange}
             query=""
           />
         </div>
