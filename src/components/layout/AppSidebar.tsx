@@ -55,11 +55,43 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
   const handlePrintDaily = useReactToPrint({
     contentRef: summaryRef,
     documentTitle: `Daily-Summary-${new Date().toISOString().split('T')[0]}`,
+    onAfterPrint: async () => {
+      try {
+        const todayOrders = reportsData?.orders?.filter(o => isToday(parseISO(o.created_at))) || [];
+        await api.reports.saveGeneratedReport(
+          'daily_summary', 
+          new Date().toISOString(), 
+          { 
+            orderCount: todayOrders.length,
+            totalRevenue: todayOrders.reduce((s, o) => s + Number(o.total_amount), 0),
+            isQuickPrint: true
+          }
+        );
+        toast.success('Summary printed and saved');
+      } catch (e) {
+        toast.success('Summary printed');
+      }
+    }
   });
 
   const handlePrintProduct = useReactToPrint({
     contentRef: productSummaryRef,
     documentTitle: `Product-Summary-${new Date().toISOString().split('T')[0]}`,
+    onAfterPrint: async () => {
+      try {
+        await api.reports.saveGeneratedReport(
+          'product_summary', 
+          new Date().toISOString(), 
+          { 
+            itemCount: productOrdersWithItems.flatMap(o => o.order_items || []).length,
+            isQuickPrint: true
+          }
+        );
+        toast.success('Product summary printed and saved');
+      } catch (e) {
+        toast.success('Product summary printed');
+      }
+    }
   });
 
   const onPrintProductSummary = async () => {
@@ -380,9 +412,9 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
           onSuccess={handleStartSessionSuccess}
         />
 
-        {/* Hidden Print Components for Quick Reports */}
-        <div style={{ position: 'absolute', left: '-10000px', top: '0', pointerEvents: 'none' }}>
-          <div ref={summaryRef}>
+        {/* Hidden Print Components for Quick Reports - positioned off-screen but rendered for printing */}
+        <div style={{ position: 'fixed', left: '-10000px', top: '0', width: '80mm', pointerEvents: 'none', zIndex: -1000 }}>
+          <div ref={summaryRef} style={{ width: '80mm' }}>
             <DailySummary 
             orders={reportsData?.orders?.filter((o: any) => {
               if (!o.created_at) return false;
@@ -391,7 +423,7 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
             date={new Date()}
           />
           </div>
-          <div ref={productSummaryRef}>
+          <div ref={productSummaryRef} style={{ width: '80mm' }}>
             <ProductSalesSummary 
               orders={productOrdersWithItems} 
               date={new Date()}

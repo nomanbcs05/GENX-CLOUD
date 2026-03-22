@@ -132,16 +132,43 @@ const ReportsPage = () => {
   const handlePrintSummary = useReactToPrint({
     contentRef: summaryRef,
     documentTitle: `Sales-Summary-${format(rangeInterval.start, 'yyyy-MM-dd')}${dateRange?.to ? `-to-${format(rangeInterval.end, 'yyyy-MM-dd')}` : ''}`,
-    onAfterPrint: () => {
-      toast.success('Summary printed successfully');
+    onAfterPrint: async () => {
+      try {
+        await api.reports.saveGeneratedReport(
+          'daily_summary', 
+          rangeInterval.start.toISOString(), 
+          { 
+            orderCount: summaryOrders.length,
+            totalRevenue: summaryOrders.reduce((s, o) => s + Number(o.total_amount), 0),
+            dateRange: { from: rangeInterval.start, to: rangeInterval.end }
+          }
+        );
+        toast.success('Summary printed and saved successfully');
+      } catch (e) {
+        toast.success('Summary printed successfully');
+        console.error('Failed to save report to DB:', e);
+      }
     },
   });
 
   const handlePrintProductSummary = useReactToPrint({
     contentRef: productSummaryRef,
     documentTitle: `Product-Summary-${format(rangeInterval.start, 'yyyy-MM-dd')}${dateRange?.to ? `-to-${format(rangeInterval.end, 'yyyy-MM-dd')}` : ''}`,
-    onAfterPrint: () => {
-      toast.success('Product sales summary printed successfully');
+    onAfterPrint: async () => {
+      try {
+        await api.reports.saveGeneratedReport(
+          'product_summary', 
+          rangeInterval.start.toISOString(), 
+          { 
+            itemCount: productOrdersWithItems.flatMap(o => o.order_items || []).length,
+            dateRange: { from: rangeInterval.start, to: rangeInterval.end }
+          }
+        );
+        toast.success('Product summary printed and saved successfully');
+      } catch (e) {
+        toast.success('Product summary printed successfully');
+        console.error('Failed to save report to DB:', e);
+      }
     },
   });
 
@@ -670,15 +697,15 @@ const ReportsPage = () => {
         </div>
       </ScrollArea>
 
-      {/* Hidden print components */}
-      <div style={{ position: 'absolute', left: '-10000px', top: '0', pointerEvents: 'none' }}>
-        <div ref={summaryRef}>
+      {/* Hidden print components - positioned off-screen but rendered for printing */}
+      <div style={{ position: 'fixed', left: '-9999px', top: '0', width: '80mm', pointerEvents: 'none', zIndex: -1000 }}>
+        <div ref={summaryRef} style={{ width: '80mm' }}>
           <DailySummary 
             orders={summaryOrders} 
             dateRange={dateRange}
           />
         </div>
-        <div ref={productSummaryRef}>
+        <div ref={productSummaryRef} style={{ width: '80mm' }}>
           <ProductSalesSummary 
             orders={productOrdersWithItems} 
             dateRange={dateRange}

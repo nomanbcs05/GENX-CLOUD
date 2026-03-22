@@ -77,6 +77,10 @@ const OrdersPage = () => {
   const [productQuery, setProductQuery] = useState('');
   const [showProductSummaryModal, setShowProductSummaryModal] = useState(false);
   const [productSearch, setProductSearch] = useState('');
+  const [productOrdersWithItems, setProductOrdersWithItems] = useState<any[]>([]);
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const productSummaryRef = useRef<HTMLDivElement>(null);
+
   const { data: products = [] } = useQuery({
     queryKey: ['products'],
     queryFn: api.products.getAll,
@@ -295,6 +299,94 @@ const OrdersPage = () => {
     }
   };
 
+  // --- Summary Printing Logic ---
+  const getRangeInterval = () => {
+    const start = date?.from ? startOfDay(date.from) : startOfDay(new Date());
+    const end = date?.to ? endOfDay(date.to) : endOfDay(date?.from ?? new Date());
+    return { start, end };
+  };
+
+  const handlePrintSummary = useReactToPrint({
+    contentRef: summaryRef,
+    documentTitle: `Sales-Summary-${format(getRangeInterval().start, 'yyyy-MM-dd')}`,
+    onAfterPrint: async () => {
+      try {
+        const { start } = getRangeInterval();
+        await api.reports.saveGeneratedReport(
+          'daily_summary', 
+          start.toISOString(), 
+          { 
+            orderCount: summaryOrders.length,
+            totalRevenue: summaryOrders.reduce((s, o) => s + Number(o.total_amount), 0),
+            source: 'orders_page'
+          }
+        );
+        toast.success('Summary printed and saved');
+      } catch (e) {
+        toast.success('Summary printed');
+      }
+    },
+  });
+
+  const handlePrintProductSummary = useReactToPrint({
+    contentRef: productSummaryRef,
+    documentTitle: `Product-Summary-${format(getRangeInterval().start, 'yyyy-MM-dd')}`,
+    onAfterPrint: async () => {
+      try {
+        const { start } = getRangeInterval();
+        await api.reports.saveGeneratedReport(
+          'product_summary', 
+          start.toISOString(), 
+          { 
+            itemCount: productOrdersWithItems.flatMap(o => o.order_items || []).length,
+            source: 'orders_page'
+          }
+        );
+        toast.success('Product summary printed and saved');
+      } catch (e) {
+        toast.success('Product summary printed');
+      }
+    },
+  });
+
+  const onPrintProductSummary = async () => {
+    try {
+      if (filteredOrders.length === 0) {
+        toast.info('No orders found for the current filter');
+        return;
+      }
+
+      const completed = filteredOrders.filter(o => o.status === 'completed');
+      if (completed.length === 0) {
+        toast.info('No completed orders found for the current filter');
+        return;
+      }
+
+      const toastId = toast.loading('Preparing product summary...');
+      const fullOrders = await Promise.all(
+        completed.map(async (o: any) => {
+          try {
+            return await api.orders.getByIdWithItems(o.id);
+          } catch {
+            return null;
+          }
+        })
+      );
+      toast.dismiss(toastId);
+
+      const valid = fullOrders.filter(Boolean) as any[];
+      setProductOrdersWithItems(valid);
+      setTimeout(() => handlePrintProductSummary(), 100);
+    } catch (e) {
+      console.error(e);
+      toast.error('Error preparing product summary');
+    }
+  };
+
+  const summaryOrders = useMemo(() => {
+    return filteredOrders.filter(o => o.status === 'completed');
+  }, [filteredOrders]);
+
   const onViewOrderDetails = async (orderId: string) => {
     try {
       const fullOrder = await api.orders.getByIdWithItems(orderId);
@@ -409,6 +501,27 @@ const OrdersPage = () => {
               <p className="text-muted-foreground">View and manage order history</p>
             </div>
             <div className="flex gap-2">
+              <Button
+                onClick={() => handlePrintSummary()}
+                variant="outline"
+                className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white transition-all font-bold"
+                disabled={summaryOrders.length === 0}
+              >
+                <PrinterCheck className="h-4 w-4 mr-2" />
+                Daily Summary
+              </Button>
+              <Button
+                variant="outline"
+                className="bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all font-bold"
+                onClick={onPrintProductSummary}
+                disabled={summaryOrders.length === 0}
+              >
+                <Printer className="h-4 w-4 mr-2" />
+                Product Summary
+              </Button>
+
+              <Separator orientation="vertical" className="h-10 mx-2 hidden md:block" />
+
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -591,7 +704,20 @@ const OrdersPage = () => {
         </div>
 
         {/* Hidden Summary for Printing */}
-        <div className="hidden">
+        <div style={{ position: 'fixed', left: '-9999px', top: '0', width: '80mm', pointerEvents: 'none', zIndex: -1000 }}>
+          <div ref={summaryRef} style={{ width: '80mm' }}>
+            <DailySummary 
+              orders={summaryOrders} 
+              date={date?.from || new Date()}
+            />
+          </div>
+          <div ref={productSummaryRef} style={{ width: '80mm' }}>
+            <ProductSalesSummary 
+              orders={productOrdersWithItems} 
+              date={date?.from || new Date()}
+              query=""
+            />
+          </div>
           {printingOrder && (
             <Receipt
               ref={receiptRef}

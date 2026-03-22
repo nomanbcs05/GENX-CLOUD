@@ -804,6 +804,28 @@ export const api = {
         orders: orders || [],
         customers: customers || []
       };
+    },
+    saveGeneratedReport: async (type: string, date: string, data: any) => {
+      const { data: result, error } = await supabase
+        .from('generated_reports')
+        .insert({
+          report_type: type,
+          report_date: date,
+          report_data: data
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return result;
+    },
+    getSavedReports: async (type?: string) => {
+      let query = supabase.from('generated_reports').select('*').order('created_at', { ascending: false });
+      if (type) query = query.eq('report_type', type);
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      return data;
     }
   },
   profiles: {
