@@ -686,13 +686,13 @@ const ReportsPage = () => {
 
       {/* Hidden print components - positioned off-screen but rendered for printing */}
       <div style={{ position: 'fixed', left: '-9999px', top: '0', width: '80mm', pointerEvents: 'none', zIndex: -1000 }}>
-        <div ref={summaryRef} id="daily-summary-pdf-content" style={{ width: '80mm' }}>
+        <div ref={summaryRef} id="daily-summary-pdf-content" className="receipt-print" style={{ width: '80mm' }}>
           <DailySummary 
             orders={summaryOrders} 
             dateRange={dateRange}
           />
         </div>
-        <div ref={productSummaryRef} style={{ width: '80mm' }}>
+        <div ref={productSummaryRef} className="receipt-print" style={{ width: '80mm' }}>
           <ProductSalesSummary 
             orders={productOrdersWithItems} 
             dateRange={dateRange}

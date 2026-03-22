@@ -202,6 +202,23 @@ const StartDayModal = ({ isOpen, onSuccess, onClose, forceNewSession = false }: 
             )}
           </Button>
         </form>
+
+        {/* Hidden Summary for Printing */}
+        <div style={{ position: 'fixed', left: '-9999px', top: '0', width: '80mm', pointerEvents: 'none', zIndex: -1000 }}>
+          <div ref={summaryRef} className="receipt-print" style={{ width: '80mm' }}>
+            <DailySummary 
+              orders={allOrders.filter((o: any) => o.status === 'completed')} 
+              date={new Date(date)}
+            />
+          </div>
+          <div ref={productSummaryRef} className="receipt-print" style={{ width: '80mm' }}>
+            <ProductSalesSummary 
+              orders={productOrdersWithItems} 
+              date={new Date(date)}
+              query=""
+            />
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

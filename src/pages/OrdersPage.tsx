@@ -684,13 +684,13 @@ const OrdersPage = () => {
 
         {/* Hidden Summary for Printing */}
         <div style={{ position: 'fixed', left: '-9999px', top: '0', width: '80mm', pointerEvents: 'none', zIndex: -1000 }}>
-          <div ref={summaryRef} style={{ width: '80mm' }}>
+          <div ref={summaryRef} className="receipt-print" style={{ width: '80mm' }}>
             <DailySummary 
               orders={summaryOrders} 
               date={date?.from || new Date()}
             />
           </div>
-          <div ref={productSummaryRef} style={{ width: '80mm' }}>
+          <div ref={productSummaryRef} className="receipt-print" style={{ width: '80mm' }}>
             <ProductSalesSummary 
               orders={productOrdersWithItems} 
               date={date?.from || new Date()}
