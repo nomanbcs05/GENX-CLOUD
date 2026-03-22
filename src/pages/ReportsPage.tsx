@@ -397,6 +397,14 @@ const ReportsPage = () => {
               <p className="text-muted-foreground">Business performance overview</p>
             </div>
             <div className="flex flex-wrap gap-2 md:gap-3">
+              <Button onClick={() => handlePrintSummary()} variant="outline" className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+                <Printer className="h-4 w-4" />
+                Print Order Summary
+              </Button>
+              <Button onClick={() => onPrintProductSummary()} variant="outline" className="gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/90">
+                <Printer className="h-4 w-4" />
+                Print Item Summary
+              </Button>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
