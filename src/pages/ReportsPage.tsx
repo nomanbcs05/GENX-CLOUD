@@ -335,80 +335,27 @@ const ReportsPage = () => {
               <p className="text-muted-foreground">Business performance overview</p>
             </div>
             <div className="flex flex-wrap gap-2 md:gap-3">
-              {/* Clear All History */}
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="bg-red-600 hover:bg-red-700">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Clear All History
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently delete ALL order history from the database. This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => deleteAllMutation.mutate()} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Delete All History
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-
-              {/* Clear Today's Orders */}
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="text-destructive border-destructive hover:bg-destructive/10">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Clear Today
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently delete all orders created today. This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => deleteTodayMutation.mutate()} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Delete Today's Orders
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
               <Button
                 onClick={() => handlePrintSummary()}
-                variant="outline"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white border-none"
+                variant="default"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-lg shadow-indigo-500/20"
                 disabled={!data?.orders || data.orders.length === 0}
               >
                 <PrinterCheck className="h-4 w-4 mr-2" />
                 Print Today's Summary
               </Button>
               <Button
-                variant="outline"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white border-none"
+                variant="default"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-lg shadow-emerald-500/20"
                 onClick={onPrintProductSummary}
+                disabled={!data?.orders || data.orders.length === 0}
               >
                 <Printer className="h-4 w-4 mr-2" />
                 Print Product Summary
               </Button>
-              <Button
-                variant="destructive"
-                className="bg-red-600 hover:bg-red-700 font-bold"
-                onClick={handleEndShift}
-                disabled={closeRegisterMutation.isPending}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                End Shift
-              </Button>
+
               <Separator orientation="vertical" className="h-10 mx-2 hidden md:block" />
+              
               <Button 
                 variant={timeRange === 'today' ? 'default' : 'outline'}
                 onClick={() => setTimeRange('today')}
@@ -601,6 +548,70 @@ const ReportsPage = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Danger Zone */}
+          <div className="pt-12 pb-6">
+            <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Danger Zone</h3>
+            <div className="flex flex-wrap gap-4 p-6 border-2 border-dashed border-red-100 rounded-2xl bg-red-50/30">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-600 hover:text-white transition-all font-bold">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Clear Today's Orders
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete all orders created today. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => deleteTodayMutation.mutate()} className="bg-red-600 hover:bg-red-700">
+                      Delete Today's Orders
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="text-red-700 border-red-300 hover:bg-red-700 hover:text-white transition-all font-black">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Reset All History
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete ALL order history from the database. This is a complete reset.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => deleteAllMutation.mutate()} className="bg-red-700 hover:bg-red-800">
+                      Reset All History
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <div className="flex-1" />
+
+              <Button
+                variant="destructive"
+                className="bg-red-600 hover:bg-red-700 font-bold px-8 h-10 shadow-lg shadow-red-500/20"
+                onClick={handleEndShift}
+                disabled={closeRegisterMutation.isPending}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                End Shift & Logout
+              </Button>
+            </div>
+          </div>
         </div>
       </ScrollArea>
 

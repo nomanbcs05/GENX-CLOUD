@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   LayoutGrid,
   Clock,
@@ -17,15 +17,22 @@ import {
   ChevronRight,
   Menu,
   ShieldCheck,
-  Building2
+  Building2,
+  Printer,
+  FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import StartDayModal from '@/components/pos/StartDayModal';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useMultiTenant } from '@/hooks/useMultiTenant';
+import { useReactToPrint } from 'react-to-print';
+import DailySummary from '@/components/pos/DailySummary';
+import ProductSalesSummary from '@/components/pos/ProductSalesSummary';
+import { api } from '@/services/api';
+import { startOfDay, parseISO, isToday } from 'date-fns';
 
 const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
   const location = useLocation();
@@ -34,6 +41,64 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
   const [showStartSessionModal, setShowStartSessionModal] = useState(false);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const productSummaryRef = useRef<HTMLDivElement>(null);
+  const [productOrdersWithItems, setProductOrdersWithItems] = useState<any[]>([]);
+
+  const { data: reportsData } = useQuery({
+    queryKey: ['reports-data'],
+    queryFn: api.reports.getDashboardStats,
+    enabled: isAdmin
+  });
+
+  const handlePrintDaily = useReactToPrint({
+    contentRef: summaryRef,
+    documentTitle: `Daily-Summary-${new Date().toISOString().split('T')[0]}`,
+  });
+
+  const handlePrintProduct = useReactToPrint({
+    contentRef: productSummaryRef,
+    documentTitle: `Product-Summary-${new Date().toISOString().split('T')[0]}`,
+  });
+
+  const onPrintProductSummary = async () => {
+    if (!reportsData?.orders || reportsData.orders.length === 0) {
+      toast.info('No orders found');
+      return;
+    }
+
+    const today = startOfDay(new Date());
+    const dayOrders = reportsData.orders.filter((o: any) => {
+      const d = parseISO(o.created_at);
+      return d >= today && o.status === 'completed';
+    });
+
+    if (dayOrders.length === 0) {
+      toast.info('No completed orders today');
+      return;
+    }
+
+    const toastId = toast.loading('Preparing product summary...');
+    try {
+      const fullOrders = await Promise.all(
+        dayOrders.map(async (o: any) => {
+          try {
+            return await api.orders.getByIdWithItems(o.id);
+          } catch {
+            return null;
+          }
+        })
+      );
+      const valid = fullOrders.filter(Boolean) as any[];
+      setProductOrdersWithItems(valid);
+      toast.dismiss(toastId);
+      setTimeout(() => handlePrintProduct(), 100);
+    } catch (e) {
+      toast.dismiss(toastId);
+      toast.error('Failed to prepare product summary');
+    }
+  };
 
   useEffect(() => {
     const updateDisplayName = () => {
@@ -167,6 +232,65 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
           })}
         </nav>
 
+        {/* Quick Reports (Admin Only) */}
+        {isAdmin && (
+          <div className="p-2 space-y-1 border-t border-sidebar-border">
+            <div className={cn(
+              "px-3 py-1.5 text-[10px] font-black text-sidebar-foreground/40 uppercase tracking-[0.2em]",
+              isCollapsed ? "text-center px-0" : ""
+            )}>
+              {!isCollapsed ? "Quick Reports" : "RP"}
+            </div>
+            {isCollapsed ? (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => handlePrintDaily()}
+                      className="w-full flex items-center justify-center p-2.5 rounded-xl text-sidebar-foreground/60 hover:bg-indigo-500 hover:text-white transition-all"
+                    >
+                      <FileText className="h-5 w-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="font-bold font-heading uppercase text-[10px] tracking-widest">
+                    Daily Summary
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => onPrintProductSummary()}
+                      className="w-full flex items-center justify-center p-2.5 rounded-xl text-sidebar-foreground/60 hover:bg-emerald-500 hover:text-white transition-all"
+                    >
+                      <Printer className="h-5 w-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="font-bold font-heading uppercase text-[10px] tracking-widest">
+                    Product Summary
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => handlePrintDaily()}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[11px] font-bold font-heading uppercase tracking-wider text-sidebar-foreground/60 hover:bg-indigo-500 hover:text-white transition-all group"
+                >
+                  <FileText className="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
+                  <span className="animate-in fade-in slide-in-from-left-2 duration-300">Daily Summary</span>
+                </button>
+                <button
+                  onClick={() => onPrintProductSummary()}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[11px] font-bold font-heading uppercase tracking-wider text-sidebar-foreground/60 hover:bg-emerald-500 hover:text-white transition-all group"
+                >
+                  <Printer className="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
+                  <span className="animate-in fade-in slide-in-from-left-2 duration-300">Product Summary</span>
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
         {/* User Section */}
         <div className="p-3 border-t border-sidebar-border">
           <div className={cn(
@@ -254,6 +378,23 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
           onClose={() => setShowStartSessionModal(false)}
           onSuccess={handleStartSessionSuccess}
         />
+
+        {/* Hidden Print Components for Quick Reports */}
+        <div className="sr-only">
+          <div ref={summaryRef}>
+            <DailySummary 
+              orders={reportsData?.orders?.filter((o: any) => isToday(parseISO(o.created_at))) || []} 
+              date={new Date()}
+            />
+          </div>
+          <div ref={productSummaryRef}>
+            <ProductSalesSummary 
+              orders={productOrdersWithItems} 
+              date={new Date()}
+              query=""
+            />
+          </div>
+        </div>
       </aside>
     </TooltipProvider>
   );

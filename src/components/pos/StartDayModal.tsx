@@ -118,13 +118,7 @@ const StartDayModal = ({ isOpen, onSuccess, onClose, forceNewSession = false }: 
       toast.error('Please enter a valid amount');
       return;
     }
-
-    // For fresh start, show print options first if there's history
-    if (forceNewSession && !showPrintOptions) {
-      setShowPrintOptions(true);
-      return;
-    }
-
+    
     startDayMutation.mutate({ amount: startAmount, date });
   };
 
@@ -142,14 +136,12 @@ const StartDayModal = ({ isOpen, onSuccess, onClose, forceNewSession = false }: 
         <div className="flex justify-between items-center mb-2">
           <DialogHeader className="flex-1">
             <DialogTitle className="text-2xl font-black font-heading uppercase tracking-tight text-slate-900">
-              {showPrintOptions ? 'Print Final Reports' : (forceNewSession ? 'Start New Session' : 'Start of Day')}
+              {forceNewSession ? 'Start New Session' : 'Start of Day'}
             </DialogTitle>
             <DialogDescription id="start-day-description" className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1.5 leading-relaxed">
-              {showPrintOptions 
-                ? 'Print your summaries before clearing history.' 
-                : (forceNewSession 
-                    ? 'Starting a new session will clear existing order history.' 
-                    : 'Please enter details to begin the shift.')}
+              {forceNewSession 
+                ? 'Starting a new session will clear existing order history.' 
+                : 'Please enter details to begin the shift.'}
             </DialogDescription>
           </DialogHeader>
           {onClose && (
@@ -164,120 +156,52 @@ const StartDayModal = ({ isOpen, onSuccess, onClose, forceNewSession = false }: 
           )}
         </div>
 
-        {showPrintOptions ? (
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-1 gap-3">
-              <Button 
-                variant="outline" 
-                className="h-16 justify-start px-6 gap-4 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all group"
-                onClick={() => handlePrintDaily()}
-              >
-                <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-600 transition-colors">
-                  <Printer className="h-5 w-5 text-blue-600 group-hover:text-white" />
-                </div>
-                <div className="text-left">
-                  <div className="font-bold text-slate-900">Daily Sales Summary</div>
-                  <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Print total revenue & orders</div>
-                </div>
-              </Button>
-
-              <Button 
-                variant="outline" 
-                className="h-16 justify-start px-6 gap-4 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-all group"
-                onClick={() => prepareProductSummary()}
-              >
-                <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center group-hover:bg-emerald-600 transition-colors">
-                  <Printer className="h-5 w-5 text-emerald-600 group-hover:text-white" />
-                </div>
-                <div className="text-left">
-                  <div className="font-bold text-slate-900">Product Sales Monitoring</div>
-                  <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Print item-wise performance</div>
-                </div>
-              </Button>
-            </div>
-
-            <div className="pt-4 flex gap-3">
-              <Button 
-                variant="ghost" 
-                className="flex-1 h-12 rounded-xl font-bold text-slate-500"
-                onClick={() => setShowPrintOptions(false)}
-              >
-                Back
-              </Button>
-              <Button 
-                className="flex-[2] h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-wider shadow-lg shadow-blue-500/20"
-                onClick={() => startDayMutation.mutate({ amount: parseFloat(amount), date })}
-                disabled={startDayMutation.isPending}
-              >
-                Confirm & Start
-              </Button>
+        <form onSubmit={handleSubmit} className="space-y-8 mt-8">
+          <div className="space-y-3">
+            <Label htmlFor="date" className="text-[11px] font-black font-heading uppercase tracking-[0.2em] text-slate-500 ml-1">Date</Label>
+            <div className="relative">
+              <Input
+                id="date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+                disabled // Make the date field static
+                className="h-14 rounded-2xl border-slate-200 bg-slate-50/50 px-5 font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-base"
+              />
             </div>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-8 mt-8">
-            <div className="space-y-3">
-              <Label htmlFor="date" className="text-[11px] font-black font-heading uppercase tracking-[0.2em] text-slate-500 ml-1">Date</Label>
-              <div className="relative">
-                <Input
-                  id="date"
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  required
-                  disabled // Make the date field static
-                  className="h-14 rounded-2xl border-slate-200 bg-slate-50/50 px-5 font-bold text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-base"
-                />
+
+          <div className="space-y-3">
+            <Label htmlFor="amount" className="text-[11px] font-black font-heading uppercase tracking-[0.2em] text-slate-500 ml-1">Opening Balance (Rs)</Label>
+            <div className="relative">
+              <Input
+                id="amount"
+                type="number"
+                placeholder="0.00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+                className="h-14 rounded-2xl border-slate-200 bg-slate-50/50 px-5 font-black text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-xl"
+              />
+            </div>
+          </div>
+
+          <Button 
+            type="submit" 
+            className="w-full h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black font-heading uppercase tracking-[0.15em] shadow-xl shadow-blue-500/25 transition-all active:scale-[0.97] text-sm"
+            disabled={startDayMutation.isPending}
+          >
+            {startDayMutation.isPending ? (
+              <div className="flex items-center gap-3">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>Processing...</span>
               </div>
-            </div>
-
-            <div className="space-y-3">
-              <Label htmlFor="amount" className="text-[11px] font-black font-heading uppercase tracking-[0.2em] text-slate-500 ml-1">Opening Balance (Rs)</Label>
-              <div className="relative">
-                <Input
-                  id="amount"
-                  type="number"
-                  placeholder="0.00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  required
-                  className="h-14 rounded-2xl border-slate-200 bg-slate-50/50 px-5 font-black text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-xl"
-                />
-              </div>
-            </div>
-
-            <Button 
-              type="submit" 
-              className="w-full h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black font-heading uppercase tracking-[0.15em] shadow-xl shadow-blue-500/25 transition-all active:scale-[0.97] text-sm"
-              disabled={startDayMutation.isPending}
-            >
-              {startDayMutation.isPending ? (
-                <div className="flex items-center gap-3">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  <span>Processing...</span>
-                </div>
-              ) : (
-                forceNewSession ? 'Start New Session' : 'Start Day'
-              )}
-            </Button>
-          </form>
-        )}
-
-        {/* Hidden Print Components */}
-        <div className="sr-only">
-          <div ref={summaryRef}>
-            <DailySummary 
-              orders={allOrders} 
-              date={new Date(date)}
-            />
-          </div>
-          <div ref={productSummaryRef}>
-            <ProductSalesSummary 
-              orders={productOrdersWithItems} 
-              date={new Date(date)}
-              query=""
-            />
-          </div>
-        </div>
+            ) : (
+              forceNewSession ? 'Start New Session' : 'Start Day'
+            )}
+          </Button>
+        </form>
       </DialogContent>
     </Dialog>
   );
