@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { TrendingUp, DollarSign, ShoppingCart, Users, Package, ArrowUpRight, ArrowDownRight, Loader2, Printer, LogOut, Trash2, Calendar as CalendarIcon } from 'lucide-react';
+import { TrendingUp, DollarSign, ShoppingCart, Users, Package, ArrowUpRight, ArrowDownRight, Loader2, Printer, LogOut, Trash2, Calendar as CalendarIcon, Download } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -43,6 +43,7 @@ import {
   differenceInCalendarDays
 } from 'date-fns';
 import { toast } from 'sonner';
+import html2pdf from 'html2pdf.js';
 
 const ReportsPage = () => {
     // --- Clear Orders Mutations ---
@@ -128,6 +129,31 @@ const ReportsPage = () => {
   };
 
   const rangeInterval = getRangeInterval();
+
+  const handleDownloadPDF = () => {
+    const reportElement = document.getElementById('report-dashboard-content');
+    if (!reportElement) {
+      toast.error('Could not generate PDF');
+      return;
+    }
+
+    const opt = {
+      margin:       [0.5, 0.5, 0.5, 0.5],
+      filename:     `Sales-Dashboard-${format(rangeInterval.start, 'yyyy-MM-dd')}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    toast.loading('Generating PDF...', { id: 'pdf-generation' });
+    
+    html2pdf().set(opt).from(reportElement).save().then(() => {
+      toast.success('PDF downloaded successfully', { id: 'pdf-generation' });
+    }).catch((err) => {
+      console.error(err);
+      toast.error('Failed to generate PDF', { id: 'pdf-generation' });
+    });
+  };
 
   const handlePrintSummary = useReactToPrint({
     contentRef: summaryRef,
@@ -389,14 +415,23 @@ const ReportsPage = () => {
   return (
     <MainLayout>
       <ScrollArea className="h-full">
-        <div className="p-6 space-y-6">
+        <div id="report-dashboard-content" className="p-6 space-y-6">
           {/* Header */}
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between" data-html2canvas-ignore="true">
             <div>
               <h1 className="text-2xl font-bold">Reports & Analytics</h1>
               <p className="text-muted-foreground">Business performance overview</p>
             </div>
             <div className="flex flex-wrap gap-2 md:gap-3">
+              <Button
+                variant="outline"
+                className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white transition-all font-bold"
+                onClick={handleDownloadPDF}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Save PDF
+              </Button>
+              <Separator orientation="vertical" className="h-10 mx-2 hidden md:block" />
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -611,7 +646,7 @@ const ReportsPage = () => {
           </Card>
 
           {/* Danger Zone */}
-          <div className="pt-12 pb-6">
+          <div className="pt-12 pb-6" data-html2canvas-ignore="true">
             <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Danger Zone</h3>
             <div className="flex flex-wrap gap-4 p-6 border-2 border-dashed border-red-100 rounded-2xl bg-red-50/30">
               <AlertDialog>
