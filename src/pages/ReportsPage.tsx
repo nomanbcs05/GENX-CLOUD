@@ -43,7 +43,6 @@ import {
   differenceInCalendarDays
 } from 'date-fns';
 import { toast } from 'sonner';
-import html2pdf from 'html2pdf.js';
 
 const ReportsPage = () => {
     // --- Clear Orders Mutations ---
@@ -129,66 +128,6 @@ const ReportsPage = () => {
   };
 
   const rangeInterval = getRangeInterval();
-
-  const handleDownloadPDF = () => {
-    const reportElement = document.getElementById('daily-summary-pdf-content');
-    if (!reportElement) {
-      toast.error('Could not generate PDF');
-      return;
-    }
-
-    // Set styling to simulate the actual printed thermal receipt layout
-    reportElement.style.display = 'block';
-    reportElement.style.position = 'relative';
-    reportElement.style.left = '0';
-    reportElement.style.top = '0';
-    reportElement.style.width = '80mm';
-    reportElement.style.margin = '0 auto';
-    reportElement.style.padding = '10px';
-    reportElement.style.background = 'white';
-    
-    // We need to temporarily add it to the body to ensure it renders full height without scrollbars clipping it
-    const clonedElement = reportElement.cloneNode(true) as HTMLElement;
-    clonedElement.style.position = 'absolute';
-    clonedElement.style.top = '-9999px';
-    clonedElement.style.left = '0';
-    clonedElement.style.height = 'auto';
-    clonedElement.style.overflow = 'visible';
-    document.body.appendChild(clonedElement);
-
-    const opt = {
-      margin:       [0.2, 0.2, 0.2, 0.2],
-      filename:     `Sales-Summary-${format(rangeInterval.start, 'yyyy-MM-dd')}.pdf`,
-      image:        { type: 'jpeg', quality: 1 },
-      html2canvas:  { 
-        scale: 2, 
-        useCORS: true, 
-        backgroundColor: '#ffffff',
-        windowWidth: 350, // Force a narrow window width to mimic the 80mm paper
-      },
-      jsPDF:        { 
-        unit: 'mm', 
-        format: [80, Math.max(clonedElement.offsetHeight * 0.264583, 200)], // dynamic height based on content
-        orientation: 'portrait' 
-      }
-    };
-
-    toast.loading('Generating PDF...', { id: 'pdf-generation' });
-    
-    html2pdf().set(opt).from(clonedElement).save().then(() => {
-      toast.success('PDF downloaded successfully', { id: 'pdf-generation' });
-      document.body.removeChild(clonedElement); // clean up
-      
-      // Reset original element styles
-      reportElement.style.display = '';
-      reportElement.style.position = 'fixed';
-      reportElement.style.left = '-9999px';
-    }).catch((err) => {
-      console.error(err);
-      toast.error('Failed to generate PDF', { id: 'pdf-generation' });
-      document.body.removeChild(clonedElement); // clean up
-    });
-  };
 
   const handlePrintSummary = useReactToPrint({
     contentRef: summaryRef,
@@ -458,15 +397,6 @@ const ReportsPage = () => {
               <p className="text-muted-foreground">Business performance overview</p>
             </div>
             <div className="flex flex-wrap gap-2 md:gap-3">
-              <Button
-                variant="outline"
-                className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white transition-all font-bold"
-                onClick={handleDownloadPDF}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Save PDF
-              </Button>
-              <Separator orientation="vertical" className="h-10 mx-2 hidden md:block" />
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
