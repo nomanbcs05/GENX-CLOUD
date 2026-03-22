@@ -327,12 +327,14 @@ const ReportsPage = () => {
   const summaryOrders = useMemo(() => {
     if (!data?.orders) return [];
     const { start, end } = getRangeInterval();
-    return data.orders.filter((order: any) => {
+    const filtered = data.orders.filter((order: any) => {
       if (!order.created_at) return false;
       const orderDate = parseISO(order.created_at);
       return isWithinInterval(orderDate, { start, end }) && order.status === 'completed';
     });
-  }, [data, dateRange]);
+    console.log('summaryOrders filtered:', filtered.length, 'for range:', format(start, 'yyyy-MM-dd'), 'to', format(end, 'yyyy-MM-dd'));
+    return filtered;
+  }, [data?.orders, dateRange]);
 
   if (isError) {
     return (
@@ -669,7 +671,7 @@ const ReportsPage = () => {
       </ScrollArea>
 
       {/* Hidden print components */}
-      <div className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none">
+      <div style={{ position: 'absolute', left: '-10000px', top: '0', pointerEvents: 'none' }}>
         <div ref={summaryRef}>
           <DailySummary 
             orders={summaryOrders} 

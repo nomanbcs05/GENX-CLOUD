@@ -381,7 +381,7 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
         />
 
         {/* Hidden Print Components for Quick Reports */}
-        <div className="sr-only">
+        <div style={{ position: 'absolute', left: '-10000px', top: '0', pointerEvents: 'none' }}>
           <div ref={summaryRef}>
             <DailySummary 
             orders={reportsData?.orders?.filter((o: any) => {
