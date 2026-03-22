@@ -137,21 +137,56 @@ const ReportsPage = () => {
       return;
     }
 
+    // Set styling to simulate the actual printed thermal receipt layout
+    reportElement.style.display = 'block';
+    reportElement.style.position = 'relative';
+    reportElement.style.left = '0';
+    reportElement.style.top = '0';
+    reportElement.style.width = '80mm';
+    reportElement.style.margin = '0 auto';
+    reportElement.style.padding = '10px';
+    reportElement.style.background = 'white';
+    
+    // We need to temporarily add it to the body to ensure it renders full height without scrollbars clipping it
+    const clonedElement = reportElement.cloneNode(true) as HTMLElement;
+    clonedElement.style.position = 'absolute';
+    clonedElement.style.top = '-9999px';
+    clonedElement.style.left = '0';
+    clonedElement.style.height = 'auto';
+    clonedElement.style.overflow = 'visible';
+    document.body.appendChild(clonedElement);
+
     const opt = {
-      margin:       [0.5, 0.5, 0.5, 0.5],
+      margin:       [0.2, 0.2, 0.2, 0.2],
       filename:     `Sales-Summary-${format(rangeInterval.start, 'yyyy-MM-dd')}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-      jsPDF:        { unit: 'in', format: [3.15, 11], orientation: 'portrait' } // 80mm width (~3.15 inches)
+      image:        { type: 'jpeg', quality: 1 },
+      html2canvas:  { 
+        scale: 2, 
+        useCORS: true, 
+        backgroundColor: '#ffffff',
+        windowWidth: 350, // Force a narrow window width to mimic the 80mm paper
+      },
+      jsPDF:        { 
+        unit: 'mm', 
+        format: [80, Math.max(clonedElement.offsetHeight * 0.264583, 200)], // dynamic height based on content
+        orientation: 'portrait' 
+      }
     };
 
     toast.loading('Generating PDF...', { id: 'pdf-generation' });
     
-    html2pdf().set(opt).from(reportElement).save().then(() => {
+    html2pdf().set(opt).from(clonedElement).save().then(() => {
       toast.success('PDF downloaded successfully', { id: 'pdf-generation' });
+      document.body.removeChild(clonedElement); // clean up
+      
+      // Reset original element styles
+      reportElement.style.display = '';
+      reportElement.style.position = 'fixed';
+      reportElement.style.left = '-9999px';
     }).catch((err) => {
       console.error(err);
       toast.error('Failed to generate PDF', { id: 'pdf-generation' });
+      document.body.removeChild(clonedElement); // clean up
     });
   };
 
