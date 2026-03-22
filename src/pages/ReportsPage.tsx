@@ -131,7 +131,7 @@ const ReportsPage = () => {
   const rangeInterval = getRangeInterval();
 
   const handleDownloadPDF = () => {
-    const reportElement = document.getElementById('report-dashboard-content');
+    const reportElement = document.getElementById('daily-summary-pdf-content');
     if (!reportElement) {
       toast.error('Could not generate PDF');
       return;
@@ -139,10 +139,10 @@ const ReportsPage = () => {
 
     const opt = {
       margin:       [0.5, 0.5, 0.5, 0.5],
-      filename:     `Sales-Dashboard-${format(rangeInterval.start, 'yyyy-MM-dd')}.pdf`,
+      filename:     `Sales-Summary-${format(rangeInterval.start, 'yyyy-MM-dd')}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+      html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+      jsPDF:        { unit: 'in', format: [3.15, 11], orientation: 'portrait' } // 80mm width (~3.15 inches)
     };
 
     toast.loading('Generating PDF...', { id: 'pdf-generation' });
@@ -415,9 +415,9 @@ const ReportsPage = () => {
   return (
     <MainLayout>
       <ScrollArea className="h-full">
-        <div id="report-dashboard-content" className="p-6 space-y-6">
+        <div className="p-6 space-y-6">
           {/* Header */}
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between" data-html2canvas-ignore="true">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-2xl font-bold">Reports & Analytics</h1>
               <p className="text-muted-foreground">Business performance overview</p>
@@ -646,7 +646,7 @@ const ReportsPage = () => {
           </Card>
 
           {/* Danger Zone */}
-          <div className="pt-12 pb-6" data-html2canvas-ignore="true">
+          <div className="pt-12 pb-6">
             <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Danger Zone</h3>
             <div className="flex flex-wrap gap-4 p-6 border-2 border-dashed border-red-100 rounded-2xl bg-red-50/30">
               <AlertDialog>
@@ -713,7 +713,7 @@ const ReportsPage = () => {
 
       {/* Hidden print components - positioned off-screen but rendered for printing */}
       <div style={{ position: 'fixed', left: '-9999px', top: '0', width: '80mm', pointerEvents: 'none', zIndex: -1000 }}>
-        <div ref={summaryRef} style={{ width: '80mm' }}>
+        <div ref={summaryRef} id="daily-summary-pdf-content" style={{ width: '80mm' }}>
           <DailySummary 
             orders={summaryOrders} 
             dateRange={dateRange}
