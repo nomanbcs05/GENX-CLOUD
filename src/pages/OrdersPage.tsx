@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, isToday, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
-import { Search, Filter, Eye, Printer, RotateCcw, Calendar as CalendarIcon, Loader2, Trash2, PrinterCheck, UtensilsCrossed, MoreVertical } from 'lucide-react';
+import { Search, Filter, Eye, Printer, RotateCcw, Calendar as CalendarIcon, Loader2, Trash2, UtensilsCrossed, MoreVertical } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -501,27 +501,6 @@ const OrdersPage = () => {
               <p className="text-muted-foreground">View and manage order history</p>
             </div>
             <div className="flex gap-2">
-              <Button
-                onClick={() => handlePrintSummary()}
-                variant="outline"
-                className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white transition-all font-bold"
-                disabled={summaryOrders.length === 0}
-              >
-                <PrinterCheck className="h-4 w-4 mr-2" />
-                Daily Summary
-              </Button>
-              <Button
-                variant="outline"
-                className="bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all font-bold"
-                onClick={onPrintProductSummary}
-                disabled={summaryOrders.length === 0}
-              >
-                <Printer className="h-4 w-4 mr-2" />
-                Product Summary
-              </Button>
-
-              <Separator orientation="vertical" className="h-10 mx-2 hidden md:block" />
-
               <Popover>
                 <PopoverTrigger asChild>
                   <Button

@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { TrendingUp, DollarSign, ShoppingCart, Users, Package, ArrowUpRight, ArrowDownRight, Loader2, Printer, PrinterCheck, LogOut, Trash2, Calendar as CalendarIcon } from 'lucide-react';
+import { TrendingUp, DollarSign, ShoppingCart, Users, Package, ArrowUpRight, ArrowDownRight, Loader2, Printer, LogOut, Trash2, Calendar as CalendarIcon } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -397,27 +397,6 @@ const ReportsPage = () => {
               <p className="text-muted-foreground">Business performance overview</p>
             </div>
             <div className="flex flex-wrap gap-2 md:gap-3">
-              <Button
-                onClick={() => handlePrintSummary()}
-                variant="default"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-lg shadow-indigo-500/20"
-                disabled={summaryOrders.length === 0}
-              >
-                <PrinterCheck className="h-4 w-4 mr-2" />
-                Print Summary
-              </Button>
-              <Button
-                variant="default"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-lg shadow-emerald-500/20"
-                onClick={onPrintProductSummary}
-                disabled={!data?.orders || data.orders.length === 0}
-              >
-                <Printer className="h-4 w-4 mr-2" />
-                Print Product Summary
-              </Button>
-
-              <Separator orientation="vertical" className="h-10 mx-2 hidden md:block" />
-
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
