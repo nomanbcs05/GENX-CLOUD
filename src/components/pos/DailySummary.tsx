@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import { format } from 'date-fns';
 import { businessInfo } from '@/data/mockData';
+import { useMultiTenant } from '@/hooks/useMultiTenant';
 
 interface Order {
   id: string;
@@ -19,6 +20,9 @@ interface DailySummaryProps {
 }
 
 const DailySummary = forwardRef<HTMLDivElement, DailySummaryProps>(({ orders = [], date, dateRange }, ref) => {
+  const { restaurant } = useMultiTenant();
+  const name = restaurant?.name || businessInfo.name;
+
   const completedOrders = Array.isArray(orders) ? orders.filter(o => o.status === 'completed') : [];
   const totalSales = completedOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
   
@@ -43,7 +47,7 @@ const DailySummary = forwardRef<HTMLDivElement, DailySummaryProps>(({ orders = [
       {/* Header */}
       <div className="text-center mb-4">
         <h1 className="text-[13px] font-bold uppercase tracking-tight">Daily Sales Summary</h1>
-        <h2 className="text-[12px] font-bold uppercase py-0.5">CRUST & CRUMS</h2>
+        <h2 className="text-[12px] font-bold uppercase py-0.5">{name}</h2>
         <p className="font-bold text-[10px]">{displayDate}</p>
       </div>
 
