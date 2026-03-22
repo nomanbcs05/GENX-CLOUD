@@ -154,6 +154,7 @@ const ReportsPage = () => {
 
       const { start, end } = rangeInterval;
       const dayOrders = data.orders.filter((o: any) => {
+        if (!o.created_at) return false;
         const d = parseISO(o.created_at);
         return isWithinInterval(d, { start, end }) && o.status === 'completed';
       });
@@ -209,12 +210,14 @@ const ReportsPage = () => {
 
     // Filter current period orders
     const currentOrders = data.orders.filter(order => {
+      if (!order.created_at) return false;
       const orderDate = parseISO(order.created_at);
       return isWithinInterval(orderDate, { start: startDate, end: endDate });
     });
 
     // Filter previous period orders (for comparison)
     const previousOrders = data.orders.filter(order => {
+      if (!order.created_at) return false;
       const orderDate = parseISO(order.created_at);
       return isWithinInterval(orderDate, { start: previousStartDate, end: previousEndDate });
     });
@@ -231,13 +234,15 @@ const ReportsPage = () => {
 
     // New Customers
     const newCustomers = data.customers.filter(customer => {
+      if (!customer.created_at) return false;
       const customerDate = parseISO(customer.created_at);
-      return customer.created_at && isWithinInterval(customerDate, { start: startDate, end: endDate });
+      return isWithinInterval(customerDate, { start: startDate, end: endDate });
     }).length;
 
     const previousNewCustomers = data.customers.filter(customer => {
+      if (!customer.created_at) return false;
       const customerDate = parseISO(customer.created_at);
-      return customer.created_at && isWithinInterval(customerDate, { start: previousStartDate, end: previousEndDate });
+      return isWithinInterval(customerDate, { start: previousStartDate, end: previousEndDate });
     }).length;
 
     // Calculate growth percentages
@@ -256,6 +261,7 @@ const ReportsPage = () => {
     const chartFormat = differenceInCalendarDays(endDate, startDate) === 0 ? 'HH:00' : 'dd MMM';
 
     currentOrders.forEach(order => {
+      if (!order.created_at) return;
       const orderDate = parseISO(order.created_at);
       const dateKey = format(orderDate, chartFormat);
       salesDataMap.set(dateKey, (salesDataMap.get(dateKey) || 0) + Number(order.total_amount));
@@ -322,6 +328,7 @@ const ReportsPage = () => {
     if (!data?.orders) return [];
     const { start, end } = getRangeInterval();
     return data.orders.filter((order: any) => {
+      if (!order.created_at) return false;
       const orderDate = parseISO(order.created_at);
       return isWithinInterval(orderDate, { start, end }) && order.status === 'completed';
     });

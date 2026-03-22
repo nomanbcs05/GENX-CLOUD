@@ -26,7 +26,7 @@ interface ProductSalesSummaryProps {
 
 const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>(
   ({ date, dateRange, query, orders = [] }, ref) => {
-    const tokens = query
+    const tokens = typeof query === 'string'
       ? query
           .split(',')
           .map((s) => s.trim().toLowerCase())
@@ -161,7 +161,8 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
         <div className="text-center space-y-1 text-[9px] mt-6 pt-2 border-t border-dotted border-black">
           <p className="font-bold uppercase tracking-tight">GEN XCLOUD POS - MONITORING REPORT</p>
           <p>{format(new Date(), 'dd-MMM HH:mm:ss')}</p>
-          <p className="mt-2 text-[10px]">********************************</p>
+          <p className="font-bold uppercase tracking-tighter">GENAI NAWABSHAH CONTACT 03342826675</p>
+          <p className="mt-2 text-[10px]">================================</p>
         </div>
       </div>
     );

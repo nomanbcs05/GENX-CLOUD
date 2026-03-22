@@ -473,7 +473,7 @@ const OngoingOrdersPage = () => {
                           #{order.id.slice(0, 8)}
                         </TableCell>
                         <TableCell className="text-slate-500 text-xs">
-                          {format(new Date(order.created_at), 'h:mm a')}
+                          {order.created_at ? format(new Date(order.created_at), 'h:mm a') : 'N/A'}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">

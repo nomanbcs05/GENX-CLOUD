@@ -70,6 +70,7 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
 
     const today = startOfDay(new Date());
     const dayOrders = reportsData.orders.filter((o: any) => {
+      if (!o.created_at) return false;
       const d = parseISO(o.created_at);
       return d >= today && o.status === 'completed';
     });
@@ -383,9 +384,12 @@ const AppSidebar = ({ isCollapsed, onToggle }: AppSidebarProps) => {
         <div className="sr-only">
           <div ref={summaryRef}>
             <DailySummary 
-              orders={reportsData?.orders?.filter((o: any) => isToday(parseISO(o.created_at))) || []} 
-              date={new Date()}
-            />
+            orders={reportsData?.orders?.filter((o: any) => {
+              if (!o.created_at) return false;
+              return isToday(parseISO(o.created_at));
+            }) || []} 
+            date={new Date()}
+          />
           </div>
           <div ref={productSummaryRef}>
             <ProductSalesSummary 

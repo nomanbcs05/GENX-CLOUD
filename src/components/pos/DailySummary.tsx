@@ -88,7 +88,7 @@ const DailySummary = forwardRef<HTMLDivElement, DailySummaryProps>(({ orders = [
             {completedOrders.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((order, idx) => (
               <tr key={order.id} className="border-b border-dotted border-gray-300">
                 <td className="py-1.5">#{String(idx + 1).padStart(2, '0')}</td>
-                <td className="py-1.5">{format(new Date(order.created_at), 'HH:mm')}</td>
+                <td className="py-1.5">{order.created_at ? format(new Date(order.created_at), 'HH:mm') : 'N/A'}</td>
                 <td className="py-1.5 truncate max-w-[60px]">{order.customers?.name || 'Walk-in'}</td>
                 <td className="text-right py-1.5 font-bold">Rs {Number(order.total_amount).toLocaleString()}</td>
               </tr>
@@ -100,9 +100,9 @@ const DailySummary = forwardRef<HTMLDivElement, DailySummaryProps>(({ orders = [
       <div className="border-t border-black my-4" />
       
       <div className="text-center space-y-1 text-[9px]">
-        <p className="font-bold uppercase">GEN XCLOUD POS - DAILY REPORT</p>
+        <p className="font-bold uppercase tracking-tight">GEN XCLOUD POS - DAILY REPORT</p>
         <p>{format(new Date(), 'dd-MMM HH:mm:ss')}</p>
-        <p className="font-bold uppercase">GENAI NAWABSHAH CONTACT 923342826675</p>
+        <p className="font-bold uppercase tracking-tighter">GENAI NAWABSHAH CONTACT 03342826675</p>
         <p className="mt-2 text-[10px]">================================</p>
       </div>
     </div>
