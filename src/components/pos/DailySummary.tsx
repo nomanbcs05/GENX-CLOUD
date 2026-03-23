@@ -79,7 +79,7 @@ const DailySummary = forwardRef<HTMLDivElement, DailySummaryProps>(({ orders = [
       {/* Order List */}
       <div className="mb-4">
         <p className="font-bold text-center border-y border-black mb-1 py-1 uppercase bg-gray-50">Order Details</p>
-        <table className="w-full text-[9px] border-collapse">
+        <table className="w-full text-[10px] border-collapse">
           <thead>
             <tr className="border-b border-black">
               <th className="text-left font-bold py-1">ID</th>
@@ -103,11 +103,11 @@ const DailySummary = forwardRef<HTMLDivElement, DailySummaryProps>(({ orders = [
 
       <div className="border-t border-black my-4" />
       
-      <div className="text-center space-y-1 text-[9px]">
+      <div className="text-center space-y-1 text-[10px]">
         <p className="font-bold uppercase tracking-tight">GEN XCLOUD POS - DAILY REPORT</p>
         <p>{format(new Date(), 'dd-MMM HH:mm:ss')}</p>
         <p className="font-bold uppercase tracking-tighter">GENAI NAWABSHAH CONTACT 03342826675</p>
-        <p className="mt-2 text-[10px]">================================</p>
+        <p className="mt-2 text-[11px]">================================</p>
       </div>
     </div>
   );

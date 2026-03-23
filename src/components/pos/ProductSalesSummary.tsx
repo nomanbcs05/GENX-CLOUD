@@ -121,7 +121,7 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
             <h2 className="font-bold uppercase mb-1 text-[11px] border-y border-black py-0.5 bg-gray-50">{category}</h2>
             <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b border-black text-[9px]">
+                <tr className="border-b border-black text-[10px]">
                   <th className="text-left font-bold py-1 w-32">Item</th>
                   <th className="text-right font-bold py-1 px-1">Qty</th>
                   <th className="text-right font-bold py-1 px-1">Sales</th>
@@ -131,7 +131,7 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
               </thead>
               <tbody>
                 {items.map((r) => (
-                  <tr key={r.name} className="border-b border-dotted border-gray-300 text-[9px]">
+                  <tr key={r.name} className="border-b border-dotted border-gray-300 text-[10px]">
                     <td className="py-1.5 break-words leading-tight">{r.name}</td>
                     <td className="py-1.5 text-right align-top px-1 font-bold">{r.quantity}</td>
                     <td className="py-1.5 text-right align-top px-1">{r.revenue.toLocaleString()}</td>
@@ -159,11 +159,11 @@ const ProductSalesSummary = forwardRef<HTMLDivElement, ProductSalesSummaryProps>
           </div>
         </div>
 
-        <div className="text-center space-y-1 text-[9px] mt-6 pt-2 border-t border-dotted border-black">
+        <div className="text-center space-y-1 text-[10px] mt-6 pt-2 border-t border-dotted border-black">
           <p className="font-bold uppercase tracking-tight">GEN XCLOUD POS - MONITORING REPORT</p>
           <p>{format(new Date(), 'dd-MMM HH:mm:ss')}</p>
           <p className="font-bold uppercase tracking-tighter">GENAI NAWABSHAH CONTACT 03342826675</p>
-          <p className="mt-2 text-[10px]">================================</p>
+          <p className="mt-2 text-[11px]">================================</p>
         </div>
       </div>
     );
