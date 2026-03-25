@@ -496,19 +496,25 @@ export const api = {
         safeOrder.customer_address = order.customer_address;
       }
 
-      // Handle customer_id as number if it's an integer-like string or number
+      // Handle customer_id
       if (order.customer_id) {
-        const cid = parseInt(String(order.customer_id));
-        if (!isNaN(cid)) {
-          safeOrder.customer_id = cid;
+        const candidate = String(order.customer_id);
+        if (isValidUUID(candidate)) {
+          safeOrder.customer_id = candidate;
+        } else {
+          const cid = parseInt(candidate);
+          if (!isNaN(cid)) safeOrder.customer_id = cid;
         }
       }
 
       // Handle table_id if present
       if (order.table_id) {
-        const tid = parseInt(String(order.table_id));
-        if (!isNaN(tid)) {
-          safeOrder.table_id = tid;
+        const candidate = String(order.table_id);
+        if (isValidUUID(candidate)) {
+          safeOrder.table_id = candidate;
+        } else {
+          const tid = parseInt(candidate);
+          if (!isNaN(tid)) safeOrder.table_id = tid;
         }
       }
 
@@ -520,16 +526,34 @@ export const api = {
         throw new Error('Invalid or missing payment_method');
       }
 
-      console.log("Validated safeOrder object for Supabase insertion:", safeOrder);
+      console.log("Attempting order insertion with safeOrder:", safeOrder);
 
       // Attempt to insert order into Supabase
-      const { data: newOrder, error: orderError } = await supabase
+      let { data: newOrder, error: orderError } = await supabase
         .from('orders')
         .insert(safeOrder)
         .select()
-        .single();
+        .maybeSingle();
 
-      if (orderError) {
+      // Fallback logic for missing columns (e.g. customer_address, server_name, table_id)
+      if (orderError && orderError.code === 'PGRST204') {
+        console.warn("Retrying order creation without optional columns (schema mismatch):", orderError.message);
+        
+        // Strip problematic columns
+        const { customer_address, server_name, table_id, ...minimalOrder } = safeOrder;
+        
+        const { data: retryData, error: retryError } = await supabase
+          .from('orders')
+          .insert(minimalOrder)
+          .select()
+          .maybeSingle();
+          
+        if (retryError) {
+          console.error("Retry failed even with minimal data:", retryError);
+          throw retryError;
+        }
+        newOrder = retryData;
+      } else if (orderError) {
         console.error("Supabase Order Insert Error:", {
           message: orderError.message,
           details: orderError.details,
@@ -539,7 +563,8 @@ export const api = {
         });
         throw orderError;
       }
-      if (!newOrder) throw new Error('Failed to create order');
+
+      if (!newOrder) throw new Error('Failed to create order - no data returned');
 
       const itemsWithOrderIdFull = items.map(item => {
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -599,22 +624,42 @@ export const api = {
       }
 
       if (order.customer_id) {
-        const cid = parseInt(String(order.customer_id));
-        if (!isNaN(cid)) safeOrder.customer_id = cid;
+        const candidate = String(order.customer_id);
+        if (isValidUUID(candidate)) {
+          safeOrder.customer_id = candidate;
+        } else {
+          const cid = parseInt(candidate);
+          if (!isNaN(cid)) safeOrder.customer_id = cid;
+        }
       }
 
       if (order.table_id) {
-        const tid = parseInt(String(order.table_id));
-        if (!isNaN(tid)) safeOrder.table_id = tid;
+        const candidate = String(order.table_id);
+        if (isValidUUID(candidate)) {
+          safeOrder.table_id = candidate;
+        } else {
+          const tid = parseInt(candidate);
+          if (!isNaN(tid)) safeOrder.table_id = tid;
+        }
       }
 
-      // 1. Update order
-      const { error: orderError } = await supabase
+      // 1. Update order with fallback
+      let { error: orderError } = await supabase
         .from('orders')
         .update(safeOrder)
         .eq('id', orderId);
 
-      if (orderError) throw orderError;
+      if (orderError && orderError.code === 'PGRST204') {
+        console.warn("Retrying order update without optional columns:", orderError.message);
+        const { customer_address, server_name, table_id, ...minimalOrder } = safeOrder;
+        const { error: retryError } = await supabase
+          .from('orders')
+          .update(minimalOrder)
+          .eq('id', orderId);
+        if (retryError) throw retryError;
+      } else if (orderError) {
+        throw orderError;
+      }
 
       // 2. Delete existing items
       const { error: deleteError } = await supabase
