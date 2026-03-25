@@ -462,7 +462,18 @@ export const api = {
       if (error) throw error;
       return data;
     },
-    getDailyCount: async () => {
+    getDailyCount: async (registerId?: string) => {
+      // If we have a registerId, count orders in that shift
+      if (registerId) {
+        const { count, error } = await supabase
+          .from('orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('register_id', registerId);
+
+        if (!error) return count || 0;
+        // If error (e.g. column missing), fallback to daily count
+      }
+
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
 
@@ -485,6 +496,7 @@ export const api = {
         status: order.status || 'completed',
         payment_method: order.payment_method || 'cash',
         order_type: order.order_type || 'dine_in',
+        register_id: order.register_id || null,
       };
 
       if (order.server_name) {
@@ -540,7 +552,7 @@ export const api = {
         console.warn("Retrying order creation without optional columns (schema mismatch):", orderError.message);
         
         // Strip problematic columns
-        const { customer_address, server_name, table_id, ...minimalOrder } = safeOrder;
+        const { customer_address, server_name, table_id, register_id, ...minimalOrder } = safeOrder;
         
         const { data: retryData, error: retryError } = await supabase
           .from('orders')
@@ -613,6 +625,7 @@ export const api = {
         status: order.status || 'pending',
         payment_method: order.payment_method || 'cash',
         order_type: order.order_type || 'dine_in',
+        register_id: order.register_id || null,
       };
 
       if (order.server_name) {
@@ -651,7 +664,7 @@ export const api = {
 
       if (orderError && orderError.code === 'PGRST204') {
         console.warn("Retrying order update without optional columns:", orderError.message);
-        const { customer_address, server_name, table_id, ...minimalOrder } = safeOrder;
+        const { customer_address, server_name, table_id, register_id, ...minimalOrder } = safeOrder;
         const { error: retryError } = await supabase
           .from('orders')
           .update(minimalOrder)

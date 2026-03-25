@@ -215,6 +215,7 @@ const CartPanel = () => {
             table_id: tableId || null,
             server_name: getServerNameWithRole(),
             customer_address: customerAddress || null,
+            register_id: openRegister?.id || null,
           };
 
           const orderItemsInsert = items.map(item => ({
@@ -276,7 +277,7 @@ const CartPanel = () => {
     createdAt: Date;
     cashierName: typeof cashierName;
   }> => {
-    const count = await api.orders.getDailyCount();
+    const count = await api.orders.getDailyCount(openRegister?.id);
     const dailyId = (count + 1).toString().padStart(2, '0');
 
     return {
@@ -346,7 +347,6 @@ const CartPanel = () => {
       return;
     }
 
-    // Create order with 'pending' status
     const orderInsert = {
       customer_id: customer?.id ? parseInt(customer.id) : null,
       total_amount: total,
@@ -356,6 +356,7 @@ const CartPanel = () => {
       table_id: tableId || null,
       server_name: getServerNameWithRole(),
       customer_address: customerAddress || null,
+      register_id: openRegister?.id || null,
     };
 
     const orderItemsInsert = items.map(item => ({
@@ -383,11 +384,7 @@ const CartPanel = () => {
       setPendingAfterRider('bill');
       setShowRiderModal(true);
       return;
-    }
-    await performShowBill();
-  };
-
-  const performCompleteSale = async () => {
+    const performCompleteSale = async () => {
     const orderInsert = {
       customer_id: customer?.id ? parseInt(customer.id) : null,
       total_amount: total,
@@ -397,6 +394,7 @@ const CartPanel = () => {
       table_id: tableId || null,
       server_name: getServerNameWithRole(),
       customer_address: customerAddress || null,
+      register_id: openRegister?.id || null,
     };
 
     const orderItemsInsert = items.map(item => ({

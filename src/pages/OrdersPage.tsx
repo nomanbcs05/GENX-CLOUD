@@ -319,23 +319,51 @@ const OrdersPage = () => {
 
   // Calculate daily IDs for today's orders
   const ordersWithDailyId = useMemo(() => {
-    // 1. Get all orders from today (already sorted in memo or sort here)
-    const sortedTodayOrders = [...todayOrders].sort((a: any, b: any) =>
+    // 1. Group orders by register_id
+    const ordersByRegister: Record<string, any[]> = {};
+    
+    // Also handle orders without a register_id (fallback to daily grouping)
+    const ordersWithoutRegister: any[] = [];
+
+    orders.forEach((order: any) => {
+      if (order.register_id) {
+        if (!ordersByRegister[order.register_id]) {
+          ordersByRegister[order.register_id] = [];
+        }
+        ordersByRegister[order.register_id].push(order);
+      } else {
+        ordersWithoutRegister.push(order);
+      }
+    });
+
+    const dailyIdMap = new Map();
+
+    // 2. For each register group, sort by date and assign IDs starting from 1
+    Object.values(ordersByRegister).forEach(group => {
+      const sortedGroup = [...group].sort((a: any, b: any) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+      sortedGroup.forEach((order, index) => {
+        dailyIdMap.set(order.id, (index + 1).toString().padStart(2, '0'));
+      });
+    });
+
+    // 3. Handle orders without register (traditional daily grouping for legacy orders)
+    const sortedLegacy = [...ordersWithoutRegister].sort((a: any, b: any) =>
       new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     );
-
-    // 2. Create a map of ID -> Daily Index (1-based)
-    const dailyIdMap = new Map();
-    sortedTodayOrders.forEach((order: any, index: number) => {
+    sortedLegacy.forEach((order, index) => {
+      // For legacy, we might want to still group by day to avoid massive numbers
+      // but the user's request is for shift-based.
       dailyIdMap.set(order.id, (index + 1).toString().padStart(2, '0'));
     });
 
-    // 3. Return orders with dailyId attached
+    // 4. Return orders with IDs attached
     return orders.map((order: any) => ({
       ...order,
       dailyId: dailyIdMap.get(order.id)
     }));
-  }, [orders, todayOrders]);
+  }, [orders]);
 
   const filteredOrders = ordersWithDailyId.filter((order: any) => {
     const customerName = order.customers?.name || 'Walk-in Customer';
