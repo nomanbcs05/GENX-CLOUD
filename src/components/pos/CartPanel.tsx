@@ -384,7 +384,11 @@ const CartPanel = () => {
       setPendingAfterRider('bill');
       setShowRiderModal(true);
       return;
-    const performCompleteSale = async () => {
+    }
+    await performShowBill();
+  };
+
+  const performCompleteSale = async () => {
     const orderInsert = {
       customer_id: customer?.id ? parseInt(customer.id) : null,
       total_amount: total,
