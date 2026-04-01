@@ -185,20 +185,9 @@ const OngoingOrdersPage = () => {
       // Prepare bill data
       const order = selectedOrder;
       if (order) {
-        // Find the daily sequential number for this order
-        let dailyOrderNumber = '';
-        if (Array.isArray(orders)) {
-          // Get today's orders sorted by created_at
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          const sortedTodayOrders = orders
-            .filter((o: any) => new Date(o.created_at) >= today)
-            .sort((a: any, b: any) => new Date(a.created_at) - new Date(b.created_at));
-          const dailyIndex = sortedTodayOrders.findIndex((o: any) => o.id === order.id);
-          if (dailyIndex !== -1) {
-            dailyOrderNumber = (dailyIndex + 1).toString().padStart(2, '0');
-          }
-        }
+        // Use the dailyId from our memo
+        const dailyOrderNumber = (order as any).dailyId || '';
+        
         const billData = {
           id: order.id, // Include order ID for auto-save
           orderNumber: dailyOrderNumber || order.id.slice(0, 8).toUpperCase(),
@@ -327,8 +316,51 @@ const OngoingOrdersPage = () => {
     }
   }, [showBill, billOrder]);
 
+  // Calculate sequential IDs for orders based on register/shift
+  const ordersWithDailyId = useMemo(() => {
+    // 1. Group orders by register_id
+    const ordersByRegister: Record<string, any[]> = {};
+    const ordersWithoutRegister: any[] = [];
+
+    orders.forEach((order: any) => {
+      if (order.register_id) {
+        if (!ordersByRegister[order.register_id]) {
+          ordersByRegister[order.register_id] = [];
+        }
+        ordersByRegister[order.register_id].push(order);
+      } else {
+        ordersWithoutRegister.push(order);
+      }
+    });
+
+    const dailyIdMap = new Map();
+
+    // 2. For each register group, sort by date and assign IDs starting from 1
+    Object.values(ordersByRegister).forEach(group => {
+      const sortedGroup = [...group].sort((a: any, b: any) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+      sortedGroup.forEach((order, index) => {
+        dailyIdMap.set(order.id, (index + 1).toString().padStart(2, '0'));
+      });
+    });
+
+    // 3. Handle orders without register (traditional daily grouping)
+    const sortedLegacy = [...ordersWithoutRegister].sort((a: any, b: any) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+    sortedLegacy.forEach((order, index) => {
+      dailyIdMap.set(order.id, (index + 1).toString().padStart(2, '0'));
+    });
+
+    return orders.map((order: any) => ({
+      ...order,
+      dailyId: dailyIdMap.get(order.id)
+    }));
+  }, [orders]);
+
   const filteredOrders = useMemo(() => {
-    let result = orders;
+    let result = ordersWithDailyId;
 
     // Filter by type tab
     if (activeTab !== 'all') {
@@ -341,6 +373,7 @@ const OngoingOrdersPage = () => {
       result = result.filter(order =>
         order.id.toLowerCase().includes(query) ||
         order.customers?.name?.toLowerCase().includes(query) ||
+        (order as any).dailyId?.includes(query) ||
         order.restaurant_tables?.table_number?.toLowerCase().includes(query)
       );
     }
@@ -358,7 +391,7 @@ const OngoingOrdersPage = () => {
     }
 
     return result;
-  }, [orders, activeTab, searchQuery]);
+  }, [ordersWithDailyId, activeTab, searchQuery]);
 
   const selectedOrder = useMemo(() =>
     orders.find(o => o.id === selectedOrderId),
@@ -470,7 +503,7 @@ const OngoingOrdersPage = () => {
                         onClick={() => setSelectedOrderId(order.id)}
                       >
                         <TableCell className="font-medium text-slate-600">
-                          #{order.id.slice(0, 8)}
+                          #{(order as any).dailyId || order.id.slice(0, 8)}
                         </TableCell>
                         <TableCell className="text-slate-500 text-xs">
                           {order.created_at ? format(new Date(order.created_at), 'h:mm a') : 'N/A'}
@@ -510,19 +543,8 @@ const OngoingOrdersPage = () => {
                               className="h-8 px-3 font-bold text-xs bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm transition-all"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                // Find the daily sequential number for this order
-                                let dailyOrderNumber = '';
-                                if (Array.isArray(orders)) {
-                                  const today = new Date();
-                                  today.setHours(0, 0, 0, 0);
-                                  const sortedTodayOrders = orders
-                                    .filter((o: any) => new Date(o.created_at) >= today)
-                                    .sort((a: any, b: any) => new Date(a.created_at) - new Date(b.created_at));
-                                  const dailyIndex = sortedTodayOrders.findIndex((o: any) => o.id === order.id);
-                                  if (dailyIndex !== -1) {
-                                    dailyOrderNumber = (dailyIndex + 1).toString().padStart(2, '0');
-                                  }
-                                }
+                                const dailyOrderNumber = (order as any).dailyId || '';
+                                
                                 const billData = {
                                   id: order.id,
                                   orderNumber: dailyOrderNumber || order.id.slice(0, 8).toUpperCase(),

@@ -714,10 +714,17 @@ export const api = {
       return true;
     },
     getOngoing: async () => {
+      // 1. Get current open register
+      const { data: openRegister } = await supabase
+        .from('daily_registers')
+        .select('id, opened_at')
+        .eq('status', 'open')
+        .maybeSingle();
+
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('orders')
         .select(`
           *,
@@ -727,9 +734,16 @@ export const api = {
             *,
             products(name, image)
           )
-        `)
-        .gte('created_at', startOfDay.toISOString())
-        .order('created_at', { ascending: false });
+        `);
+
+      // 2. If there's an open register, get all orders for it OR from today
+      if (openRegister) {
+        query = query.or(`register_id.eq.${openRegister.id},created_at.gte.${startOfDay.toISOString()}`);
+      } else {
+        query = query.gte('created_at', startOfDay.toISOString());
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       return data;
@@ -764,13 +778,25 @@ export const api = {
       return true;
     },
     clearAllToday: async () => {
+      // 1. Get current open register
+      const { data: openRegister } = await supabase
+        .from('daily_registers')
+        .select('id')
+        .eq('status', 'open')
+        .maybeSingle();
+
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
 
-      const { data: orders, error: fetchError } = await supabase
-        .from('orders')
-        .select('id')
-        .gte('created_at', startOfDay.toISOString());
+      let query = supabase.from('orders').select('id');
+
+      if (openRegister) {
+        query = query.or(`register_id.eq.${openRegister.id},created_at.gte.${startOfDay.toISOString()}`);
+      } else {
+        query = query.gte('created_at', startOfDay.toISOString());
+      }
+
+      const { data: orders, error: fetchError } = await query;
 
       if (fetchError) throw fetchError;
       if (!orders || orders.length === 0) return;
