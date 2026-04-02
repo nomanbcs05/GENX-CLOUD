@@ -51,21 +51,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const useMultiTenant = () => {
   const context = useContext(AuthContext);
   
-  // Fallback for components outside Provider (optional, but good for safety during migration)
-  const [localSession, setLocalSession] = useState<any>(null);
-  const [localLoading, setLocalLoading] = useState(true);
+  if (!context) {
+    throw new Error('useMultiTenant must be used within an AuthProvider');
+  }
 
-  useEffect(() => {
-    if (!context) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        setLocalSession(session);
-        setLocalLoading(false);
-      });
-    }
-  }, [context]);
-
-  const session = context ? context.session : localSession;
-  const sessionLoading = context ? context.sessionLoading : localLoading;
+  const { session, sessionLoading } = context;
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile', session?.user?.id],
