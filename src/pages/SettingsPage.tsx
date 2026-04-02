@@ -122,7 +122,6 @@ const SettingsPage = () => {
       password: newStaffPassword,
       full_name: newStaffName,
       role: 'cashier',
-      restaurant_id: restaurant.id
     });
   };
 

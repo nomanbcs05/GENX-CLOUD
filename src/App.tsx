@@ -15,9 +15,7 @@ import Welcome from "./pages/Welcome";
 import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 import LicenseGenerator from "./pages/LicenseGenerator";
-import SuperAdminDashboard from "./pages/SuperAdminDashboard";
-import { LicenseGate } from "./components/LicenseGate";
-import { useMultiTenant, AuthProvider } from "./hooks/useMultiTenant";
+import { AuthProvider } from "./hooks/useMultiTenant";
 
 const queryClient = new QueryClient();
 

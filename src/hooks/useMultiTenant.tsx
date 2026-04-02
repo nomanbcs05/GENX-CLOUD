@@ -77,24 +77,33 @@ export const useMultiTenant = () => {
     queryKey: ['profile', session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .maybeSingle();
 
-      if (error) return null;
-      return data as Profile;
+        if (error) {
+          console.warn('Profile fetch error (could be expected if profile table is missing):', error);
+          return null;
+        }
+        return data as Profile;
+      } catch (err) {
+        console.warn('Profile query exception:', err);
+        return null;
+      }
     },
     enabled: !!session?.user?.id,
     staleTime: 1000 * 60 * 5,
   });
 
   return useMemo(() => {
-    const isAdmin = profile?.email === 'thepizzaandburgerhouse@gmail.com' || profile?.role === 'admin';
+    const isSuperAdmin = profile?.email === 'thepizzaandburgerhouse@gmail.com';
+    const isAdmin = isSuperAdmin || profile?.role === 'admin';
     const isCashier = profile?.role === 'cashier' || 
-                     profile?.email === 'syedabuzarzaidi07@gmail.com' || 
-                     (profile && profile.email !== 'thepizzaandburgerhouse@gmail.com');
+                     profile?.email === 'syedabuzarzaidi07@gmail.com' ||
+                     (!isSuperAdmin && profile && profile.email !== 'thepizzaandburgerhouse@gmail.com');
 
     return {
       session,
@@ -102,7 +111,7 @@ export const useMultiTenant = () => {
       isLoading: sessionLoading || profileLoading,
       isAdmin,
       isCashier,
-      isSuperAdmin: false,
+      isSuperAdmin,
       restaurant: { 
         id: "the-pizza-burger-house-id",
         name: "THE pizza&burger HOUSE",

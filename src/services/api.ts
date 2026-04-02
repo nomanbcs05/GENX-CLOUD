@@ -925,7 +925,6 @@ export const api = {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('restaurant_id', restaurantId)
         .order('full_name');
       if (error) throw error;
       return data as Profile[];
@@ -947,7 +946,7 @@ export const api = {
         .eq('id', id);
       if (error) throw error;
     },
-    createStaff: async ({ email, password, full_name, role, restaurant_id }: any) => {
+    createStaff: async ({ email, password, full_name, role }: any) => {
       // 1. Sign up the user (isolated from current session)
       const { data: authData, error: authError } = await supabaseSignup.auth.signUp({
         email,
@@ -971,7 +970,6 @@ export const api = {
           full_name,
           email,
           role: role || 'cashier',
-          restaurant_id,
         })
         .select()
         .single();
