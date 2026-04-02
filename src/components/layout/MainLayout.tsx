@@ -38,18 +38,6 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     }
   }, [openRegister, isLoading]);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen w-full bg-slate-900 text-white flex-col gap-4">
-        <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
-        <div className="text-center">
-          <h2 className="text-xl font-black tracking-widest uppercase">Initializing POS</h2>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">Checking session status...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
       <AppSidebar isCollapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
