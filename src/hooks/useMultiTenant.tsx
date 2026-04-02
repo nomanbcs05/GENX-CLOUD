@@ -18,28 +18,44 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<any>(null);
-  const [sessionLoading, setSessionLoading] = useState(true);
+  const [state, setState] = useState<AuthContextType>({
+    session: null,
+    sessionLoading: true,
+  });
 
   useEffect(() => {
+    let mounted = true;
+
     // Initial session fetch
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setSessionLoading(false);
+      if (mounted) {
+        setState({ session, sessionLoading: false });
+      }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-      setSessionLoading(false);
+      if (mounted) {
+        setState(prev => {
+          // Deep compare simple session fields to prevent loop
+          const isSameUser = prev.session?.user?.id === newSession?.user?.id;
+          const isSameToken = prev.session?.access_token === newSession?.access_token;
+          
+          if (isSameUser && isSameToken && prev.sessionLoading === false) {
+            return prev;
+          }
+          return { session: newSession, sessionLoading: false };
+        });
+      }
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
-  const value = useMemo(() => ({ session, sessionLoading }), [session, sessionLoading]);
+  const value = useMemo(() => state, [state.session?.user?.id, state.session?.access_token, state.sessionLoading]);
 
   return (
     <AuthContext.Provider value={value}>

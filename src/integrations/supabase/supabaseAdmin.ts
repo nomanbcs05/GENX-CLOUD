@@ -15,6 +15,7 @@ export const supabaseSignup = createClient<Database>(SUPABASE_URL, SUPABASE_KEY,
     persistSession: false,
     autoRefreshToken: false,
     detectSessionInUrl: false,
+    storageKey: 'sb-signup-token', // Unique key to avoid conflict
     storage: {
       getItem: () => null,
       setItem: () => {},
