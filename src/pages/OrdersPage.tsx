@@ -348,14 +348,23 @@ const OrdersPage = () => {
       });
     });
 
-    // 3. Handle orders without register (traditional daily grouping for legacy orders)
-    const sortedLegacy = [...ordersWithoutRegister].sort((a: any, b: any) =>
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    );
-    sortedLegacy.forEach((order, index) => {
-      // For legacy, we might want to still group by day to avoid massive numbers
-      // but the user's request is for shift-based.
-      dailyIdMap.set(order.id, (index + 1).toString().padStart(2, '0'));
+    // 3. Handle orders without register (group by day to avoid massive numbers)
+    const ordersByDay: Record<string, any[]> = {};
+    ordersWithoutRegister.forEach(order => {
+      const dateKey = new Date(order.created_at).toISOString().split('T')[0];
+      if (!ordersByDay[dateKey]) {
+        ordersByDay[dateKey] = [];
+      }
+      ordersByDay[dateKey].push(order);
+    });
+
+    Object.values(ordersByDay).forEach(group => {
+      const sortedGroup = [...group].sort((a: any, b: any) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+      sortedGroup.forEach((order, index) => {
+        dailyIdMap.set(order.id, (index + 1).toString().padStart(2, '0'));
+      });
     });
 
     // 4. Return orders with IDs attached
