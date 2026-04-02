@@ -1,7 +1,6 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, createContext, useContext, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { toast } from 'sonner';
 
 export interface Profile {
   id: string;
@@ -11,21 +10,26 @@ export interface Profile {
   restaurant_id?: string;
 }
 
-export const useMultiTenant = () => {
+interface AuthContextType {
+  session: any;
+  sessionLoading: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<any>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
 
   useEffect(() => {
     // Initial session fetch
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      console.log("useMultiTenant: getSession finished", { hasSession: !!session });
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setSessionLoading(false);
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
-      console.log("useMultiTenant: onAuthStateChange", { event, hasSession: !!newSession });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
       setSessionLoading(false);
     });
@@ -35,25 +39,49 @@ export const useMultiTenant = () => {
     };
   }, []);
 
+  const value = useMemo(() => ({ session, sessionLoading }), [session, sessionLoading]);
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useMultiTenant = () => {
+  const context = useContext(AuthContext);
+  
+  // Fallback for components outside Provider (optional, but good for safety during migration)
+  const [localSession, setLocalSession] = useState<any>(null);
+  const [localLoading, setLocalLoading] = useState(true);
+
+  useEffect(() => {
+    if (!context) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setLocalSession(session);
+        setLocalLoading(false);
+      });
+    }
+  }, [context]);
+
+  const session = context ? context.session : localSession;
+  const sessionLoading = context ? context.sessionLoading : localLoading;
+
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile', session?.user?.id],
     queryFn: async () => {
       if (!session?.user?.id) return null;
-      console.log("useMultiTenant: fetching profile for", session.user.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
         .single();
 
-      if (error) {
-        console.error("useMultiTenant: profile error", error);
-        return null;
-      }
+      if (error) return null;
       return data as Profile;
     },
     enabled: !!session?.user?.id,
-    staleTime: 1000 * 60 * 5, // Cache profile for 5 mins
+    staleTime: 1000 * 60 * 5,
   });
 
   return useMemo(() => {
@@ -68,7 +96,7 @@ export const useMultiTenant = () => {
       isLoading: sessionLoading || profileLoading,
       isAdmin,
       isCashier,
-      isSuperAdmin: false, // SaaS disabled
+      isSuperAdmin: false,
       restaurant: { 
         id: "the-pizza-burger-house-id",
         name: "THE pizza&burger HOUSE",
@@ -81,7 +109,7 @@ export const useMultiTenant = () => {
         email: null,
         receipt_footer: "Powered By: GENX CLOUD +92 334 2826675",
         bill_footer: "!!!!FOR THE LOVE OF FOOD !!!!"
-      } // Static config for single tenant
+      }
     };
   }, [session, profile, sessionLoading, profileLoading]);
 };

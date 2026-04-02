@@ -17,61 +17,63 @@ import NotFound from "./pages/NotFound";
 import LicenseGenerator from "./pages/LicenseGenerator";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import { LicenseGate } from "./components/LicenseGate";
-import { useMultiTenant } from "./hooks/useMultiTenant";
+import { useMultiTenant, AuthProvider } from "./hooks/useMultiTenant";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Routes>
-            <Route path="/license-manager" element={<LicenseGenerator />} />
-            <Route path="/auth" element={<Welcome />} />
-            <Route path="/login" element={<LoginPage />} />
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <Routes>
+              <Route path="/license-manager" element={<LicenseGenerator />} />
+              <Route path="/auth" element={<Welcome />} />
+              <Route path="/login" element={<LoginPage />} />
 
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Index />
-              </ProtectedRoute>
-            } />
-            <Route path="/ongoing-orders" element={
-              <ProtectedRoute>
-                <OngoingOrdersPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/orders" element={
-              <ProtectedRoute>
-                <OrdersPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/products" element={
-              <ProtectedRoute adminOnly={true}>
-                <ProductsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/customers" element={
-              <ProtectedRoute adminOnly={true}>
-                <CustomersPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/reports" element={
-              <ProtectedRoute adminOnly={true}>
-                <ReportsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/settings" element={
-              <ProtectedRoute adminOnly={true}>
-                <SettingsPage />
-              </ProtectedRoute>
-            } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <Index />
+                </ProtectedRoute>
+              } />
+              <Route path="/ongoing-orders" element={
+                <ProtectedRoute>
+                  <OngoingOrdersPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/orders" element={
+                <ProtectedRoute>
+                  <OrdersPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/products" element={
+                <ProtectedRoute adminOnly={true}>
+                  <ProductsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/customers" element={
+                <ProtectedRoute adminOnly={true}>
+                  <CustomersPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/reports" element={
+                <ProtectedRoute adminOnly={true}>
+                  <ReportsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute adminOnly={true}>
+                  <SettingsPage />
+                </ProtectedRoute>
+              } />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
