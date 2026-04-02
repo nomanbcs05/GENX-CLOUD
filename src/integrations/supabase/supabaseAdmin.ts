@@ -15,5 +15,10 @@ export const supabaseSignup = createClient<Database>(SUPABASE_URL, SUPABASE_KEY,
     persistSession: false,
     autoRefreshToken: false,
     detectSessionInUrl: false,
+    storage: {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    }
   },
 });
